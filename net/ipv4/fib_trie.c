@@ -1607,7 +1607,6 @@ found:
 	rcu_read_unlock();
 	return ret;
 }
-EXPORT_SYMBOL_GPL(fib_table_lookup);
 
 /*
  * Remove the leaf and return parent.

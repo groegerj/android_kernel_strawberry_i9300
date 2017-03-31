@@ -233,9 +233,7 @@ static inline struct rt6_info *ip6_dst_alloc(struct dst_ops *ops,
 {
 	struct rt6_info *rt = dst_alloc(ops, dev, 0, 0, flags);
 
-	if (rt != NULL)
-		memset(&rt->rt6i_table, 0,
-			sizeof(*rt) - sizeof(struct dst_entry));
+	memset(&rt->rt6i_table, 0, sizeof(*rt) - sizeof(struct dst_entry));
 
 	return rt;
 }
@@ -640,13 +638,6 @@ out:
 	return rt;
 
 }
-
-struct dst_entry * ip6_route_lookup(struct net *net, struct flowi6 *fl6,
-				    int flags)
-{
-	return fib6_rule_lookup(net, fl6, flags, ip6_pol_route_lookup);
-}
-EXPORT_SYMBOL_GPL(ip6_route_lookup);
 
 struct rt6_info *rt6_lookup(struct net *net, const struct in6_addr *daddr,
 			    const struct in6_addr *saddr, int oif, int strict)
@@ -2205,7 +2196,6 @@ static const struct nla_policy rtm_ipv6_policy[RTA_MAX+1] = {
 	[RTA_IIF]		= { .type = NLA_U32 },
 	[RTA_PRIORITY]          = { .type = NLA_U32 },
 	[RTA_METRICS]           = { .type = NLA_NESTED },
-	[RTA_UID]		= { .type = NLA_U32 },
 };
 
 static int rtm_to_fib6_config(struct sk_buff *skb, struct nlmsghdr *nlh,
@@ -2508,11 +2498,6 @@ static int inet6_rtm_getroute(struct sk_buff *in_skb, struct nlmsghdr* nlh, void
 
 	if (tb[RTA_OIF])
 		fl6.flowi6_oif = nla_get_u32(tb[RTA_OIF]);
-
-	if (tb[RTA_UID])
-		fl6.flowi6_uid = nla_get_u32(tb[RTA_UID]);
-	else
-		fl6.flowi6_uid = (iif ? (uid_t) -1 : current_uid());
 
 	if (iif) {
 		struct net_device *dev;

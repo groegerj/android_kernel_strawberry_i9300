@@ -511,8 +511,8 @@ extern struct sk_buff *skb_clone(struct sk_buff *skb,
 				 gfp_t priority);
 extern struct sk_buff *skb_copy(const struct sk_buff *skb,
 				gfp_t priority);
-extern struct sk_buff *__pskb_copy(struct sk_buff *skb,
-				 int headroom, gfp_t gfp_mask);
+extern struct sk_buff *pskb_copy(struct sk_buff *skb,
+				 gfp_t gfp_mask);
 extern int	       pskb_expand_head(struct sk_buff *skb,
 					int nhead, int ntail,
 					gfp_t gfp_mask);
@@ -1614,12 +1614,6 @@ static inline void netdev_free_page(struct net_device *dev, struct page *page)
 	__free_page(page);
 }
 
-static inline struct sk_buff *pskb_copy(struct sk_buff *skb,
-					gfp_t gfp_mask)
-{
-	return __pskb_copy(skb, skb_headroom(skb), gfp_mask);
-}
-
 /**
  *	skb_clone_writable - is the header of a clone writable
  *	@skb: buffer to check
@@ -1863,8 +1857,7 @@ extern int	       skb_copy_datagram_iovec(const struct sk_buff *from,
 					       int size);
 extern int	       skb_copy_and_csum_datagram_iovec(struct sk_buff *skb,
 							int hlen,
-							struct iovec *iov,
-							int len);
+							struct iovec *iov);
 extern int	       skb_copy_datagram_from_iovec(struct sk_buff *skb,
 						    int offset,
 						    const struct iovec *from,

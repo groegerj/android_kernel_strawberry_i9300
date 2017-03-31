@@ -13,7 +13,7 @@ DHDCFLAGS += -Wall -Wstrict-prototypes -Dlinux -DLINUX -DBCMDRIVER             \
         -DEMBEDDED_PLATFORM -DPNO_SUPPORT
 
 # CM kernel includes 3.4 backports
-DHDCFLAGS += -DWL_COMPAT_WIRELESS
+#DHDCFLAGS += -DWL_COMPAT_WIRELESS
 
 #################
 # Common feature
@@ -128,7 +128,7 @@ DHDCFLAGS += -DDHDENABLE_TAILPAD
 ##########
 # Definitions are filtered by Kernel version
 DHDCFLAGS += -DWL_ENABLE_P2P_IF
-DHDCFLAGS += -DWL_SUPPORT_BACKPORTED_KPATCHES
+#DHDCFLAGS += -DWL_SUPPORT_BACKPORTED_KPATCHES
 # Default definitions for KitKat
 DHDCFLAGS += -DWL_CFG80211_STA_EVENT
 DHDCFLAGS += -DWL_IFACE_COMB_NUM_CHANNELS
