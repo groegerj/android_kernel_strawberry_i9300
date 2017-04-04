@@ -664,9 +664,8 @@ static int mbind_range(struct mm_struct *mm, unsigned long start,
 		vmend   = min(end, vma->vm_end);
 
 		pgoff = vma->vm_pgoff + ((start - vma->vm_start) >> PAGE_SHIFT);
-                prev = vma_merge(mm, prev, vmstart, vmend, vma->vm_flags,
-                                 vma->anon_vma, vma->vm_file, pgoff,
-                                 new_pol, vma_get_anon_name(name));
+		prev = vma_merge(mm, prev, vmstart, vmend, vma->vm_flags,
+				  vma->anon_vma, vma->vm_file, pgoff, new_pol);
 		if (prev) {
 			vma = prev;
 			next = vma->vm_next;
@@ -948,13 +947,8 @@ static int migrate_to_node(struct mm_struct *mm, int source, int dest,
 		return PTR_ERR(vma);
 
 	if (!list_empty(&pagelist)) {
-#ifndef CONFIG_DMA_CMA
 		err = migrate_pages(&pagelist, new_node_page, dest,
-								false, MIGRATE_SYNC);
-#else
-		err = migrate_pages(&pagelist, new_node_page, dest,
-								false, MIGRATE_SYNC, 0);
-#endif
+							false, MIGRATE_SYNC);
 		if (err)
 			putback_lru_pages(&pagelist);
 	}
@@ -1173,15 +1167,9 @@ static long do_mbind(unsigned long start, unsigned long len,
 		err = mbind_range(mm, start, end, new);
 
 		if (!list_empty(&pagelist)) {
-#ifndef CONFIG_DMA_CMA
 			nr_failed = migrate_pages(&pagelist, new_vma_page,
 						(unsigned long)vma,
 						false, true);
-#else
-			nr_failed = migrate_pages(&pagelist, new_vma_page,
-						(unsigned long)vma,
-						false, true, 0);
-#endif
 			if (nr_failed)
 				putback_lru_pages(&pagelist);
 		}
