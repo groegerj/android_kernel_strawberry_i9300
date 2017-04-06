@@ -17,8 +17,6 @@
 #include <asm/pgtable-hwdef.h>
 #include <asm/pgtable.h>
 
-#include <mach/smc.h>
-
 #include "proc-macros.S"
 
 #define TTB_S		(1 << 1)
@@ -68,6 +66,7 @@ ENDPROC(cpu_v7_proc_fin)
 ENTRY(cpu_v7_reset)
 	mrc	p15, 0, r1, c1, c0, 0		@ ctrl register
 	bic	r1, r1, #0x1			@ ...............m
+ THUMB(	bic	r1, r1, #1 << 30 )		@ SCTLR.TE (Thumb exceptions)
 	mcr	p15, 0, r1, c1, c0, 0		@ disable MMU
 	isb
 	mov	pc, r0
@@ -249,13 +248,16 @@ ENTRY(cpu_v7_do_resume)
 	mcr	p15, 0, r7, c2, c0, 0	@ TTB 0
 	mcr	p15, 0, r8, c2, c0, 1	@ TTB 1
 	mcr	p15, 0, ip, c2, c0, 2	@ TTB control register
-	mcr	p15, 0, r10, c1, c0, 1	@ Auxiliary control register
+	mrc	p15, 0, r4, c1, c0, 1	@ Read Auxiliary control register
+	teq	r4, r10			@ Is it already set?
+	mcrne	p15, 0, r10, c1, c0, 1	@ No, so write it
 	mcr	p15, 0, r11, c1, c0, 2	@ Co-processor access control
 	ldr	r4, =PRRR		@ PRRR
 	ldr	r5, =NMRR		@ NMRR
 	mcr	p15, 0, r4, c10, c2, 0	@ write PRRR
 	mcr	p15, 0, r5, c10, c2, 1	@ write NMRR
 	isb
+	dsb
 	mov	r0, r9			@ control register
 	mov	r2, r7, lsr #14		@ get TTB0 base
 	mov	r2, r2, lsl #14
@@ -265,9 +267,6 @@ ENDPROC(cpu_v7_do_resume)
 cpu_resume_l1_flags:
 	ALT_SMP(.long PMD_TYPE_SECT | PMD_SECT_AP_WRITE | PMD_FLAGS_SMP)
 	ALT_UP(.long  PMD_TYPE_SECT | PMD_SECT_AP_WRITE | PMD_FLAGS_UP)
-#else
-#define cpu_v7_do_suspend	0
-#define cpu_v7_do_resume	0
 #endif
 
 	__CPUINIT
@@ -277,6 +276,10 @@ cpu_resume_l1_flags:
  *
  *	Initialise TLB, Caches, and MMU state ready to switch the MMU
  *	on.  Return in r0 the new CP15 C1 control register setting.
+ *
+ *	We automatically detect if we have a Harvard cache, and use the
+ *	Harvard cache control instructions insead of the unified cache
+ *	control instructions.
  *
  *	This should be able to cover all ARMv7 cores.
  *
@@ -337,23 +340,12 @@ __v7_setup:
 	orreq	r10, r10, #(1 << 22)		@ set the Write Allocate disable bit
 	mcreq	p15, 1, r10, c9, c0, 2		@ write the L2 cache aux ctrl register
 #endif
-	b	4f
+	b	3f
 
 	/* Cortex-A9 Errata */
 2:	ldr	r10, =0x00000c09		@ Cortex-A9 primary part number
 	teq	r0, r10
 	bne	3f
-#ifndef CONFIG_ARM_TRUSTZONE
-	cmp	r6, #0x10			@ power ctrl reg added r1p0
-	mrcge	p15, 0, r10, c15, c0, 0		@ read power control register
-	orrge	r10, r10, #1			@ enable dynamic clock gating
-	mcrge	p15, 0, r10, c15, c0, 0		@ write power control register
-#ifdef CONFIG_ARM_ERRATA_720791
-	teq	r5, #0x00100000			@ only present in r1p*
-	mrceq	p15, 0, r10, c15, c0, 2		@ read "chicken power ctrl" reg
-	orreq	r10, r10, #0x30			@ disable core clk gate on
-	mcreq	p15, 0, r10, c15, c0, 2		@ instr-side waits
-#endif
 #ifdef CONFIG_ARM_ERRATA_742230
 	cmp	r6, #0x22			@ only present up to r2p2
 	mrcle	p15, 0, r10, c15, c0, 1		@ read diagnostic register
@@ -369,13 +361,10 @@ __v7_setup:
 	orreq	r10, r10, #1 << 22		@ set bit #22
 	mcreq	p15, 0, r10, c15, c0, 1		@ write diagnostic register
 #endif
-#ifdef CONFIG_ARM_ERRATA_761320
-	mrc	p15, 0, r10, c15, c0, 1		@ read diagnostic register
-	orr	r10, r10, #1 << 21		@ set bit #21
-	mcr	p15, 0, r10, c15, c0, 1		@ write diagnostic register
-#endif
 #ifdef CONFIG_ARM_ERRATA_743622
-	teq	r5, #0x00200000			@ only present in r2p*
+	teq	r6, #0x20			@ present in r2p0
+	teqne	r6, #0x21			@ present in r2p1
+	teqne	r6, #0x22			@ present in r2p2
 	mrceq	p15, 0, r10, c15, c0, 1		@ read diagnostic register
 	orreq	r10, r10, #1 << 6		@ set bit #6
 	mcreq	p15, 0, r10, c15, c0, 1		@ write diagnostic register
@@ -386,69 +375,11 @@ __v7_setup:
 	orrlt	r10, r10, #1 << 11		@ set bit #11
 	mcrlt	p15, 0, r10, c15, c0, 1		@ write diagnostic register
 #endif
-#endif
-	b	4f
 
-	/* Cortex-A15 Errata */
-3:	ldr	r10, =0x00000c0f		@ Cortex-A15 primary part number
-	teq	r0, r10
-	bne	4f
-
-#ifdef CONFIG_ARM_TRUSTZONE
-	stmia	r12, {r0-r3}
-	mov	r3, #0
-#endif
-#ifdef CONFIG_ARM_ERRATA_761171
-	teq	r6, #0x0			@ present in r0p0
-	teqne	r6, #0x1			@ present in r0p1
-	teqne	r6, #0x2			@ present in r0p2
-	mrceq	p15, 0, r10, c1, c0, 1		@ read aux control register
-	orreq	r10, r10, #3 << 27		@ set [28:27] bit
-#ifdef CONFIG_ARM_TRUSTZONE
-	ldreq	r0, =SMC_CMD_REG
-	ldreq	r1, =SMC_REG_ID_CP15(1, 0, 0, 1)
-	moveq	r2, r10
-	smceq	0
-#else
-	mcreq	p15, 0, r10, c1, c0, 1		@ write aux control register
-#endif
-#endif
-#ifdef CONFIG_ARM_ERRATA_762974
-	teq	r6, #0x0			@ present in r0p0
-	teqne	r6, #0x1			@ present in r0p1
-	teqne	r6, #0x2			@ present in r0p2
-	ldreq	r10, =0x400			@ disable l2 prefetch function
-#ifdef CONFIG_ARM_TRUSTZONE
-	ldreq	r0, =SMC_CMD_REG
-	ldreq	r1, =SMC_REG_ID_CP15(15, 1, 0, 3)
-	moveq	r2, r10
-	smceq	0
-#else
-	mcreq	p15, 1, r10, c15, c0, 3		@ write l2 prefetch ctrl register
-#endif
-#endif
-#ifdef CONFIG_ARM_ERRATA_763722
-	teq	r6, #0x0			@ present in r0p0
-	teqne	r6, #0x1			@ present in r0p1
-	teqne	r6, #0x2			@ present in r0p2
-	teqne	r6, #0x3			@ present in r0p3
-	mrceq	p15, 0, r10, c1, c0, 1		@ read aux control register
-	orreq	r10, r10, #15 << 25		@ set [28:25] bit
-#ifdef CONFIG_ARM_TRUSTZONE
-	ldreq	r0, =SMC_CMD_REG
-	ldreq	r1, =SMC_REG_ID_CP15(1, 0, 0, 1)
-	moveq	r2, r10
-	smceq	0
-#else
-	mcreq	p15, 0, r10, c1, c0, 1		@ write aux control register
-#endif
-#endif
-#ifdef CONFIG_ARM_TRUSTZONE
-	ldmia	r12, {r0-r3}
-#endif
-
-4:	mov	r10, #0
+3:	mov	r10, #0
+#ifdef HARVARD_CACHE
 	mcr	p15, 0, r10, c7, c5, 0		@ I+BTB cache invalidate
+#endif
 	dsb
 #ifdef CONFIG_MMU
 	mcr	p15, 0, r10, c8, c7, 0		@ invalidate I + D TLBs
@@ -462,18 +393,6 @@ __v7_setup:
 	ldr	r6, =NMRR			@ NMRR
 	mcr	p15, 0, r5, c10, c2, 0		@ write PRRR
 	mcr	p15, 0, r6, c10, c2, 1		@ write NMRR
-#endif
-#ifndef CONFIG_ARM_THUMBEE
-	mrc	p15, 0, r0, c0, c1, 0		@ read ID_PFR0 for ThumbEE
-	and	r0, r0, #(0xf << 12)		@ ThumbEE enabled field
-	teq	r0, #(1 << 12)			@ check if ThumbEE is present
-	bne	1f
-	mov	r5, #0
-	mcr	p14, 6, r5, c1, c0, 0		@ Initialize TEEHBR to 0
-	mrc	p14, 6, r0, c0, c0, 0		@ load TEECR
-	orr	r0, r0, #1			@ set the 1st bit in order to
-	mcr	p14, 6, r0, c0, c0, 0		@ stop userspace TEEHBR access
-1:
 #endif
 	adr	r5, v7_crval
 	ldmia	r5, {r5, r6}
@@ -507,11 +426,7 @@ __v7_setup_stack:
 	__INITDATA
 
 	@ define struct processor (see <asm/proc-fns.h> and proc-macros.S)
-#ifdef CONFIG_PM_SLEEP
 	define_processor_functions v7, dabort=v7_early_abort, pabort=v7_pabort, suspend=1
-#else
-	define_processor_functions v7, dabort=v7_early_abort, pabort=v7_pabort, suspend=0
-#endif
 
 	.section ".rodata"
 
