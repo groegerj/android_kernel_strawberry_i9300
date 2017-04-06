@@ -31,8 +31,10 @@
 #include <linux/random.h>
 #include <linux/hw_breakpoint.h>
 #include <linux/console.h>
+#include <linux/cpuidle.h>
 
 #include <asm/cacheflush.h>
+#include <asm/leds.h>
 #include <asm/processor.h>
 #include <asm/system.h>
 #include <asm/thread_notify.h>
@@ -134,6 +136,7 @@ void arm_machine_restart(char mode, const char *cmd)
 	 * out to the console drivers */
 	arm_machine_flush_console();
 
+
 	/* Disable interrupts first */
 	local_irq_disable();
 	local_fiq_disable();
@@ -225,6 +228,7 @@ void cpu_idle(void)
 	while (1) {
 		idle_notifier_call_chain(IDLE_START);
 		tick_nohz_stop_sched_tick(1);
+		leds_event(led_idle_start);
 		while (!need_resched()) {
 #ifdef CONFIG_HOTPLUG_CPU
 			if (cpu_is_offline(smp_processor_id()))
@@ -232,15 +236,13 @@ void cpu_idle(void)
 #endif
 
 			local_irq_disable();
-#ifdef CONFIG_PL310_ERRATA_769419
-			wmb();
-#endif
 			if (hlt_counter) {
 				local_irq_enable();
 				cpu_relax();
 			} else {
 				stop_critical_timings();
-				pm_idle();
+				if (cpuidle_idle_call())
+					pm_idle();
 				start_critical_timings();
 				/*
 				 * This will eventually be removed - pm_idle
@@ -251,6 +253,7 @@ void cpu_idle(void)
 				local_irq_enable();
 			}
 		}
+		leds_event(led_idle_end);
 		tick_nohz_restart_sched_tick();
 		idle_notifier_call_chain(IDLE_END);
 		preempt_enable_no_resched();
