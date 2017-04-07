@@ -120,6 +120,8 @@ source "drivers/uio/Kconfig"
 
 source "drivers/vlynq/Kconfig"
 
+source "drivers/virtio/Kconfig"
+
 source "drivers/xen/Kconfig"
 
 source "drivers/staging/Kconfig"
@@ -155,12 +157,14 @@ source "drivers/dpram/Kconfig"
 # Secure OS Mobicore
 source "drivers/gud/Kconfig"
 
-source "drivers/iommu/Kconfig"
-
 # FELICA
 source "drivers/felica/Kconfig"
 
 # Authentec
 source "drivers/interceptor/Kconfig"
+
+source "drivers/iommu/Kconfig"
+
+source "drivers/virt/Kconfig"
 
 endmenu
