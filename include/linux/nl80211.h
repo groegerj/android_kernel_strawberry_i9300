@@ -502,14 +502,6 @@
  *	more background information, see
  *	http://wireless.kernel.org/en/users/Documentation/WoWLAN.
  *
- * @NL80211_CMD_SET_REKEY_OFFLOAD: This command is used give the driver
- *	the necessary information for supporting GTK rekey offload. This
- *	feature is typically used during WoWLAN. The configuration data
- *	is contained in %NL80211_ATTR_REKEY_DATA (which is nested and
- *	contains the data in sub-attributes). After rekeying happened,
- *	this command may also be sent by the driver as an MLME event to
- *	inform userspace of the new replay counter.
- *
  * @NL80211_CMD_PMKSA_CANDIDATE: This is used as an event to inform userspace
  *	of PMKSA caching dandidates.
  *
@@ -547,6 +539,14 @@
  *
  * @NL80211_CMD_SET_NOACK_MAP: sets a bitmap for the individual TIDs whether
  *      No Acknowledgement Policy should be applied.
+ *
+ * @NL80211_CMD_SET_REKEY_OFFLOAD: This command is used give the driver
+ *	the necessary information for supporting GTK rekey offload. This
+ *	feature is typically used during WoWLAN. The configuration data
+ *	is contained in %NL80211_ATTR_REKEY_DATA (which is nested and
+ *	contains the data in sub-attributes). After rekeying happened,
+ *	this command may also be sent by the driver as an MLME event to
+ *	inform userspace of the new replay counter.
  *
  * @NL80211_CMD_MAX: highest used command number
  * @__NL80211_CMD_AFTER_LAST: internal use
@@ -672,8 +672,6 @@ enum nl80211_commands {
 	NL80211_CMD_SCHED_SCAN_RESULTS,
 	NL80211_CMD_SCHED_SCAN_STOPPED,
 
-	NL80211_CMD_SET_REKEY_OFFLOAD,
-
 	NL80211_CMD_PMKSA_CANDIDATE,
 
 	NL80211_CMD_TDLS_OPER,
@@ -688,6 +686,8 @@ enum nl80211_commands {
 	NL80211_CMD_UNEXPECTED_4ADDR_FRAME,
 
 	NL80211_CMD_SET_NOACK_MAP,
+
+	NL80211_CMD_SET_REKEY_OFFLOAD,
 
 	/* add new commands above here */
 
@@ -835,10 +835,10 @@ enum nl80211_commands {
  *	scan with a single scheduled scan request, a wiphy attribute.
  * @NL80211_ATTR_MAX_SCAN_IE_LEN: maximum length of information elements
  *	that can be added to a scan request
- * @NL80211_ATTR_MAX_SCHED_SCAN_IE_LEN: maximum length of information
- *	elements that can be added to a scheduled scan request
  * @NL80211_ATTR_MAX_MATCH_SETS: maximum number of sets that can be
  *	used with @NL80211_ATTR_SCHED_SCAN_MATCH, a wiphy attribute.
+ * @NL80211_ATTR_MAX_SCHED_SCAN_IE_LEN: maximum length of information
+ *	elements that can be added to a scheduled scan request
  *
  * @NL80211_ATTR_SCAN_FREQUENCIES: nested attribute with frequencies (in MHz)
  * @NL80211_ATTR_SCAN_SSIDS: nested attribute with SSIDs, leave out for passive
@@ -1108,14 +1108,6 @@ enum nl80211_commands {
  *	are managed in software: interfaces of these types aren't subject to
  *	any restrictions in their number or combinations.
  *
- * @%NL80211_ATTR_REKEY_DATA: nested attribute containing the information
- *	necessary for GTK rekeying in the device, see &enum nl80211_rekey_data.
- *
- * @NL80211_ATTR_SCAN_SUPP_RATES: rates per to be advertised as supported in scan,
- *	nested array attribute containing an entry for each band, with the entry
- *	being a list of supported rates as defined by IEEE 802.11 7.3.2.2 but
- *	without the length restriction (at most %NL80211_MAX_SUPP_RATES).
- *
  * @NL80211_ATTR_HIDDEN_SSID: indicates whether SSID is to be hidden from Beacon
  *	and Probe Response (when response to wildcard Probe Request); see
  *	&enum nl80211_hidden_ssid, represented as a u32
@@ -1263,6 +1255,14 @@ enum nl80211_commands {
  *
  * @NL80211_ATTR_BG_SCAN_PERIOD: Background scan period in seconds
  *      or 0 to disable background scan.
+ *
+ * @%NL80211_ATTR_REKEY_DATA: nested attribute containing the information
+ *	necessary for GTK rekeying in the device, see &enum nl80211_rekey_data.
+ *
+ * @NL80211_ATTR_SCAN_SUPP_RATES: rates per to be advertised as supported in scan,
+ *	nested array attribute containing an entry for each band, with the entry
+ *	being a list of supported rates as defined by IEEE 802.11 7.3.2.2 but
+ *	without the length restriction (at most %NL80211_MAX_SUPP_RATES).
  *
  * @NL80211_ATTR_MAX: highest attribute number currently defined
  * @__NL80211_ATTR_AFTER_LAST: internal use
@@ -1461,13 +1461,6 @@ enum nl80211_attrs {
 
 	NL80211_ATTR_INTERFACE_COMBINATIONS,
 	NL80211_ATTR_SOFTWARE_IFTYPES,
-
-	NL80211_ATTR_REKEY_DATA,
-
-	NL80211_ATTR_MAX_NUM_SCHED_SCAN_SSIDS,
-	NL80211_ATTR_MAX_SCHED_SCAN_IE_LEN,
-
-	NL80211_ATTR_SCAN_SUPP_RATES,
 
 	NL80211_ATTR_HIDDEN_SSID,
 
@@ -2770,30 +2763,6 @@ enum nl80211_plink_state {
 	MAX_NL80211_PLINK_STATES = NUM_NL80211_PLINK_STATES - 1
 };
 
-#define NL80211_KCK_LEN			16
-#define NL80211_KEK_LEN			16
-#define NL80211_REPLAY_CTR_LEN		8
-
-/**
- * enum nl80211_rekey_data - attributes for GTK rekey offload
- * @__NL80211_REKEY_DATA_INVALID: invalid number for nested attributes
- * @NL80211_REKEY_DATA_KEK: key encryption key (binary)
- * @NL80211_REKEY_DATA_KCK: key confirmation key (binary)
- * @NL80211_REKEY_DATA_REPLAY_CTR: replay counter (binary)
- * @NUM_NL80211_REKEY_DATA: number of rekey attributes (internal)
- * @MAX_NL80211_REKEY_DATA: highest rekey attribute (internal)
- */
-enum nl80211_rekey_data {
-	__NL80211_REKEY_DATA_INVALID,
-	NL80211_REKEY_DATA_KEK,
-	NL80211_REKEY_DATA_KCK,
-	NL80211_REKEY_DATA_REPLAY_CTR,
-
-	/* keep last */
-	NUM_NL80211_REKEY_DATA,
-	MAX_NL80211_REKEY_DATA = NUM_NL80211_REKEY_DATA - 1
-};
-
 /**
  * enum nl80211_hidden_ssid - values for %NL80211_ATTR_HIDDEN_SSID
  * @NL80211_HIDDEN_SSID_NOT_IN_USE: do not hide SSID (i.e., broadcast it in
@@ -2910,6 +2879,30 @@ enum nl80211_probe_resp_offload_support_attr {
 	NL80211_PROBE_RESP_OFFLOAD_SUPPORT_WPS2 =	1<<1,
 	NL80211_PROBE_RESP_OFFLOAD_SUPPORT_P2P =	1<<2,
 	NL80211_PROBE_RESP_OFFLOAD_SUPPORT_80211U =	1<<3,
+};
+
+#define NL80211_KCK_LEN			16
+#define NL80211_KEK_LEN			16
+#define NL80211_REPLAY_CTR_LEN		8
+
+/**
+ * enum nl80211_rekey_data - attributes for GTK rekey offload
+ * @__NL80211_REKEY_DATA_INVALID: invalid number for nested attributes
+ * @NL80211_REKEY_DATA_KEK: key encryption key (binary)
+ * @NL80211_REKEY_DATA_KCK: key confirmation key (binary)
+ * @NL80211_REKEY_DATA_REPLAY_CTR: replay counter (binary)
+ * @NUM_NL80211_REKEY_DATA: number of rekey attributes (internal)
+ * @MAX_NL80211_REKEY_DATA: highest rekey attribute (internal)
+ */
+enum nl80211_rekey_data {
+	__NL80211_REKEY_DATA_INVALID,
+	NL80211_REKEY_DATA_KEK,
+	NL80211_REKEY_DATA_KCK,
+	NL80211_REKEY_DATA_REPLAY_CTR,
+
+	/* keep last */
+	NUM_NL80211_REKEY_DATA,
+	MAX_NL80211_REKEY_DATA = NUM_NL80211_REKEY_DATA - 1
 };
 
 #endif /* __LINUX_NL80211_H */
