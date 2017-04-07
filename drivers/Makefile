@@ -143,8 +143,6 @@ obj-$(CONFIG_SAMSUNG_PHONE_TTY)	+= dpram/
 # Secure OS Mobicore
 obj-$(CONFIG_MOBICORE_SUPPORT)	+= gud/
 
-obj-$(CONFIG_IOMMU_SUPPORT)	+= iommu/
-
 obj-$(CONFIG_FELICA) += felica/
 
 obj-$(CONFIG_AUTHENTEC_VPNCLIENT_INTERCEPTOR) += interceptor/
@@ -153,3 +151,8 @@ ifeq (1, $(shell if [ -d ./drivers/exfat ]; then echo 1; fi))
 obj-y	+= exfat/
 endif
 
+obj-$(CONFIG_NFC)		+= nfc/
+obj-$(CONFIG_IOMMU_SUPPORT)	+= iommu/
+
+# Virtualization drivers
+obj-$(CONFIG_VIRT_DRIVERS)	+= virt/
