@@ -136,7 +136,6 @@ obj-$(CONFIG_PM_DEVFREQ)	+= devfreq/
 obj-$(CONFIG_SAMSUNG_PHONE_SVNET) += svnet/
 obj-$(CONFIG_PHONE_IPC_SPI) += phone_svn/
 #obj-$(CONFIG_ACCESSORY)		+= accessory/
-obj-$(CONFIG_IR_REMOCON)	+= irda/
 #obj-$(CONFIG_BARCODE_EMUL)	+= barcode_emul/
 obj-$(CONFIG_EXTCON)		+= extcon/
 obj-$(CONFIG_SAMSUNG_PHONE_TTY)	+= dpram/
@@ -144,8 +143,6 @@ obj-$(CONFIG_SAMSUNG_PHONE_TTY)	+= dpram/
 obj-$(CONFIG_MOBICORE_SUPPORT)	+= gud/
 
 obj-$(CONFIG_FELICA) += felica/
-
-obj-$(CONFIG_AUTHENTEC_VPNCLIENT_INTERCEPTOR) += interceptor/
 
 ifeq (1, $(shell if [ -d ./drivers/exfat ]; then echo 1; fi))
 obj-y	+= exfat/
