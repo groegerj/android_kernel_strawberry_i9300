@@ -305,7 +305,7 @@ obj-$(CONFIG_SFC) += sfc/
 
 obj-$(CONFIG_WIMAX) += wimax/
 #wimax for gaudi ICS
-obj-$(CONFIG_WIMAX_CMC) += wimax_cmc/
+#obj-$(CONFIG_WIMAX_CMC) += wimax_cmc/
 
 obj-$(CONFIG_CAIF) += caif/
 

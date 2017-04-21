@@ -135,9 +135,9 @@ obj-$(CONFIG_FM_RADIO)   += samsung/
 obj-$(CONFIG_PM_DEVFREQ)	+= devfreq/
 obj-$(CONFIG_SAMSUNG_PHONE_SVNET) += svnet/
 obj-$(CONFIG_PHONE_IPC_SPI) += phone_svn/
-obj-$(CONFIG_ACCESSORY)		+= accessory/
+#obj-$(CONFIG_ACCESSORY)		+= accessory/
 obj-$(CONFIG_IR_REMOCON)	+= irda/
-obj-$(CONFIG_BARCODE_EMUL)	+= barcode_emul/
+#obj-$(CONFIG_BARCODE_EMUL)	+= barcode_emul/
 obj-$(CONFIG_EXTCON)		+= extcon/
 obj-$(CONFIG_SAMSUNG_PHONE_TTY)	+= dpram/
 # Secure OS Mobicore

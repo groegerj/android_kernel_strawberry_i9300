@@ -105,6 +105,11 @@ enum dma_ch {
 	DMACH_MAX,
 };
 
+static inline bool samsung_dma_has_circular(void)
+{
+	return true;
+}
+
 static inline bool s3c_dma_has_circular(void)
 {
 	return true;
@@ -115,6 +120,12 @@ static inline bool s3c_dma_has_infiniteloop(void)
 	return true;
 }
 
+static inline bool samsung_dma_is_dmadev(void)
+{
+	return true;
+}
+
 #include <plat/dma.h>
+#include <plat/dma-ops.h>
 
 #endif	/* __S3C_DMA_PL330_H_ */

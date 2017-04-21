@@ -4,7 +4,7 @@
 #
 # Licensed under GPLv2
 
-obj-y				:=
+obj-y				:= dma-ops.o
 obj-m				:=
 obj-n				:= dummy.o
 obj-				:=

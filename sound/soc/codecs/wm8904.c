@@ -50,7 +50,6 @@ static const char *wm8904_supply_names[WM8904_NUM_SUPPLIES] = {
 struct wm8904_priv {
 
 	enum wm8904_type devtype;
-	void *control_data;
 
 	struct regulator_bulk_data supplies[WM8904_NUM_SUPPLIES];
 
@@ -2540,7 +2539,6 @@ static __devinit int wm8904_i2c_probe(struct i2c_client *i2c,
 
 	wm8904->devtype = id->driver_data;
 	i2c_set_clientdata(i2c, wm8904);
-	wm8904->control_data = i2c;
 	wm8904->pdata = i2c->dev.platform_data;
 
 	ret = snd_soc_register_codec(&i2c->dev,
@@ -2560,6 +2558,7 @@ static __devexit int wm8904_i2c_remove(struct i2c_client *client)
 static const struct i2c_device_id wm8904_i2c_id[] = {
 	{ "wm8904", WM8904 },
 	{ "wm8912", WM8912 },
+	{ "wm8918", WM8904 },   /* Actually a subset, updates to follow */
 	{ }
 };
 MODULE_DEVICE_TABLE(i2c, wm8904_i2c_id);

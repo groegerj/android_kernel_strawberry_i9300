@@ -12,6 +12,7 @@
 
 #include <linux/clk.h>
 #include <linux/io.h>
+#include <linux/module.h>
 
 #include <sound/soc.h>
 #include <sound/pcm_params.h>
@@ -340,7 +341,7 @@ static struct snd_soc_dai_ops spdif_dai_ops = {
 	.shutdown	= spdif_shutdown,
 };
 
-struct snd_soc_dai_driver samsung_spdif_dai = {
+static struct snd_soc_dai_driver samsung_spdif_dai = {
 	.name = "samsung-spdif",
 	.playback = {
 		.stream_name = "S/PDIF Playback",
@@ -393,7 +394,7 @@ static __devinit int spdif_probe(struct platform_device *pdev)
 	spdif->pclk = clk_get(&pdev->dev, "spdif");
 	if (IS_ERR(spdif->pclk)) {
 		dev_err(&pdev->dev, "failed to get peri-clock\n");
-		ret = PTR_ERR(spdif->pclk);
+		ret = -ENOENT;
 		goto err0;
 	}
 	clk_enable(spdif->pclk);
@@ -401,7 +402,7 @@ static __devinit int spdif_probe(struct platform_device *pdev)
 	spdif->sclk = clk_get(&pdev->dev, "sclk_spdif");
 	if (IS_ERR(spdif->sclk)) {
 		dev_err(&pdev->dev, "failed to get internal source clock\n");
-		ret = PTR_ERR(spdif->sclk);
+		ret = -ENOENT;
 		goto err1;
 	}
 	clk_enable(spdif->sclk);
@@ -475,7 +476,7 @@ static __devexit int spdif_remove(struct platform_device *pdev)
 
 static struct platform_driver samsung_spdif_driver = {
 	.probe	= spdif_probe,
-	.remove	= spdif_remove,
+	.remove	= __devexit_p(spdif_remove),
 	.driver	= {
 		.name	= "samsung-spdif",
 		.owner	= THIS_MODULE,

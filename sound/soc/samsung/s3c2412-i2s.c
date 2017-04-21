@@ -20,6 +20,7 @@
 #include <linux/gpio.h>
 #include <linux/clk.h>
 #include <linux/io.h>
+#include <linux/module.h>
 
 #include <sound/soc.h>
 #include <sound/pcm_params.h>
@@ -77,11 +78,7 @@ static int s3c2412_i2s_probe(struct snd_soc_dai *dai)
 
 	/* Set MPLL as the source for IIS CLK */
 
-	if (clk_set_parent(s3c2412_i2s.iis_cclk, clk_get(NULL, "mpll"))) {
-		pr_err("unable to set parent %s of clock %s.\n",
-				"mpll", s3c2412_i2c.iis_cclk->name);
-		return -EINVAL;
-	}
+	clk_set_parent(s3c2412_i2s.iis_cclk, clk_get(NULL, "mpll"));
 	clk_enable(s3c2412_i2s.iis_cclk);
 
 	s3c2412_i2s.iis_cclk = s3c2412_i2s.iis_pclk;
@@ -180,7 +177,7 @@ static __devexit int s3c2412_iis_dev_remove(struct platform_device *pdev)
 
 static struct platform_driver s3c2412_iis_driver = {
 	.probe  = s3c2412_iis_dev_probe,
-	.remove = s3c2412_iis_dev_remove,
+	.remove = __devexit_p(s3c2412_iis_dev_remove),
 	.driver = {
 		.name = "s3c2412-iis",
 		.owner = THIS_MODULE,
