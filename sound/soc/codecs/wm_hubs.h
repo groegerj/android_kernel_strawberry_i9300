@@ -32,9 +32,6 @@ struct wm_hubs_data {
 	int series_startup;
 	int no_series_update;
 
-	bool class_w;
-	u16 class_w_dcs;
-
 	bool no_cache_dac_hp_direct;
 	struct list_head dcs_cache;
 	bool (*check_class_w_digital)(struct snd_soc_codec *);

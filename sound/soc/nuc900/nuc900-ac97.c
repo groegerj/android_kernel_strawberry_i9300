@@ -356,7 +356,7 @@ static int __devinit nuc900_ac97_drvprobe(struct platform_device *pdev)
 	nuc900_audio->irq_num = platform_get_irq(pdev, 0);
 	if (!nuc900_audio->irq_num) {
 		ret = -EBUSY;
-		goto out3;
+		goto out2;
 	}
 
 	nuc900_ac97_data = nuc900_audio;
@@ -365,8 +365,7 @@ static int __devinit nuc900_ac97_drvprobe(struct platform_device *pdev)
 	if (ret)
 		goto out3;
 
-	/* enbale ac97 multifunction pin */
-	mfp_set_groupg(nuc900_audio->dev, "nuc900-audio");
+	mfp_set_groupg(nuc900_audio->dev); /* enbale ac97 multifunction pin*/
 
 	return 0;
 

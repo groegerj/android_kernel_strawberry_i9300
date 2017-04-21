@@ -20,7 +20,6 @@
 #include <linux/regulator/driver.h>
 #include <linux/regulator/machine.h>
 #include <linux/regulator/consumer.h>
-#include <linux/of_device.h>
 #include <sound/core.h>
 #include <sound/tlv.h>
 #include <sound/pcm.h>
@@ -131,13 +130,16 @@ static int mic_bias_event(struct snd_soc_dapm_widget *w,
 	case SND_SOC_DAPM_POST_PMU:
 		/* change mic bias resistor to 4Kohm */
 		snd_soc_update_bits(w->codec, SGTL5000_CHIP_MIC_CTRL,
-				SGTL5000_BIAS_R_MASK,
-				SGTL5000_BIAS_R_4k << SGTL5000_BIAS_R_SHIFT);
+				SGTL5000_BIAS_R_4k, SGTL5000_BIAS_R_4k);
 		break;
 
 	case SND_SOC_DAPM_PRE_PMD:
+		/*
+		 * SGTL5000_BIAS_R_8k as mask to clean the two bits
+		 * of mic bias and output impedance
+		 */
 		snd_soc_update_bits(w->codec, SGTL5000_CHIP_MIC_CTRL,
-				SGTL5000_BIAS_R_MASK, 0);
+				SGTL5000_BIAS_R_8k, 0);
 		break;
 	}
 	return 0;
@@ -365,7 +367,7 @@ static const DECLARE_TLV_DB_SCALE(capture_6db_attenuate, -600, 600, 0);
 
 /* tlv for mic gain, 0db 20db 30db 40db */
 static const unsigned int mic_gain_tlv[] = {
-	TLV_DB_RANGE_HEAD(2),
+	TLV_DB_RANGE_HEAD(4),
 	0, 0, TLV_DB_SCALE_ITEM(0, 0, 0),
 	1, 3, TLV_DB_SCALE_ITEM(2000, 1000, 0),
 };
@@ -723,9 +725,7 @@ static int sgtl5000_pcm_hw_params(struct snd_pcm_substream *substream,
 		return -EINVAL;
 	}
 
-	snd_soc_update_bits(codec, SGTL5000_CHIP_I2S_CTRL,
-			    SGTL5000_I2S_DLEN_MASK | SGTL5000_I2S_SCLKFREQ_MASK,
-			    i2s_ctl);
+	snd_soc_update_bits(codec, SGTL5000_CHIP_I2S_CTRL, i2s_ctl, i2s_ctl);
 
 	return 0;
 }
@@ -756,7 +756,7 @@ static int ldo_regulator_enable(struct regulator_dev *dev)
 
 	/* set voltage to register */
 	snd_soc_update_bits(codec, SGTL5000_CHIP_LINREG_CTRL,
-				SGTL5000_LINREG_VDDD_MASK, reg);
+				(0x1 << 4) - 1, reg);
 
 	snd_soc_update_bits(codec, SGTL5000_CHIP_ANA_POWER,
 				SGTL5000_LINEREG_D_POWERUP,
@@ -782,7 +782,7 @@ static int ldo_regulator_disable(struct regulator_dev *dev)
 
 	/* clear voltage info */
 	snd_soc_update_bits(codec, SGTL5000_CHIP_LINREG_CTRL,
-				SGTL5000_LINREG_VDDD_MASK, 0);
+				(0x1 << 4) - 1, 0);
 
 	ldo->enabled = 0;
 
@@ -808,7 +808,6 @@ static int ldo_regulator_register(struct snd_soc_codec *codec,
 				int voltage)
 {
 	struct ldo_regulator *ldo;
-	struct sgtl5000_priv *sgtl5000 = snd_soc_codec_get_drvdata(codec);
 
 	ldo = kzalloc(sizeof(struct ldo_regulator), GFP_KERNEL);
 
@@ -843,7 +842,6 @@ static int ldo_regulator_register(struct snd_soc_codec *codec,
 
 		return ret;
 	}
-	sgtl5000->ldo = ldo;
 
 	return 0;
 }
@@ -867,7 +865,6 @@ static int ldo_regulator_register(struct snd_soc_codec *codec,
 				struct regulator_init_data *init_data,
 				int voltage)
 {
-	dev_err(codec->dev, "this setup needs regulator support in the kernel\n");
 	return -EINVAL;
 }
 
@@ -1117,7 +1114,7 @@ static int sgtl5000_set_power_regs(struct snd_soc_codec *codec)
 
 	/* set voltage to register */
 	snd_soc_update_bits(codec, SGTL5000_CHIP_LINREG_CTRL,
-				SGTL5000_LINREG_VDDD_MASK, 0x8);
+				(0x1 << 4) - 1, 0x8);
 
 	/*
 	 * if vddd linear reg has been enabled,
@@ -1148,7 +1145,8 @@ static int sgtl5000_set_power_regs(struct snd_soc_codec *codec)
 		vag = (vag - SGTL5000_ANA_GND_BASE) / SGTL5000_ANA_GND_STP;
 
 	snd_soc_update_bits(codec, SGTL5000_CHIP_REF_CTRL,
-			SGTL5000_ANA_GND_MASK, vag << SGTL5000_ANA_GND_SHIFT);
+			vag << SGTL5000_ANA_GND_SHIFT,
+			vag << SGTL5000_ANA_GND_SHIFT);
 
 	/* set line out VAG to vddio / 2, in range (0.8v, 1.675v) */
 	vag = vddio / 2;
@@ -1162,40 +1160,13 @@ static int sgtl5000_set_power_regs(struct snd_soc_codec *codec)
 		    SGTL5000_LINE_OUT_GND_STP;
 
 	snd_soc_update_bits(codec, SGTL5000_CHIP_LINE_OUT_CTRL,
-			SGTL5000_LINE_OUT_CURRENT_MASK |
-			SGTL5000_LINE_OUT_GND_MASK,
+			vag << SGTL5000_LINE_OUT_GND_SHIFT |
+			SGTL5000_LINE_OUT_CURRENT_360u <<
+				SGTL5000_LINE_OUT_CURRENT_SHIFT,
 			vag << SGTL5000_LINE_OUT_GND_SHIFT |
 			SGTL5000_LINE_OUT_CURRENT_360u <<
 				SGTL5000_LINE_OUT_CURRENT_SHIFT);
 
-	return 0;
-}
-
-static int sgtl5000_replace_vddd_with_ldo(struct snd_soc_codec *codec)
-{
-	struct sgtl5000_priv *sgtl5000 = snd_soc_codec_get_drvdata(codec);
-	int ret;
-
-	/* set internal ldo to 1.2v */
-	ret = ldo_regulator_register(codec, &ldo_init_data, LDO_VOLTAGE);
-	if (ret) {
-		dev_err(codec->dev,
-			"Failed to register vddd internal supplies: %d\n", ret);
-		return ret;
-	}
-
-	sgtl5000->supplies[VDDD].supply = LDO_CONSUMER_NAME;
-
-	ret = regulator_bulk_get(codec->dev, ARRAY_SIZE(sgtl5000->supplies),
-			sgtl5000->supplies);
-
-	if (ret) {
-		ldo_regulator_remove(codec);
-		dev_err(codec->dev, "Failed to request supplies: %d\n", ret);
-		return ret;
-	}
-
-	dev_info(codec->dev, "Using internal LDO instead of VDDD\n");
 	return 0;
 }
 
@@ -1216,9 +1187,30 @@ static int sgtl5000_enable_regulators(struct snd_soc_codec *codec)
 	if (!ret)
 		external_vddd = 1;
 	else {
-		ret = sgtl5000_replace_vddd_with_ldo(codec);
-		if (ret)
+		/* set internal ldo to 1.2v */
+		int voltage = LDO_VOLTAGE;
+
+		ret = ldo_regulator_register(codec, &ldo_init_data, voltage);
+		if (ret) {
+			dev_err(codec->dev,
+			"Failed to register vddd internal supplies: %d\n",
+				ret);
 			return ret;
+		}
+
+		sgtl5000->supplies[VDDD].supply = LDO_CONSUMER_NAME;
+
+		ret = regulator_bulk_get(codec->dev,
+				ARRAY_SIZE(sgtl5000->supplies),
+				sgtl5000->supplies);
+
+		if (ret) {
+			ldo_regulator_remove(codec);
+			dev_err(codec->dev,
+				"Failed to request supplies: %d\n", ret);
+
+			return ret;
+		}
 	}
 
 	ret = regulator_bulk_enable(ARRAY_SIZE(sgtl5000->supplies),
@@ -1247,6 +1239,7 @@ static int sgtl5000_enable_regulators(struct snd_soc_codec *codec)
 	 * roll back to use internal LDO
 	 */
 	if (external_vddd && rev >= 0x11) {
+		int voltage = LDO_VOLTAGE;
 		/* disable all regulator first */
 		regulator_bulk_disable(ARRAY_SIZE(sgtl5000->supplies),
 					sgtl5000->supplies);
@@ -1254,9 +1247,22 @@ static int sgtl5000_enable_regulators(struct snd_soc_codec *codec)
 		regulator_bulk_free(ARRAY_SIZE(sgtl5000->supplies),
 					sgtl5000->supplies);
 
-		ret = sgtl5000_replace_vddd_with_ldo(codec);
+		ret = ldo_regulator_register(codec, &ldo_init_data, voltage);
 		if (ret)
 			return ret;
+
+		sgtl5000->supplies[VDDD].supply = LDO_CONSUMER_NAME;
+
+		ret = regulator_bulk_get(codec->dev,
+				ARRAY_SIZE(sgtl5000->supplies),
+				sgtl5000->supplies);
+		if (ret) {
+			ldo_regulator_remove(codec);
+			dev_err(codec->dev,
+				"Failed to request supplies: %d\n", ret);
+
+			return ret;
+		}
 
 		ret = regulator_bulk_enable(ARRAY_SIZE(sgtl5000->supplies),
 						sgtl5000->supplies);
@@ -1436,17 +1442,10 @@ static const struct i2c_device_id sgtl5000_id[] = {
 
 MODULE_DEVICE_TABLE(i2c, sgtl5000_id);
 
-static const struct of_device_id sgtl5000_dt_ids[] = {
-	{ .compatible = "fsl,sgtl5000", },
-	{ /* sentinel */ }
-};
-MODULE_DEVICE_TABLE(of, sgtl5000_dt_ids);
-
 static struct i2c_driver sgtl5000_i2c_driver = {
 	.driver = {
 		   .name = "sgtl5000",
 		   .owner = THIS_MODULE,
-		   .of_match_table = sgtl5000_dt_ids,
 		   },
 	.probe = sgtl5000_i2c_probe,
 	.remove = __devexit_p(sgtl5000_i2c_remove),
