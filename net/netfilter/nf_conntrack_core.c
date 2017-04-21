@@ -177,7 +177,7 @@ EXPORT_SYMBOL_GPL(nf_ct_invert_tuple);
 static void
 clean_from_lists(struct nf_conn *ct)
 {
-	pr_debug("clean_from_lists(%pK)\n", ct);
+	pr_debug("clean_from_lists(%p)\n", ct);
 	hlist_nulls_del_rcu(&ct->tuplehash[IP_CT_DIR_ORIGINAL].hnnode);
 	hlist_nulls_del_rcu(&ct->tuplehash[IP_CT_DIR_REPLY].hnnode);
 
@@ -192,7 +192,7 @@ destroy_conntrack(struct nf_conntrack *nfct)
 	struct net *net = nf_ct_net(ct);
 	struct nf_conntrack_l4proto *l4proto;
 
-	pr_debug("destroy_conntrack(%pK)\n", ct);
+	pr_debug("destroy_conntrack(%p)\n", ct);
 	NF_CT_ASSERT(atomic_read(&nfct->use) == 0);
 	NF_CT_ASSERT(!timer_pending(&ct->timeout));
 
@@ -225,7 +225,7 @@ destroy_conntrack(struct nf_conntrack *nfct)
 	if (ct->master)
 		nf_ct_put(ct->master);
 
-	pr_debug("destroy_conntrack: returning ct=%pK to slab\n", ct);
+	pr_debug("destroy_conntrack: returning ct=%p to slab\n", ct);
 	nf_conntrack_free(ct);
 }
 
@@ -314,7 +314,6 @@ static void death_by_timeout(unsigned long ul_conntrack)
  * OR
  * - Caller must lock nf_conntrack_lock before calling this function
  */
-
 static struct nf_conntrack_tuple_hash *
 ____nf_conntrack_find(struct net *net, u16 zone,
 		      const struct nf_conntrack_tuple *tuple, u32 hash)
@@ -322,9 +321,6 @@ ____nf_conntrack_find(struct net *net, u16 zone,
 	struct nf_conntrack_tuple_hash *h;
 	struct hlist_nulls_node *n;
 	unsigned int bucket = hash_bucket(hash, net);
-#ifdef CONFIG_MACH_P4NOTE
-	unsigned long start_tick = jiffies;
-#endif
 
 	/* Disable BHs the entire time since we normally need to disable them
 	 * at least once for the stats anyway.
@@ -347,10 +343,6 @@ begin:
 	 */
 	if (get_nulls_value(n) != bucket) {
 		NF_CT_STAT_INC(net, search_restart);
-#ifdef CONFIG_MACH_P4NOTE
-		if (unlikely(time_after(jiffies, start_tick + 18 * HZ)))
-			panic("%s: too much repeat!!", __func__);
-#endif
 		goto begin;
 	}
 	local_bh_enable();
@@ -470,7 +462,7 @@ __nf_conntrack_confirm(struct sk_buff *skb)
 	/* No external references means no one else could have
 	   confirmed us. */
 	NF_CT_ASSERT(!nf_ct_is_confirmed(ct));
-	pr_debug("Confirming conntrack %pK\n", ct);
+	pr_debug("Confirming conntrack %p\n", ct);
 
 	spin_lock_bh(&nf_conntrack_lock);
 
@@ -735,7 +727,6 @@ void nf_conntrack_free(struct nf_conn *ct)
 	nf_ct_ext_destroy(ct);
 	atomic_dec(&net->ct.count);
 	nf_ct_ext_free(ct);
-	del_timer(&ct->timeout);
 	kmem_cache_free(net->ct.nf_conntrack_cachep, ct);
 }
 EXPORT_SYMBOL_GPL(nf_conntrack_free);
@@ -786,7 +777,7 @@ init_conntrack(struct net *net, struct nf_conn *tmpl,
 	spin_lock_bh(&nf_conntrack_lock);
 	exp = nf_ct_find_expectation(net, zone, tuple);
 	if (exp) {
-		pr_debug("conntrack: expectation arrives ct=%pK exp=%pK\n",
+		pr_debug("conntrack: expectation arrives ct=%p exp=%p\n",
 			 ct, exp);
 		/* Welcome, Mr. Bond.  We've been expecting you... */
 		__set_bit(IPS_EXPECTED_BIT, &ct->status);
@@ -871,14 +862,14 @@ resolve_normal_ct(struct net *net, struct nf_conn *tmpl,
 	} else {
 		/* Once we've had two way comms, always ESTABLISHED. */
 		if (test_bit(IPS_SEEN_REPLY_BIT, &ct->status)) {
-			pr_debug("nf_conntrack_in: normal packet for %pK\n", ct);
+			pr_debug("nf_conntrack_in: normal packet for %p\n", ct);
 			*ctinfo = IP_CT_ESTABLISHED;
 		} else if (test_bit(IPS_EXPECTED_BIT, &ct->status)) {
-			pr_debug("nf_conntrack_in: related packet for %pK\n",
+			pr_debug("nf_conntrack_in: related packet for %p\n",
 				 ct);
 			*ctinfo = IP_CT_RELATED;
 		} else {
-			pr_debug("nf_conntrack_in: new packet for %pK\n", ct);
+			pr_debug("nf_conntrack_in: new packet for %p\n", ct);
 			*ctinfo = IP_CT_NEW;
 		}
 		*set_reply = 0;
@@ -1016,7 +1007,7 @@ void nf_conntrack_alter_reply(struct nf_conn *ct,
 	/* Should be unconfirmed, so not in hash table yet */
 	NF_CT_ASSERT(!nf_ct_is_confirmed(ct));
 
-	pr_debug("Altering reply tuple of %pK to ", ct);
+	pr_debug("Altering reply tuple of %p to ", ct);
 	nf_ct_dump_tuple(newreply);
 
 	ct->tuplehash[IP_CT_DIR_REPLY].tuple = *newreply;
@@ -1516,7 +1507,7 @@ static int nf_conntrack_init_net(struct net *net)
 		goto err_stat;
 	}
 
-	net->ct.slabname = kasprintf(GFP_KERNEL, "nf_conntrack_%pK", net);
+	net->ct.slabname = kasprintf(GFP_KERNEL, "nf_conntrack_%p", net);
 	if (!net->ct.slabname) {
 		ret = -ENOMEM;
 		goto err_slabname;
