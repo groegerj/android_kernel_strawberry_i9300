@@ -2511,6 +2511,39 @@ int snd_soc_limit_volume(struct snd_soc_codec *codec,
 EXPORT_SYMBOL_GPL(snd_soc_limit_volume);
 
 /**
+ * snd_soc_info_volsw_2r - double mixer info callback
+ * @kcontrol: mixer control
+ * @uinfo: control element information
+ *
+ * Callback to provide information about a double mixer control that
+ * spans 2 codec registers.
+ *
+ * Returns 0 for success.
+ */
+int snd_soc_info_volsw_2r(struct snd_kcontrol *kcontrol,
+	struct snd_ctl_elem_info *uinfo)
+{
+	struct soc_mixer_control *mc =
+		(struct soc_mixer_control *)kcontrol->private_value;
+	int platform_max;
+
+	if (!mc->platform_max)
+		mc->platform_max = mc->max;
+	platform_max = mc->platform_max;
+
+	if (platform_max == 1 && !strstr(kcontrol->id.name, " Volume"))
+		uinfo->type = SNDRV_CTL_ELEM_TYPE_BOOLEAN;
+	else
+		uinfo->type = SNDRV_CTL_ELEM_TYPE_INTEGER;
+
+	uinfo->count = 2;
+	uinfo->value.integer.min = 0;
+	uinfo->value.integer.max = platform_max;
+	return 0;
+}
+EXPORT_SYMBOL_GPL(snd_soc_info_volsw_2r);
+
+/**
  * snd_soc_info_volsw_2r_sx - double with tlv and variable data size
  *  mixer info callback
  * @kcontrol: mixer control
