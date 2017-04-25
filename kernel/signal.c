@@ -303,21 +303,6 @@ void task_clear_jobctl_pending(struct task_struct *task, unsigned int mask)
 }
 
 /**
- * task_clear_group_stop_pending - clear pending group stop
- * @task: target task
- *
- * Clear group stop states for @task.
- *
- * CONTEXT:
- * Must be called with @task->sighand->siglock held.
- */
-void task_clear_group_stop_pending(struct task_struct *task)
-{
-	task->group_stop &= ~(GROUP_STOP_PENDING | GROUP_STOP_CONSUME |
-			      GROUP_STOP_DEQUEUED);
-}
-
-/**
  * task_participate_group_stop - participate in a group stop
  * @task: task participating in a group stop
  *
