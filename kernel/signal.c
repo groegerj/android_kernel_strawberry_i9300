@@ -224,6 +224,87 @@ static inline void print_dropped_signal(int sig)
 }
 
 /**
+ * task_set_jobctl_pending - set jobctl pending bits
+ * @task: target task
+ * @mask: pending bits to set
+ *
+ * Clear @mask from @task->jobctl.  @mask must be subset of
+ * %JOBCTL_PENDING_MASK | %JOBCTL_STOP_CONSUME | %JOBCTL_STOP_SIGMASK |
+ * %JOBCTL_TRAPPING.  If stop signo is being set, the existing signo is
+ * cleared.  If @task is already being killed or exiting, this function
+ * becomes noop.
+ *
+ * CONTEXT:
+ * Must be called with @task->sighand->siglock held.
+ *
+ * RETURNS:
+ * %true if @mask is set, %false if made noop because @task was dying.
+ */
+bool task_set_jobctl_pending(struct task_struct *task, unsigned int mask)
+{
+	BUG_ON(mask & ~(JOBCTL_PENDING_MASK | JOBCTL_STOP_CONSUME |
+			JOBCTL_STOP_SIGMASK | JOBCTL_TRAPPING));
+	BUG_ON((mask & JOBCTL_TRAPPING) && !(mask & JOBCTL_PENDING_MASK));
+
+	if (unlikely(fatal_signal_pending(task) || (task->flags & PF_EXITING)))
+		return false;
+
+	if (mask & JOBCTL_STOP_SIGMASK)
+		task->jobctl &= ~JOBCTL_STOP_SIGMASK;
+
+	task->jobctl |= mask;
+	return true;
+}
+
+/**
+ * task_clear_jobctl_trapping - clear jobctl trapping bit
+ * @task: target task
+ *
+ * If JOBCTL_TRAPPING is set, a ptracer is waiting for us to enter TRACED.
+ * Clear it and wake up the ptracer.  Note that we don't need any further
+ * locking.  @task->siglock guarantees that @task->parent points to the
+ * ptracer.
+ *
+ * CONTEXT:
+ * Must be called with @task->sighand->siglock held.
+ */
+void task_clear_jobctl_trapping(struct task_struct *task)
+{
+	if (unlikely(task->jobctl & JOBCTL_TRAPPING)) {
+		task->jobctl &= ~JOBCTL_TRAPPING;
+		wake_up_bit(&task->jobctl, JOBCTL_TRAPPING_BIT);
+	}
+}
+
+/**
+ * task_clear_jobctl_pending - clear jobctl pending bits
+ * @task: target task
+ * @mask: pending bits to clear
+ *
+ * Clear @mask from @task->jobctl.  @mask must be subset of
+ * %JOBCTL_PENDING_MASK.  If %JOBCTL_STOP_PENDING is being cleared, other
+ * STOP bits are cleared together.
+ *
+ * If clearing of @mask leaves no stop or trap pending, this function calls
+ * task_clear_jobctl_trapping().
+ *
+ * CONTEXT:
+ * Must be called with @task->sighand->siglock held.
+ */
+void task_clear_jobctl_pending(struct task_struct *task, unsigned int mask)
+{
+	BUG_ON(mask & ~JOBCTL_PENDING_MASK);
+
+	if (mask & JOBCTL_STOP_PENDING)
+		mask |= JOBCTL_STOP_CONSUME | JOBCTL_STOP_DEQUEUED;
+
+	task->jobctl &= ~mask;
+
+	if (!(task->jobctl & JOBCTL_PENDING_MASK))
+		task_clear_jobctl_trapping(task);
+}
+
+/**
  * task_clear_group_stop_trapping - clear group stop trapping bit
  * @task: target task
  *
