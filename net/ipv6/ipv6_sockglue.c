@@ -475,7 +475,7 @@ sticky_done:
 		msg.msg_controllen = optlen;
 		msg.msg_control = (void*)(opt+1);
 
-		retv = datagram_send_ctl(net, &msg, &fl6, opt, &junk, &junk,
+		retv = datagram_send_ctl(net, sk, &msg, &fl6, opt, &junk, &junk,
 					 &junk);
 		if (retv)
 			goto done;
@@ -798,7 +798,6 @@ pref_skip_coa:
 		if (val < 0 || val > 255)
 			goto e_inval;
 		np->min_hopcount = val;
-		retv = 0;
 		break;
 	case IPV6_DONTFRAG:
 		np->dontfrag = valbool;
