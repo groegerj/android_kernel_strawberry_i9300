@@ -300,10 +300,15 @@ static ssize_t ps3flash_kernel_write(const void *buf, size_t count,
 	return res;
 }
 
-static int ps3flash_flush(struct file *file, fl_owner_t id)
-{
-	return ps3flash_writeback(ps3flash_dev);
-}
+static int ps3flash_fsync(struct file *file, loff_t start, loff_t end, int datasync)
+ {
+	struct inode *inode = file->f_path.dentry->d_inode;
+	int err;
+	mutex_lock(&inode->i_mutex);
+	err = ps3flash_writeback(ps3flash_dev);
+	mutex_unlock(&inode->i_mutex);
+	return err;
+ }
 
 static int ps3flash_fsync(struct file *file, int datasync)
 {
