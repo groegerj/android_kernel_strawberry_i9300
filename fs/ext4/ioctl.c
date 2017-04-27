@@ -35,7 +35,7 @@ long ext4_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 		handle_t *handle = NULL;
 		int err, migrate = 0;
 		struct ext4_iloc iloc;
-		unsigned int oldflags, mask, i;
+		unsigned int oldflags;
 		unsigned int jflag;
 
 		if (!inode_owner_or_capable(inode))
@@ -112,14 +112,9 @@ long ext4_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 		if (err)
 			goto flags_err;
 
-		for (i = 0, mask = 1; i < 32; i++, mask <<= 1) {
-			if (!(mask & EXT4_FL_USER_MODIFIABLE))
-				continue;
-			if (mask & flags)
-				ext4_set_inode_flag(inode, i);
-			else
-				ext4_clear_inode_flag(inode, i);
-		}
+		flags = flags & EXT4_FL_USER_MODIFIABLE;
+		flags |= oldflags & ~EXT4_FL_USER_MODIFIABLE;
+		ei->i_flags = flags;
 
 		ext4_set_inode_flags(inode);
 		inode->i_ctime = ext4_current_time(inode);
@@ -207,8 +202,9 @@ setversion_out:
 		struct super_block *sb = inode->i_sb;
 		int err, err2=0;
 
-		if (!capable(CAP_SYS_RESOURCE))
-			return -EPERM;
+		err = ext4_resize_begin(sb);
+		if (err)
+			return err;
 
 		if (get_user(n_blocks_count, (__u32 __user *)arg))
 			return -EFAULT;
@@ -226,6 +222,7 @@ setversion_out:
 		if (err == 0)
 			err = err2;
 		mnt_drop_write(filp->f_path.mnt);
+		ext4_resize_end(sb);
 
 		return err;
 	}
@@ -276,8 +273,9 @@ mext_out:
 		struct super_block *sb = inode->i_sb;
 		int err, err2=0;
 
-		if (!capable(CAP_SYS_RESOURCE))
-			return -EPERM;
+		err = ext4_resize_begin(sb);
+		if (err)
+			return err;
 
 		if (copy_from_user(&input, (struct ext4_new_group_input __user *)arg,
 				sizeof(input)))
@@ -296,6 +294,7 @@ mext_out:
 		if (err == 0)
 			err = err2;
 		mnt_drop_write(filp->f_path.mnt);
+		ext4_resize_end(sb);
 
 		return err;
 	}
