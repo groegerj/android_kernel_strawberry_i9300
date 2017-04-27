@@ -98,6 +98,5 @@ obj-$(CONFIG_SND_SOC_SAMSUNG_GD2_WM1811) += snd-soc-gd2-wm1811.o
 obj-$(CONFIG_SND_SOC_SAMSUNG_GC2PD_WM1811) += snd-soc-gc2pd-wm1811.o
 obj-$(CONFIG_SND_SOC_SAMSUNG_WATCH_YMU831) += snd-soc-watch-ymu831.o
 
-obj-$(CONFIG_SND_SAMSUNG_RP)   += srp_ulp/
 obj-$(CONFIG_SND_SAMSUNG_ALP)   += srp_alp/
 

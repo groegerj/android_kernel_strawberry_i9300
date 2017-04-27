@@ -214,7 +214,6 @@ config SND_SAMSUNG_LP
 
 # For support SRP audio
 source "sound/soc/samsung/srp_alp/Kconfig"
-source "sound/soc/samsung/srp_ulp/Kconfig"
 
 endchoice
 
