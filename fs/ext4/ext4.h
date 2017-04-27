@@ -1848,6 +1848,11 @@ extern void ext4_da_update_reserve_space(struct inode *inode,
 					int used, int quota_claim);
 
 /* indirect.c */
+extern int ext4_ind_map_blocks(handle_t *handle, struct inode *inode,
+				struct ext4_map_blocks *map, int flags);
+extern ssize_t ext4_ind_direct_IO(int rw, struct kiocb *iocb,
+				const struct iovec *iov, loff_t offset,
+				unsigned long nr_segs);
 extern int ext4_ind_calc_metadata_amount(struct inode *inode, sector_t lblock);
 extern int ext4_ind_trans_blocks(struct inode *inode, int nrblocks, int chunk);
 extern void ext4_ind_truncate(struct inode *inode);
@@ -2159,6 +2164,11 @@ static inline void ext4_mark_super_dirty(struct super_block *sb)
 /*
  * Block validity checking
  */
+#define ext4_check_indirect_blockref(inode, bh)				\
+	ext4_check_blockref(__func__, __LINE__, inode,			\
+			    (__le32 *)(bh)->b_data,			\
+			    EXT4_ADDR_PER_BLOCK((inode)->i_sb))
+
 #define ext4_ind_check_inode(inode)					\
 	ext4_check_blockref(__func__, __LINE__, inode,			\
 			    EXT4_I(inode)->i_data,			\
