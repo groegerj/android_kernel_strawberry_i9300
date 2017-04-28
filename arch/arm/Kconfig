@@ -1038,7 +1038,7 @@ source "arch/arm/mach-s5pc100/Kconfig"
 
 source "arch/arm/mach-s5pv210/Kconfig"
 
-source "arch/arm/mach-exynos/Kconfig"
+source "arch/arm/mach-exynos4/Kconfig"
 
 source "arch/arm/mach-shmobile/Kconfig"
 
