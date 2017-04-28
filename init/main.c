@@ -80,12 +80,6 @@
 #include <asm/smp.h>
 #endif
 
-#if defined (CONFIG_MACH_U1_NA_SPR)
-#ifdef CONFIG_SEC_DEBUG
-#include <linux/kernel_sec_common.h>
-#endif
-#endif
-
 static int kernel_init(void *);
 
 extern void init_IRQ(void);
@@ -628,11 +622,6 @@ asmlinkage void __init start_kernel(void)
 	sfi_init_late();
 
 	ftrace_init();
-#if defined (CONFIG_MACH_U1_NA_SPR)
-#ifdef CONFIG_SEC_DEBUG
-	kernel_sec_init();
-#endif
-#endif
 
 	/* Do the rest non-__init'ed, we're now alive */
 	rest_init();
@@ -742,10 +731,8 @@ static void __init do_pre_smp_initcalls(void)
 
 static void run_init_process(const char *init_filename)
 {
-	int ret = 0;
 	argv_init[0] = init_filename;
-	ret = kernel_execve(init_filename, argv_init, envp_init);
-	pr_info("run_init_process Ret : %d\n", ret);
+	kernel_execve(init_filename, argv_init, envp_init);
 }
 
 /* This is a non __init function. Force it to be noinline otherwise gcc
