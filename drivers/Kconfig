@@ -140,8 +140,6 @@ source "drivers/samsung/Kconfig"
 
 source "drivers/sensor/Kconfig"
 
-source "drivers/sensorhub/Kconfig"
-
 # Secure OS Mobicore
 source "drivers/gud/Kconfig"
 
