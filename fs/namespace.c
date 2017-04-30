@@ -2536,7 +2536,7 @@ out_type:
 bool is_path_reachable(struct vfsmount *mnt, struct dentry *dentry,
 			 const struct path *root)
 {
-	while (mnt != root->mnt && mnt_has_parent(mnt)) {
+	while (mnt != root->mnt && mnt != mnt->mnt_parent) {
 		dentry = mnt->mnt_mountpoint;
 		mnt = mnt->mnt_parent;
 	}
