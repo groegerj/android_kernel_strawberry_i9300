@@ -181,8 +181,9 @@ struct tcf_proto_ops {
 	struct tcf_proto_ops	*next;
 	char			kind[IFNAMSIZ];
 
-	int			(*classify)(struct sk_buff*, struct tcf_proto*,
-					struct tcf_result *);
+	int			(*classify)(struct sk_buff *,
+					    const struct tcf_proto *,
+					    struct tcf_result *);
 	int			(*init)(struct tcf_proto*);
 	void			(*destroy)(struct tcf_proto*);
 
@@ -205,8 +206,9 @@ struct tcf_proto {
 	/* Fast access part */
 	struct tcf_proto	*next;
 	void			*root;
-	int			(*classify)(struct sk_buff*, struct tcf_proto*,
-					struct tcf_result *);
+	int			(*classify)(struct sk_buff *,
+					    const struct tcf_proto *,
+					    struct tcf_result *);
 	__be16			protocol;
 
 	/* All the rest */
@@ -214,23 +216,13 @@ struct tcf_proto {
 	u32			classid;
 	struct Qdisc		*q;
 	void			*data;
-	struct tcf_proto_ops	*ops;
+	const struct tcf_proto_ops	*ops;
 };
 
 struct qdisc_skb_cb {
 	unsigned int		pkt_len;
-	u16			bond_queue_mapping;
-	u16			_pad;
-	unsigned char		data[20];
+	long			data[];
 };
-
-static inline void qdisc_cb_private_validate(const struct sk_buff *skb, int sz)
-{
-	struct qdisc_skb_cb *qcb;
-
-	BUILD_BUG_ON(sizeof(skb->cb) < offsetof(struct qdisc_skb_cb, data) + sz);
-	BUILD_BUG_ON(sizeof(qcb->data) < sz);
-}
 
 static inline int qdisc_qlen(struct Qdisc *q)
 {

@@ -5,7 +5,7 @@
  * NetLabel system.  The NetLabel system manages static and dynamic label
  * mappings for network protocols such as CIPSO and RIPSO.
  *
- * Author: Paul Moore <paul.moore@hp.com>
+ * Author: Paul Moore <paul@paul-moore.com>
  *
  */
 
@@ -52,7 +52,7 @@
 #include <net/net_namespace.h>
 #include <net/netlabel.h>
 #include <asm/bug.h>
-#include <asm/atomic.h>
+#include <linux/atomic.h>
 
 #include "netlabel_user.h"
 #include "netlabel_addrlist.h"
@@ -116,8 +116,7 @@ struct netlbl_unlhsh_walk_arg {
  * hash table should be okay */
 static DEFINE_SPINLOCK(netlbl_unlhsh_lock);
 #define netlbl_unlhsh_rcu_deref(p) \
-	rcu_dereference_check(p, rcu_read_lock_held() || \
-				 lockdep_is_held(&netlbl_unlhsh_lock))
+	rcu_dereference_check(p, lockdep_is_held(&netlbl_unlhsh_lock))
 static struct netlbl_unlhsh_tbl *netlbl_unlhsh = NULL;
 static struct netlbl_unlhsh_iface *netlbl_unlhsh_def = NULL;
 
@@ -426,10 +425,9 @@ int netlbl_unlhsh_add(struct net *net,
 					      audit_info);
 	switch (addr_len) {
 	case sizeof(struct in_addr): {
-		struct in_addr *addr4, *mask4;
+		const struct in_addr *addr4 = addr;
+		const struct in_addr *mask4 = mask;
 
-		addr4 = (struct in_addr *)addr;
-		mask4 = (struct in_addr *)mask;
 		ret_val = netlbl_unlhsh_add_addr4(iface, addr4, mask4, secid);
 		if (audit_buf != NULL)
 			netlbl_af4list_audit_addr(audit_buf, 1,
@@ -440,10 +438,9 @@ int netlbl_unlhsh_add(struct net *net,
 	}
 #if defined(CONFIG_IPV6) || defined(CONFIG_IPV6_MODULE)
 	case sizeof(struct in6_addr): {
-		struct in6_addr *addr6, *mask6;
+		const struct in6_addr *addr6 = addr;
+		const struct in6_addr *mask6 = mask;
 
-		addr6 = (struct in6_addr *)addr;
-		mask6 = (struct in6_addr *)mask;
 		ret_val = netlbl_unlhsh_add_addr6(iface, addr6, mask6, secid);
 		if (audit_buf != NULL)
 			netlbl_af6list_audit_addr(audit_buf, 1,
@@ -1192,6 +1189,8 @@ static int netlbl_unlabel_staticlist(struct sk_buff *skb,
 	struct netlbl_unlhsh_walk_arg cb_arg;
 	u32 skip_bkt = cb->args[0];
 	u32 skip_chain = cb->args[1];
+	u32 skip_addr4 = cb->args[2];
+	u32 skip_addr6 = cb->args[3];
 	u32 iter_bkt;
 	u32 iter_chain = 0, iter_addr4 = 0, iter_addr6 = 0;
 	struct netlbl_unlhsh_iface *iface;
@@ -1216,7 +1215,7 @@ static int netlbl_unlabel_staticlist(struct sk_buff *skb,
 				continue;
 			netlbl_af4list_foreach_rcu(addr4,
 						   &iface->addr4_list) {
-				if (iter_addr4++ < cb->args[2])
+				if (iter_addr4++ < skip_addr4)
 					continue;
 				if (netlbl_unlabel_staticlist_gen(
 					      NLBL_UNLABEL_C_STATICLIST,
@@ -1232,7 +1231,7 @@ static int netlbl_unlabel_staticlist(struct sk_buff *skb,
 #if defined(CONFIG_IPV6) || defined(CONFIG_IPV6_MODULE)
 			netlbl_af6list_foreach_rcu(addr6,
 						   &iface->addr6_list) {
-				if (iter_addr6++ < cb->args[3])
+				if (iter_addr6++ < skip_addr6)
 					continue;
 				if (netlbl_unlabel_staticlist_gen(
 					      NLBL_UNLABEL_C_STATICLIST,
@@ -1251,10 +1250,10 @@ static int netlbl_unlabel_staticlist(struct sk_buff *skb,
 
 unlabel_staticlist_return:
 	rcu_read_unlock();
-	cb->args[0] = iter_bkt;
-	cb->args[1] = iter_chain;
-	cb->args[2] = iter_addr4;
-	cb->args[3] = iter_addr6;
+	cb->args[0] = skip_bkt;
+	cb->args[1] = skip_chain;
+	cb->args[2] = skip_addr4;
+	cb->args[3] = skip_addr6;
 	return skb->len;
 }
 
@@ -1274,9 +1273,12 @@ static int netlbl_unlabel_staticlistdef(struct sk_buff *skb,
 {
 	struct netlbl_unlhsh_walk_arg cb_arg;
 	struct netlbl_unlhsh_iface *iface;
-	u32 iter_addr4 = 0, iter_addr6 = 0;
+	u32 skip_addr4 = cb->args[0];
+	u32 skip_addr6 = cb->args[1];
+	u32 iter_addr4 = 0;
 	struct netlbl_af4list *addr4;
 #if defined(CONFIG_IPV6) || defined(CONFIG_IPV6_MODULE)
+	u32 iter_addr6 = 0;
 	struct netlbl_af6list *addr6;
 #endif
 
@@ -1290,7 +1292,7 @@ static int netlbl_unlabel_staticlistdef(struct sk_buff *skb,
 		goto unlabel_staticlistdef_return;
 
 	netlbl_af4list_foreach_rcu(addr4, &iface->addr4_list) {
-		if (iter_addr4++ < cb->args[0])
+		if (iter_addr4++ < skip_addr4)
 			continue;
 		if (netlbl_unlabel_staticlist_gen(NLBL_UNLABEL_C_STATICLISTDEF,
 					      iface,
@@ -1303,7 +1305,7 @@ static int netlbl_unlabel_staticlistdef(struct sk_buff *skb,
 	}
 #if defined(CONFIG_IPV6) || defined(CONFIG_IPV6_MODULE)
 	netlbl_af6list_foreach_rcu(addr6, &iface->addr6_list) {
-		if (iter_addr6++ < cb->args[1])
+		if (iter_addr6++ < skip_addr6)
 			continue;
 		if (netlbl_unlabel_staticlist_gen(NLBL_UNLABEL_C_STATICLISTDEF,
 					      iface,
@@ -1318,8 +1320,8 @@ static int netlbl_unlabel_staticlistdef(struct sk_buff *skb,
 
 unlabel_staticlistdef_return:
 	rcu_read_unlock();
-	cb->args[0] = iter_addr4;
-	cb->args[1] = iter_addr6;
+	cb->args[0] = skip_addr4;
+	cb->args[1] = skip_addr6;
 	return skb->len;
 }
 

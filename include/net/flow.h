@@ -9,7 +9,7 @@
 
 #include <linux/socket.h>
 #include <linux/in6.h>
-#include <asm/atomic.h>
+#include <linux/atomic.h>
 
 struct flowi_common {
 	int	flowic_oif;
@@ -89,16 +89,6 @@ static inline void flowi4_init_output(struct flowi4 *fl4, int oif,
 	fl4->saddr = saddr;
 	fl4->fl4_dport = dport;
 	fl4->fl4_sport = sport;
-}
-
-/* Reset some input parameters after previous lookup */
-static inline void flowi4_update_output(struct flowi4 *fl4, int oif, __u8 tos,
-					__be32 daddr, __be32 saddr)
-{
-	fl4->flowi4_oif = oif;
-	fl4->flowi4_tos = tos;
-	fl4->daddr = daddr;
-	fl4->saddr = saddr;
 }
 				      
 

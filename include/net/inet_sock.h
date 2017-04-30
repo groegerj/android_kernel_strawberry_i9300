@@ -31,7 +31,6 @@
 /** struct ip_options - IP Options
  *
  * @faddr - Saved first hop address
- * @nexthop - Saved nexthop address in LSRR and SSRR
  * @is_data - Options in __data, rather than skb
  * @is_strictroute - Strict source route
  * @srr_is_hit - Packet destination addr was our one
@@ -42,7 +41,6 @@
  */
 struct ip_options {
 	__be32		faddr;
-	__be32		nexthop;
 	unsigned char	optlen;
 	unsigned char	srr;
 	unsigned char	rr;
@@ -199,7 +197,6 @@ static inline void inet_sk_copy_descendant(struct sock *sk_to,
 extern int inet_sk_rebuild_header(struct sock *sk);
 
 extern u32 inet_ehash_secret;
-extern u32 ipv6_hash_secret;
 extern void build_ehash_secret(void);
 
 static inline unsigned int inet_ehashfn(struct net *net,
@@ -241,7 +238,7 @@ static inline __u8 inet_sk_flowi_flags(const struct sock *sk)
 {
 	__u8 flags = 0;
 
-	if (inet_sk(sk)->transparent)
+	if (inet_sk(sk)->transparent || inet_sk(sk)->hdrincl)
 		flags |= FLOWI_FLAG_ANYSRC;
 	if (sk->sk_protocol == IPPROTO_TCP)
 		flags |= FLOWI_FLAG_PRECOW_METRICS;

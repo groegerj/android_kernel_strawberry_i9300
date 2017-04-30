@@ -20,6 +20,8 @@
  *		2 of the License, or (at your option) any later version.
  */
 
+#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
+
 #include <linux/module.h>
 #include <linux/slab.h>
 #include <linux/skbuff.h>
@@ -55,7 +57,7 @@ static int vlan_dev_rebuild_header(struct sk_buff *skb)
 		return arp_find(veth->h_dest, skb);
 #endif
 	default:
-		pr_debug("%s: unable to resolve type %X addresses.\n",
+		pr_debug("%s: unable to resolve type %X addresses\n",
 			 dev->name, ntohs(veth->h_vlan_encapsulated_proto));
 
 		memcpy(veth->h_source, dev->dev_addr, ETH_ALEN);
@@ -69,8 +71,6 @@ static inline u16
 vlan_dev_get_egress_qos_mask(struct net_device *dev, struct sk_buff *skb)
 {
 	struct vlan_priority_tci_mapping *mp;
-
-	smp_rmb(); /* coupled with smp_wmb() in vlan_dev_set_egress_priority() */
 
 	mp = vlan_dev_info(dev)->egress_priority_map[(skb->priority & 0xF)];
 	while (mp) {
@@ -156,7 +156,7 @@ static netdev_tx_t vlan_dev_hard_start_xmit(struct sk_buff *skb,
 		skb = __vlan_hwaccel_put_tag(skb, vlan_tci);
 	}
 
-	skb->dev = vlan_dev_info(dev)->real_dev;
+	skb_set_dev(skb, vlan_dev_info(dev)->real_dev);
 	len = skb->len;
 	ret = dev_queue_xmit(skb);
 
@@ -232,11 +232,6 @@ int vlan_dev_set_egress_priority(const struct net_device *dev,
 	np->next = mp;
 	np->priority = skb_prio;
 	np->vlan_qos = vlan_qos;
-	/* Before inserting this element in hash table, make sure all its fields
-	 * are committed to memory.
-	 * coupled with smp_rmb() in vlan_dev_get_egress_qos_mask()
-	 */
-	smp_wmb();
 	vlan->egress_priority_map[skb_prio & 0xF] = np;
 	if (vlan_qos)
 		vlan->nr_egress_mappings++;
@@ -602,8 +597,7 @@ static u32 vlan_dev_fix_features(struct net_device *dev, u32 features)
 	features &= real_dev->features;
 	features &= real_dev->vlan_features;
 
-	if (old_features & NETIF_F_SOFT_FEATURES)
-		features |= old_features & NETIF_F_SOFT_FEATURES;
+	features |= old_features & NETIF_F_SOFT_FEATURES;
 
 	if (dev_ethtool_get_rx_csum(real_dev))
 		features |= NETIF_F_RXCSUM;

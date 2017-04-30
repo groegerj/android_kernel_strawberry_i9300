@@ -167,7 +167,6 @@ svc_pool_map_alloc_arrays(struct svc_pool_map *m, unsigned int maxpools)
 
 fail_free:
 	kfree(m->to_pool);
-	m->to_pool = NULL;
 fail:
 	return -ENOMEM;
 }
@@ -288,9 +287,7 @@ svc_pool_map_put(void)
 	if (!--m->count) {
 		m->mode = SVC_POOL_DEFAULT;
 		kfree(m->to_pool);
-		m->to_pool = NULL;
 		kfree(m->pool_to);
-		m->pool_to = NULL;
 		m->npools = 0;
 	}
 
@@ -475,19 +472,16 @@ svc_destroy(struct svc_serv *serv)
 		printk("svc_destroy: no threads for serv=%p!\n", serv);
 
 	del_timer_sync(&serv->sv_temptimer);
-	/*
-	 * The set of xprts (contained in the sv_tempsocks and
-	 * sv_permsocks lists) is now constant, since it is modified
-	 * only by accepting new sockets (done by service threads in
-	 * svc_recv) or aging old ones (done by sv_temptimer), or
-	 * configuration changes (excluded by whatever locking the
-	 * caller is using--nfsd_mutex in the case of nfsd).  So it's
-	 * safe to traverse those lists and shut everything down:
-	 */
-	svc_close_all(serv);
+
+	svc_close_all(&serv->sv_tempsocks);
 
 	if (serv->sv_shutdown)
 		serv->sv_shutdown(serv);
+
+	svc_close_all(&serv->sv_permsocks);
+
+	BUG_ON(!list_empty(&serv->sv_permsocks));
+	BUG_ON(!list_empty(&serv->sv_tempsocks));
 
 	cache_clean_deferred(serv);
 
@@ -1258,7 +1252,7 @@ svc_process(struct svc_rqst *rqstp)
 	}
 }
 
-#if defined(CONFIG_NFS_V4_1)
+#if defined(CONFIG_SUNRPC_BACKCHANNEL)
 /*
  * Process a backchannel RPC request that arrived over an existing
  * outbound connection
@@ -1302,13 +1296,12 @@ bc_svc_process(struct svc_serv *serv, struct rpc_rqst *req,
 						sizeof(req->rq_snd_buf));
 		return bc_send(req);
 	} else {
-		/* drop request */
-		xprt_free_bc_request(req);
+		/* Nothing to do to drop request */
 		return 0;
 	}
 }
-EXPORT_SYMBOL(bc_svc_process);
-#endif /* CONFIG_NFS_V4_1 */
+EXPORT_SYMBOL_GPL(bc_svc_process);
+#endif /* CONFIG_SUNRPC_BACKCHANNEL */
 
 /*
  * Return (transport-specific) limit on the rpc payload.

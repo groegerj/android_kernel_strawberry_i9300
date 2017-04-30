@@ -140,9 +140,8 @@ ieee80211_add_rx_radiotap_header(struct ieee80211_local *local,
 	pos++;
 
 	/* IEEE80211_RADIOTAP_RATE */
-	if (!rate || status->flag & RX_FLAG_HT) {
+	if (status->flag & RX_FLAG_HT) {
 		/*
-		 * Without rate information don't add it. If we have,
 		 * MCS information is a separate field in radiotap,
 		 * added below. The byte here is needed as padding
 		 * for the channel though, so initialise it to 0.
@@ -163,14 +162,12 @@ ieee80211_add_rx_radiotap_header(struct ieee80211_local *local,
 	else if (status->flag & RX_FLAG_HT)
 		put_unaligned_le16(IEEE80211_CHAN_DYN | IEEE80211_CHAN_2GHZ,
 				   pos);
-	else if (rate && rate->flags & IEEE80211_RATE_ERP_G)
+	else if (rate->flags & IEEE80211_RATE_ERP_G)
 		put_unaligned_le16(IEEE80211_CHAN_OFDM | IEEE80211_CHAN_2GHZ,
 				   pos);
-	else if (rate)
+	else
 		put_unaligned_le16(IEEE80211_CHAN_CCK | IEEE80211_CHAN_2GHZ,
 				   pos);
-	else
-		put_unaligned_le16(IEEE80211_CHAN_2GHZ, pos);
 	pos += 2;
 
 	/* IEEE80211_RADIOTAP_DBM_ANTSIGNAL */
@@ -334,15 +331,18 @@ static void ieee80211_parse_qos(struct ieee80211_rx_data *rx)
 {
 	struct ieee80211_hdr *hdr = (struct ieee80211_hdr *)rx->skb->data;
 	struct ieee80211_rx_status *status = IEEE80211_SKB_RXCB(rx->skb);
-	int tid;
+	int tid, seqno_idx, security_idx;
 
 	/* does the frame have a qos control field? */
 	if (ieee80211_is_data_qos(hdr->frame_control)) {
 		u8 *qc = ieee80211_get_qos_ctl(hdr);
 		/* frame has qos control */
 		tid = *qc & IEEE80211_QOS_CTL_TID_MASK;
-		if (*qc & IEEE80211_QOS_CONTROL_A_MSDU_PRESENT)
+		if (*qc & IEEE80211_QOS_CTL_A_MSDU_PRESENT)
 			status->rx_flags |= IEEE80211_RX_AMSDU;
+
+		seqno_idx = tid;
+		security_idx = tid;
 	} else {
 		/*
 		 * IEEE 802.11-2007, 7.1.3.4.1 ("Sequence Number field"):
@@ -355,10 +355,15 @@ static void ieee80211_parse_qos(struct ieee80211_rx_data *rx)
 		 *
 		 * We also use that counter for non-QoS STAs.
 		 */
-		tid = NUM_RX_DATA_QUEUES - 1;
+		seqno_idx = NUM_RX_DATA_QUEUES;
+		security_idx = 0;
+		if (ieee80211_is_mgmt(hdr->frame_control))
+			security_idx = NUM_RX_DATA_QUEUES;
+		tid = 0;
 	}
 
-	rx->queue = tid;
+	rx->seqno_idx = seqno_idx;
+	rx->security_idx = security_idx;
 	/* Set skb->priority to 1d tag if highest order bit of TID is not set.
 	 * For now, set skb->priority to 0 for other cases. */
 	rx->skb->priority = (tid > 7) ? 0 : tid;
@@ -610,7 +615,7 @@ static void ieee80211_sta_reorder_release(struct ieee80211_hw *hw,
 	index = seq_sub(tid_agg_rx->head_seq_num, tid_agg_rx->ssn) %
 						tid_agg_rx->buf_size;
 	if (!tid_agg_rx->reorder_buf[index] &&
-	    tid_agg_rx->stored_mpdu_num) {
+	    tid_agg_rx->stored_mpdu_num > 1) {
 		/*
 		 * No buffers ready to be released, but check whether any
 		 * frames in the reorder buffer have timed out.
@@ -810,16 +815,10 @@ ieee80211_rx_h_check(struct ieee80211_rx_data *rx)
 	struct ieee80211_hdr *hdr = (struct ieee80211_hdr *)rx->skb->data;
 	struct ieee80211_rx_status *status = IEEE80211_SKB_RXCB(rx->skb);
 
-	/*
-	 * Drop duplicate 802.11 retransmissions
-	 * (IEEE 802.11-2012: 9.3.2.10 "Duplicate detection and recovery")
-	 */
-	if (rx->skb->len >= 24 && rx->sta &&
-	    !ieee80211_is_ctl(hdr->frame_control) &&
-	    !ieee80211_is_qos_nullfunc(hdr->frame_control) &&
-	    !is_multicast_ether_addr(hdr->addr1)) {
+	/* Drop duplicate 802.11 retransmissions (IEEE 802.11 Chap. 9.2.9) */
+	if (rx->sta && !is_multicast_ether_addr(hdr->addr1)) {
 		if (unlikely(ieee80211_has_retry(hdr->frame_control) &&
-			     rx->sta->last_seq_ctrl[rx->queue] ==
+			     rx->sta->last_seq_ctrl[rx->seqno_idx] ==
 			     hdr->seq_ctrl)) {
 			if (status->rx_flags & IEEE80211_RX_RA_MATCH) {
 				rx->local->dot11FrameDuplicateCount++;
@@ -827,7 +826,7 @@ ieee80211_rx_h_check(struct ieee80211_rx_data *rx)
 			}
 			return RX_DROP_UNUSABLE;
 		} else
-			rx->sta->last_seq_ctrl[rx->queue] = hdr->seq_ctrl;
+			rx->sta->last_seq_ctrl[rx->seqno_idx] = hdr->seq_ctrl;
 	}
 
 	if (unlikely(rx->skb->len < 16)) {
@@ -1020,6 +1019,9 @@ ieee80211_rx_h_decrypt(struct ieee80211_rx_data *rx)
 	}
 
 	if (rx->key) {
+		if (unlikely(rx->key->flags & KEY_FLAG_TAINTED))
+			return RX_DROP_MONITOR;
+
 		rx->key->tx_rx_count++;
 		/* TODO: add threshold stuff again */
 	} else {
@@ -1358,14 +1360,11 @@ ieee80211_rx_h_defragment(struct ieee80211_rx_data *rx)
 
 	hdr = (struct ieee80211_hdr *)rx->skb->data;
 	fc = hdr->frame_control;
-
-	if (ieee80211_is_ctl(fc))
-		return RX_CONTINUE;
-
 	sc = le16_to_cpu(hdr->seq_ctrl);
 	frag = sc & IEEE80211_SCTL_FRAG;
 
 	if (likely((!ieee80211_has_morefrags(fc) && frag == 0) ||
+		   (rx->skb)->len < 24 ||
 		   is_multicast_ether_addr(hdr->addr1))) {
 		/* not fragmented */
 		goto out;
@@ -1386,11 +1385,10 @@ ieee80211_rx_h_defragment(struct ieee80211_rx_data *rx)
 	if (frag == 0) {
 		/* This is the first fragment of a new frame. */
 		entry = ieee80211_reassemble_add(rx->sdata, frag, seq,
-						 rx->queue, &(rx->skb));
+						 rx->seqno_idx, &(rx->skb));
 		if (rx->key && rx->key->conf.cipher == WLAN_CIPHER_SUITE_CCMP &&
 		    ieee80211_has_protected(fc)) {
-			int queue = ieee80211_is_mgmt(fc) ?
-				NUM_RX_DATA_QUEUES : rx->queue;
+			int queue = rx->security_idx;
 			/* Store CCMP PN so that we can verify that the next
 			 * fragment has a sequential PN value. */
 			entry->ccmp = 1;
@@ -1404,7 +1402,8 @@ ieee80211_rx_h_defragment(struct ieee80211_rx_data *rx)
 	/* This is a fragment for a frame that should already be pending in
 	 * fragment cache. Add this fragment to the end of the pending entry.
 	 */
-	entry = ieee80211_reassemble_find(rx->sdata, frag, seq, rx->queue, hdr);
+	entry = ieee80211_reassemble_find(rx->sdata, frag, seq,
+					  rx->seqno_idx, hdr);
 	if (!entry) {
 		I802_DEBUG_INC(rx->local->rx_handlers_drop_defrag);
 		return RX_DROP_MONITOR;
@@ -1424,8 +1423,7 @@ ieee80211_rx_h_defragment(struct ieee80211_rx_data *rx)
 			if (pn[i])
 				break;
 		}
-		queue = ieee80211_is_mgmt(fc) ?
-			NUM_RX_DATA_QUEUES : rx->queue;
+		queue = rx->security_idx;
 		rpn = rx->key->u.ccmp.rx_pn[queue];
 		if (memcmp(pn, rpn, CCMP_PN_LEN))
 			return RX_DROP_UNUSABLE;
@@ -2300,7 +2298,7 @@ ieee80211_rx_h_action_return(struct ieee80211_rx_data *rx)
 	 * frames that we didn't handle, including returning unknown
 	 * ones. For all other modes we will return them to the sender,
 	 * setting the 0x80 bit in the action category, as required by
-	 * 802.11-2012 9.24.4.
+	 * 802.11-2007 7.3.1.11.
 	 * Newer versions of hostapd shall also use the management frame
 	 * registration mechanisms, but older ones still use cooked
 	 * monitor interfaces so push all frames there.
@@ -2308,9 +2306,6 @@ ieee80211_rx_h_action_return(struct ieee80211_rx_data *rx)
 	if (!(status->rx_flags & IEEE80211_RX_MALFORMED_ACTION_FRM) &&
 	    (sdata->vif.type == NL80211_IFTYPE_AP ||
 	     sdata->vif.type == NL80211_IFTYPE_AP_VLAN))
-		return RX_DROP_MONITOR;
-
-	if (is_multicast_ether_addr(mgmt->da))
 		return RX_DROP_MONITOR;
 
 	/* do not return rejected action frames */
@@ -2605,7 +2600,9 @@ void ieee80211_release_reorder_timeout(struct sta_info *sta, int tid)
 		.sta = sta,
 		.sdata = sta->sdata,
 		.local = sta->local,
-		.queue = tid,
+		/* This is OK -- must be QoS data frame */
+		.security_idx = tid,
+		.seqno_idx = tid,
 		.flags = 0,
 	};
 	struct tid_ampdu_rx *tid_agg_rx;
@@ -2777,15 +2774,10 @@ static void __ieee80211_rx_handle_packet(struct ieee80211_hw *hw,
 		     test_bit(SCAN_SW_SCANNING, &local->scanning)))
 		status->rx_flags |= IEEE80211_RX_IN_SCAN;
 
-	if (ieee80211_is_mgmt(fc)) {
-		/* drop frame if too short for header */
-		if (skb->len < ieee80211_hdrlen(fc))
-			err = -ENOBUFS;
-		else
-			err = skb_linearize(skb);
-	} else {
+	if (ieee80211_is_mgmt(fc))
+		err = skb_linearize(skb);
+	else
 		err = !pskb_may_pull(skb, ieee80211_hdrlen(fc));
-	}
 
 	if (err) {
 		dev_kfree_skb(skb);

@@ -181,7 +181,7 @@ static bool choke_match_flow(struct sk_buff *skb1,
 		    ip1->saddr != ip2->saddr || ip1->daddr != ip2->daddr)
 			return false;
 
-		if ((ip1->frag_off | ip2->frag_off) & htons(IP_MF | IP_OFFSET))
+		if (ip_is_fragment(ip1) | ip_is_fragment(ip2))
 			ip_proto = 0;
 		off1 += ip1->ihl * 4;
 		off2 += ip2->ihl * 4;
@@ -225,7 +225,8 @@ struct choke_skb_cb {
 
 static inline struct choke_skb_cb *choke_skb_cb(const struct sk_buff *skb)
 {
-	qdisc_cb_private_validate(skb, sizeof(struct choke_skb_cb));
+	BUILD_BUG_ON(sizeof(skb->cb) <
+		sizeof(struct qdisc_skb_cb) + sizeof(struct choke_skb_cb));
 	return (struct choke_skb_cb *)qdisc_skb_cb(skb)->data;
 }
 

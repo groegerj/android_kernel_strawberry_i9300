@@ -159,18 +159,21 @@ static const u8 tcp_conntracks[2][6][TCP_CONNTRACK_MAX] = {
  *	sCL -> sSS
  */
 /* 	     sNO, sSS, sSR, sES, sFW, sCW, sLA, sTW, sCL, sS2	*/
-/*synack*/ { sIV, sIV, sSR, sIV, sIV, sIV, sIV, sIV, sIV, sSR },
+/*synack*/ { sIV, sIV, sIG, sIG, sIG, sIG, sIG, sIG, sIG, sSR },
 /*
  *	sNO -> sIV	Too late and no reason to do anything
  *	sSS -> sIV	Client can't send SYN and then SYN/ACK
  *	sS2 -> sSR	SYN/ACK sent to SYN2 in simultaneous open
- *	sSR -> sSR	Late retransmitted SYN/ACK in simultaneous open
- *	sES -> sIV	Invalid SYN/ACK packets sent by the client
- *	sFW -> sIV
- *	sCW -> sIV
- *	sLA -> sIV
- *	sTW -> sIV
- *	sCL -> sIV
+ *	sSR -> sIG
+ *	sES -> sIG	Error: SYNs in window outside the SYN_SENT state
+ *			are errors. Receiver will reply with RST
+ *			and close the connection.
+ *			Or we are not in sync and hold a dead connection.
+ *	sFW -> sIG
+ *	sCW -> sIG
+ *	sLA -> sIG
+ *	sTW -> sIG
+ *	sCL -> sIG
  */
 /* 	     sNO, sSS, sSR, sES, sFW, sCW, sLA, sTW, sCL, sS2	*/
 /*fin*/    { sIV, sIV, sFW, sFW, sLA, sLA, sLA, sTW, sCL, sIV },
@@ -406,7 +409,7 @@ static void tcp_options(const struct sk_buff *skb,
 			if (opsize < 2) /* "silly options" */
 				return;
 			if (opsize > length)
-				break;	/* don't parse partial options */
+				return;	/* don't parse partial options */
 
 			if (opcode == TCPOPT_SACK_PERM
 			    && opsize == TCPOLEN_SACK_PERM)
@@ -444,7 +447,7 @@ static void tcp_sack(const struct sk_buff *skb, unsigned int dataoff,
 	BUG_ON(ptr == NULL);
 
 	/* Fast path for timestamp-only option */
-	if (length == TCPOLEN_TSTAMP_ALIGNED*4
+	if (length == TCPOLEN_TSTAMP_ALIGNED
 	    && *(__be32 *)ptr == htonl((TCPOPT_NOP << 24)
 				       | (TCPOPT_NOP << 16)
 				       | (TCPOPT_TIMESTAMP << 8)
@@ -466,7 +469,7 @@ static void tcp_sack(const struct sk_buff *skb, unsigned int dataoff,
 			if (opsize < 2) /* "silly options" */
 				return;
 			if (opsize > length)
-				break;	/* don't parse partial options */
+				return;	/* don't parse partial options */
 
 			if (opcode == TCPOPT_SACK
 			    && opsize >= (TCPOLEN_SACK_BASE
@@ -625,9 +628,15 @@ static bool tcp_in_window(const struct nf_conn *ct,
 		ack = sack = receiver->td_end;
 	}
 
-	if (tcph->rst && seq == 0 && state->state == TCP_CONNTRACK_SYN_SENT)
+	if (seq == end
+	    && (!tcph->rst
+		|| (seq == 0 && state->state == TCP_CONNTRACK_SYN_SENT)))
 		/*
-		 * RST sent answering SYN.
+		 * Packets contains no data: we assume it is valid
+		 * and check the ack value only.
+		 * However RST segments are always validated by their
+		 * SEQ number, except when seq == 0 (reset sent answering
+		 * SYN.
 		 */
 		seq = end = sender->td_end;
 

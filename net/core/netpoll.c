@@ -177,7 +177,7 @@ static void service_arp_queue(struct netpoll_info *npi)
 	}
 }
 
-void netpoll_poll_dev(struct net_device *dev)
+static void netpoll_poll_dev(struct net_device *dev)
 {
 	const struct net_device_ops *ops;
 
@@ -193,7 +193,7 @@ void netpoll_poll_dev(struct net_device *dev)
 
 	poll_napi(dev);
 
-	if (dev->flags & IFF_SLAVE) {
+	if (dev->priv_flags & IFF_SLAVE) {
 		if (dev->npinfo) {
 			struct net_device *bond_dev = dev->master;
 			struct sk_buff *skb;
@@ -208,13 +208,6 @@ void netpoll_poll_dev(struct net_device *dev)
 
 	zap_completion_queue();
 }
-EXPORT_SYMBOL(netpoll_poll_dev);
-
-void netpoll_poll(struct netpoll *np)
-{
-	netpoll_poll_dev(np->dev);
-}
-EXPORT_SYMBOL(netpoll_poll);
 
 static void refill_skbs(void)
 {
@@ -275,7 +268,7 @@ repeat:
 
 	if (!skb) {
 		if (++count < 10) {
-			netpoll_poll(np);
+			netpoll_poll_dev(np->dev);
 			goto repeat;
 		}
 		return NULL;
@@ -336,7 +329,7 @@ void netpoll_send_skb_on_dev(struct netpoll *np, struct sk_buff *skb,
 			}
 
 			/* tickle device maybe there is some cleanup */
-			netpoll_poll(np);
+			netpoll_poll_dev(np->dev);
 
 			udelay(USEC_PER_POLL);
 		}
@@ -357,23 +350,22 @@ EXPORT_SYMBOL(netpoll_send_skb_on_dev);
 
 void netpoll_send_udp(struct netpoll *np, const char *msg, int len)
 {
-	int total_len, ip_len, udp_len;
+	int total_len, eth_len, ip_len, udp_len;
 	struct sk_buff *skb;
 	struct udphdr *udph;
 	struct iphdr *iph;
 	struct ethhdr *eth;
 
 	udp_len = len + sizeof(*udph);
-	ip_len = udp_len + sizeof(*iph);
-	total_len = ip_len + LL_RESERVED_SPACE(np->dev);
+	ip_len = eth_len = udp_len + sizeof(*iph);
+	total_len = eth_len + ETH_HLEN + NET_IP_ALIGN;
 
-	skb = find_skb(np, total_len + np->dev->needed_tailroom,
-		       total_len - len);
+	skb = find_skb(np, total_len, total_len - len);
 	if (!skb)
 		return;
 
 	skb_copy_to_linear_data(skb, msg, len);
-	skb_put(skb, len);
+	skb->len += len;
 
 	skb_push(skb, sizeof(*udph));
 	skb_reset_transport_header(skb);
@@ -566,13 +558,14 @@ int __netpoll_rx(struct sk_buff *skb)
 	if (skb_shared(skb))
 		goto out;
 
-	iph = (struct iphdr *)skb->data;
 	if (!pskb_may_pull(skb, sizeof(struct iphdr)))
 		goto out;
+	iph = (struct iphdr *)skb->data;
 	if (iph->ihl < 5 || iph->version != 4)
 		goto out;
 	if (!pskb_may_pull(skb, iph->ihl*4))
 		goto out;
+	iph = (struct iphdr *)skb->data;
 	if (ip_fast_csum((u8 *)iph, iph->ihl) != 0)
 		goto out;
 
@@ -587,6 +580,7 @@ int __netpoll_rx(struct sk_buff *skb)
 	if (pskb_trim_rcsum(skb, len))
 		goto out;
 
+	iph = (struct iphdr *)skb->data;
 	if (iph->protocol != IPPROTO_UDP)
 		goto out;
 
@@ -927,14 +921,15 @@ EXPORT_SYMBOL_GPL(__netpoll_cleanup);
 
 void netpoll_cleanup(struct netpoll *np)
 {
-	rtnl_lock();
 	if (!np->dev)
-		goto out;
+		return;
+
+	rtnl_lock();
 	__netpoll_cleanup(np);
+	rtnl_unlock();
+
 	dev_put(np->dev);
 	np->dev = NULL;
-out:
-	rtnl_unlock();
 }
 EXPORT_SYMBOL(netpoll_cleanup);
 
