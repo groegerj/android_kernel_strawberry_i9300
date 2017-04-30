@@ -95,6 +95,7 @@ EXPORT_SYMBOL(empty_aops);
 struct inodes_stat_t inodes_stat;
 
 static DEFINE_PER_CPU(unsigned int, nr_inodes);
+static DEFINE_PER_CPU(unsigned int, nr_unused);
 
 static struct kmem_cache *inode_cachep __read_mostly;
 
@@ -737,6 +738,107 @@ static struct shrinker icache_shrinker = {
 	.shrink = shrink_icache_memory,
 	.seeks = DEFAULT_SEEKS,
 };
+
+/*
+ * Walk the superblock inode LRU for freeable inodes and attempt to free them.
+ * This is called from the superblock shrinker function with a number of inodes
+ * to trim from the LRU. Inodes to be freed are moved to a temporary list and
+ * then are freed outside inode_lock by dispose_list().
+ *
+ * Any inodes which are pinned purely because of attached pagecache have their
+ * pagecache removed.  If the inode has metadata buffers attached to
+ * mapping->private_list then try to remove them.
+ *
+ * If the inode has the I_REFERENCED flag set, then it means that it has been
+ * used recently - the flag is set in iput_final(). When we encounter such an
+ * inode, clear the flag and move it to the back of the LRU so it gets another
+ * pass through the LRU before it gets reclaimed. This is necessary because of
+ * the fact we are doing lazy LRU updates to minimise lock contention so the
+ * LRU does not have strict ordering. Hence we don't want to reclaim inodes
+ * with this flag set because they are the inodes that are out of order.
+ */
+void prune_icache_sb(struct super_block *sb, int nr_to_scan)
+{
+	LIST_HEAD(freeable);
+	int nr_scanned;
+	unsigned long reap = 0;
+
+	spin_lock(&sb->s_inode_lru_lock);
+	for (nr_scanned = nr_to_scan; nr_scanned >= 0; nr_scanned--) {
+		struct inode *inode;
+
+		if (list_empty(&sb->s_inode_lru))
+			break;
+
+		inode = list_entry(sb->s_inode_lru.prev, struct inode, i_lru);
+
+		/*
+		 * we are inverting the sb->s_inode_lru_lock/inode->i_lock here,
+		 * so use a trylock. If we fail to get the lock, just move the
+		 * inode to the back of the list so we don't spin on it.
+		 */
+		if (!spin_trylock(&inode->i_lock)) {
+			list_move(&inode->i_lru, &sb->s_inode_lru);
+			continue;
+		}
+
+		/*
+		 * Referenced or dirty inodes are still in use. Give them
+		 * another pass through the LRU as we canot reclaim them now.
+		 */
+		if (atomic_read(&inode->i_count) ||
+		    (inode->i_state & ~I_REFERENCED)) {
+			list_del_init(&inode->i_lru);
+			spin_unlock(&inode->i_lock);
+			sb->s_nr_inodes_unused--;
+			this_cpu_dec(nr_unused);
+			continue;
+		}
+
+		/* recently referenced inodes get one more pass */
+		if (inode->i_state & I_REFERENCED) {
+			inode->i_state &= ~I_REFERENCED;
+			list_move(&inode->i_lru, &sb->s_inode_lru);
+			spin_unlock(&inode->i_lock);
+			continue;
+		}
+		if (inode_has_buffers(inode) || inode->i_data.nrpages) {
+			__iget(inode);
+			spin_unlock(&inode->i_lock);
+			spin_unlock(&sb->s_inode_lru_lock);
+			if (remove_inode_buffers(inode))
+				reap += invalidate_mapping_pages(&inode->i_data,
+								0, -1);
+			iput(inode);
+			spin_lock(&sb->s_inode_lru_lock);
+
+			if (inode != list_entry(sb->s_inode_lru.next,
+						struct inode, i_lru))
+				continue;	/* wrong inode or list_empty */
+			/* avoid lock inversions with trylock */
+			if (!spin_trylock(&inode->i_lock))
+				continue;
+			if (!can_unuse(inode)) {
+				spin_unlock(&inode->i_lock);
+				continue;
+			}
+		}
+		WARN_ON(inode->i_state & I_NEW);
+		inode->i_state |= I_FREEING;
+		spin_unlock(&inode->i_lock);
+
+		list_move(&inode->i_lru, &freeable);
+		sb->s_nr_inodes_unused--;
+		this_cpu_dec(nr_unused);
+	}
+	if (current_is_kswapd())
+		__count_vm_events(KSWAPD_INODESTEAL, reap);
+	else
+		__count_vm_events(PGINODESTEAL, reap);
+	spin_unlock(&sb->s_inode_lru_lock);
+
+	dispose_list(&freeable);
+}
 
 static void __wait_on_freeing_inode(struct inode *inode);
 /*
