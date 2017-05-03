@@ -849,7 +849,7 @@ static void soc_remove_codec(struct snd_soc_codec *codec)
 	module_put(codec->dev->driver->owner);
 }
 
-static void soc_remove_dai_link(struct snd_soc_card *card, int num)
+static void soc_remove_dai_link(struct snd_soc_card *card, int num, int order)
 {
 	struct snd_soc_pcm_runtime *rtd = &card->rtd[num];
 	struct snd_soc_codec *codec = rtd->codec;
@@ -866,7 +866,8 @@ static void soc_remove_dai_link(struct snd_soc_card *card, int num)
 	}
 
 	/* remove the CODEC DAI */
-	if (codec_dai && codec_dai->probed) {
+	if (codec_dai && codec_dai->probed &&
+			codec_dai->driver->remove_order == order) {
 		if (codec_dai->driver->remove) {
 			err = codec_dai->driver->remove(codec_dai);
 			if (err < 0)
@@ -877,7 +878,8 @@ static void soc_remove_dai_link(struct snd_soc_card *card, int num)
 	}
 
 	/* remove the platform */
-	if (platform && platform->probed) {
+	if (platform && platform->probed &&
+			platform->driver->remove_order == order) {
 		if (platform->driver->remove) {
 			err = platform->driver->remove(platform);
 			if (err < 0)
@@ -889,11 +891,13 @@ static void soc_remove_dai_link(struct snd_soc_card *card, int num)
 	}
 
 	/* remove the CODEC */
-	if (codec && codec->probed)
+	if (codec && codec->probed &&
+			codec->driver->remove_order == order)
 		soc_remove_codec(codec);
 
 	/* remove the cpu_dai */
-	if (cpu_dai && cpu_dai->probed) {
+	if (cpu_dai && cpu_dai->probed &&
+			cpu_dai->driver->remove_order == order) {
 		if (cpu_dai->driver->remove) {
 			err = cpu_dai->driver->remove(cpu_dai);
 			if (err < 0)
@@ -907,11 +911,13 @@ static void soc_remove_dai_link(struct snd_soc_card *card, int num)
 
 static void soc_remove_dai_links(struct snd_soc_card *card)
 {
-	int i;
+	int dai, order;
 
-	for (i = 0; i < card->num_rtd; i++)
-		soc_remove_dai_link(card, i);
-
+	for (order = SND_SOC_COMP_ORDER_FIRST; order <= SND_SOC_COMP_ORDER_LAST;
+			order++) {
+		for (dai = 0; dai < card->num_rtd; dai++)
+			soc_remove_dai_link(card, dai, order);
+	}
 	card->num_rtd = 0;
 }
 
@@ -982,6 +988,52 @@ err_probe:
 	return ret;
 }
 
+static int soc_probe_platform(struct snd_soc_card *card,
+			   struct snd_soc_platform *platform)
+{
+	int ret = 0;
+	const struct snd_soc_platform_driver *driver = platform->driver;
+
+	platform->card = card;
+	platform->dapm.card = card;
+
+	if (!try_module_get(platform->dev->driver->owner))
+		return -ENODEV;
+
+	if (driver->dapm_widgets)
+		snd_soc_dapm_new_controls(&platform->dapm,
+			driver->dapm_widgets, driver->num_dapm_widgets);
+
+	if (driver->probe) {
+		ret = driver->probe(platform);
+		if (ret < 0) {
+			dev_err(platform->dev,
+				"asoc: failed to probe platform %s: %d\n",
+				platform->name, ret);
+			goto err_probe;
+		}
+	}
+
+	if (driver->controls)
+		snd_soc_add_platform_controls(platform, driver->controls,
+				     driver->num_controls);
+	if (driver->dapm_routes)
+		snd_soc_dapm_add_routes(&platform->dapm, driver->dapm_routes,
+					driver->num_dapm_routes);
+
+	/* mark platform as probed and add to card platform list */
+	platform->probed = 1;
+	list_add(&platform->card_list, &card->platform_dev_list);
+	list_add(&platform->dapm.list, &card->dapm_list);
+
+	return 0;
+
+err_probe:
+	module_put(platform->dev->driver->owner);
+
+	return ret;
+}
+
 static void rtd_release(struct device *dev) {}
 
 static int soc_post_component_init(struct snd_soc_card *card,
@@ -1028,6 +1080,7 @@ static int soc_post_component_init(struct snd_soc_card *card,
 	rtd->dev.parent = card->dev;
 	rtd->dev.release = rtd_release;
 	rtd->dev.init_name = name;
+	mutex_init(&rtd->pcm_mutex);
 	ret = device_register(&rtd->dev);
 	if (ret < 0) {
 		dev_err(card->dev,
@@ -1052,7 +1105,7 @@ static int soc_post_component_init(struct snd_soc_card *card,
 	return 0;
 }
 
-static int soc_probe_dai_link(struct snd_soc_card *card, int num)
+static int soc_probe_dai_link(struct snd_soc_card *card, int num, int order)
 {
 	struct snd_soc_dai_link *dai_link = &card->dai_link[num];
 	struct snd_soc_pcm_runtime *rtd = &card->rtd[num];
@@ -1061,7 +1114,8 @@ static int soc_probe_dai_link(struct snd_soc_card *card, int num)
 	struct snd_soc_dai *codec_dai = rtd->codec_dai, *cpu_dai = rtd->cpu_dai;
 	int ret;
 
-	dev_dbg(card->dev, "probe %s dai link %d\n", card->name, num);
+	dev_dbg(card->dev, "probe %s dai link %d late %d\n",
+			card->name, num, order);
 
 	/* config components */
 	codec_dai->codec = codec;
@@ -1073,7 +1127,8 @@ static int soc_probe_dai_link(struct snd_soc_card *card, int num)
 	rtd->pmdown_time = pmdown_time;
 
 	/* probe the cpu_dai */
-	if (!cpu_dai->probed) {
+	if (!cpu_dai->probed &&
+			cpu_dai->driver->probe_order == order) {
 		if (!try_module_get(cpu_dai->dev->driver->owner))
 			return -ENODEV;
 
@@ -1087,38 +1142,28 @@ static int soc_probe_dai_link(struct snd_soc_card *card, int num)
 			}
 		}
 		cpu_dai->probed = 1;
-		/* mark cpu_dai as probed and add to card cpu_dai list */
+		/* mark cpu_dai as probed and add to card dai list */
 		list_add(&cpu_dai->card_list, &card->dai_dev_list);
 	}
 
 	/* probe the CODEC */
-	if (!codec->probed) {
+	if (!codec->probed &&
+			codec->driver->probe_order == order) {
 		ret = soc_probe_codec(card, codec);
 		if (ret < 0)
 			return ret;
 	}
 
 	/* probe the platform */
-	if (!platform->probed) {
-		if (!try_module_get(platform->dev->driver->owner))
-			return -ENODEV;
-
-		if (platform->driver->probe) {
-			ret = platform->driver->probe(platform);
-			if (ret < 0) {
-				printk(KERN_ERR "asoc: failed to probe platform %s\n",
-						platform->name);
-				module_put(platform->dev->driver->owner);
-				return ret;
-			}
-		}
-		/* mark platform as probed and add to card platform list */
-		platform->probed = 1;
-		list_add(&platform->card_list, &card->platform_dev_list);
+	if (!platform->probed &&
+			platform->driver->probe_order == order) {
+		ret = soc_probe_platform(card, platform);
+		if (ret < 0)
+			return ret;
 	}
 
 	/* probe the CODEC DAI */
-	if (!codec_dai->probed) {
+	if (!codec_dai->probed && codec_dai->driver->probe_order == order) {
 		if (codec_dai->driver->probe) {
 			ret = codec_dai->driver->probe(codec_dai);
 			if (ret < 0) {
@@ -1128,10 +1173,14 @@ static int soc_probe_dai_link(struct snd_soc_card *card, int num)
 			}
 		}
 
-		/* mark cpu_dai as probed and add to card cpu_dai list */
+		/* mark codec_dai as probed and add to card dai list */
 		codec_dai->probed = 1;
 		list_add(&codec_dai->card_list, &card->dai_dev_list);
 	}
+
+	/* complete DAI probe during last probe */
+	if (order != SND_SOC_COMP_ORDER_LAST)
+		return 0;
 
 	ret = soc_post_component_init(card, codec, num, 0);
 	if (ret)
@@ -1270,7 +1319,7 @@ static void snd_soc_instantiate_card(struct snd_soc_card *card)
 	struct snd_soc_codec *codec;
 	struct snd_soc_codec_conf *codec_conf;
 	enum snd_soc_compress_type compress_type;
-	int ret, i;
+	int ret, i, order;
 
 	mutex_lock(&card->mutex);
 
@@ -1348,12 +1397,16 @@ static void snd_soc_instantiate_card(struct snd_soc_card *card)
 			goto card_probe_error;
 	}
 
-	for (i = 0; i < card->num_links; i++) {
-		ret = soc_probe_dai_link(card, i);
-		if (ret < 0) {
-			pr_err("asoc: failed to instantiate card %s: %d\n",
+	/* early DAI link probe */
+	for (order = SND_SOC_COMP_ORDER_FIRST; order <= SND_SOC_COMP_ORDER_LAST;
+			order++) {
+		for (i = 0; i < card->num_links; i++) {
+			ret = soc_probe_dai_link(card, i, order);
+			if (ret < 0) {
+				pr_err("asoc: failed to instantiate card %s: %d\n",
 			       card->name, ret);
-			goto probe_dai_err;
+				goto probe_dai_err;
+			}
 		}
 	}
 
@@ -1592,7 +1645,7 @@ int snd_soc_codec_readable_register(struct snd_soc_codec *codec,
 	if (codec->readable_register)
 		return codec->readable_register(codec, reg);
 	else
-		return 0;
+		return 1;
 }
 EXPORT_SYMBOL_GPL(snd_soc_codec_readable_register);
 
@@ -1610,9 +1663,41 @@ int snd_soc_codec_writable_register(struct snd_soc_codec *codec,
 	if (codec->writable_register)
 		return codec->writable_register(codec, reg);
 	else
-		return 0;
+		return 1;
 }
 EXPORT_SYMBOL_GPL(snd_soc_codec_writable_register);
+
+int snd_soc_platform_read(struct snd_soc_platform *platform,
+					unsigned int reg)
+{
+	unsigned int ret;
+
+	if (!platform->driver->read) {
+		dev_err(platform->dev, "platform has no read back\n");
+		return -1;
+	}
+
+	ret = platform->driver->read(platform, reg);
+	dev_dbg(platform->dev, "read %x => %x\n", reg, ret);
+	trace_snd_soc_preg_read(platform, reg, ret);
+
+	return ret;
+}
+EXPORT_SYMBOL_GPL(snd_soc_platform_read);
+
+int snd_soc_platform_write(struct snd_soc_platform *platform,
+					 unsigned int reg, unsigned int val)
+{
+	if (!platform->driver->write) {
+		dev_err(platform->dev, "platform has no write back\n");
+		return -1;
+	}
+
+	dev_dbg(platform->dev, "write %x = %x\n", reg, val);
+	trace_snd_soc_preg_write(platform, reg, val);
+	return platform->driver->write(platform, reg, val);
+}
+EXPORT_SYMBOL_GPL(snd_soc_platform_write);
 
 /**
  * snd_soc_new_ac97_codec - initailise AC97 device
@@ -1726,7 +1811,7 @@ int snd_soc_update_bits(struct snd_soc_codec *codec, unsigned short reg,
 		return ret;
 
 	old = ret;
-	new = (old & ~mask) | value;
+	new = (old & ~mask) | (value & mask);
 	change = old != new;
 	if (change) {
 		ret = snd_soc_write(codec, reg, new);
@@ -1840,7 +1925,7 @@ struct snd_kcontrol *snd_soc_cnew(const struct snd_kcontrol_new *_template,
 
 	if (prefix) {
 		name_len = strlen(long_name) + strlen(prefix) + 2;
-		name = kmalloc(name_len, GFP_ATOMIC);
+		name = kmalloc(name_len, GFP_KERNEL);
 		if (!name)
 			return NULL;
 
@@ -1891,6 +1976,36 @@ int snd_soc_add_controls(struct snd_soc_codec *codec,
 	return 0;
 }
 EXPORT_SYMBOL_GPL(snd_soc_add_controls);
+
+/**
+ * snd_soc_add_platform_controls - add an array of controls to a platform.
+ * Convienience function to add a list of controls.
+ *
+ * @platform: platform to add controls to
+ * @controls: array of controls to add
+ * @num_controls: number of elements in the array
+ *
+ * Return 0 for success, else error.
+ */
+int snd_soc_add_platform_controls(struct snd_soc_platform *platform,
+	const struct snd_kcontrol_new *controls, int num_controls)
+{
+	struct snd_card *card = platform->card->snd_card;
+	int err, i;
+
+	for (i = 0; i < num_controls; i++) {
+		const struct snd_kcontrol_new *control = &controls[i];
+		err = snd_ctl_add(card, snd_soc_cnew(control, platform,
+				control->name, NULL));
+		if (err < 0) {
+			dev_err(platform->dev, "Failed to add %s %d\n",control->name, err);
+			return err;
+		}
+	}
+
+	return 0;
+}
+EXPORT_SYMBOL_GPL(snd_soc_add_platform_controls);
 
 /**
  * snd_soc_info_enum_double - enumerated double mixer info callback
@@ -3036,6 +3151,8 @@ int snd_soc_register_platform(struct device *dev,
 
 	platform->dev = dev;
 	platform->driver = platform_drv;
+	platform->dapm.dev = dev;
+	platform->dapm.platform = platform;
 
 	mutex_lock(&client_mutex);
 	list_add(&platform->list, &platform_list);
