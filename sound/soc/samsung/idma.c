@@ -23,6 +23,7 @@
 #include "i2s.h"
 #include "idma.h"
 #include "dma.h"
+#include "i2s-regs.h"
 
 /*#define ENABLE_REG_LOG*/
 #define ENABLE_TRNCNT_WA

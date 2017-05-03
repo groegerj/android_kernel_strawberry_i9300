@@ -27,7 +27,10 @@
 #include "dma.h"
 #include "idma.h"
 #include "i2s.h"
+#include "i2s-regs.h"
 #include "srp-types.h"
+
+#define msecs_to_loops(t) (loops_per_jiffy / 1000 * HZ * t)
 
 #if defined(CONFIG_SND_SAMSUNG_RP) && \
 	(defined(CONFIG_MACH_U1) || defined(CONFIG_MACH_TRATS))
@@ -676,7 +679,7 @@ static int i2s_hw_params(struct snd_pcm_substream *substream,
 
 	if (is_secondary(i2s) || is_srp_enabled(i2s, stream)) {
 		mod |= MOD_TXS_IDMA;
-		con &= ~CON_FRXOFINTEN | ~CON_FTXSURINTEN | ~CON_FTXURINTEN;
+		con &= ~CON_FRXORINTEN | ~CON_FTXSURINTEN | ~CON_FTXURINTEN;
 	}
 
 	writel(mod, i2s->addr + I2SMOD);

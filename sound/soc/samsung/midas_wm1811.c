@@ -51,6 +51,7 @@
 
 
 #include "i2s.h"
+#include "i2s-regs.h"
 #include "s3c-i2s-v2.h"
 #include "../codecs/wm8994.h"
 
