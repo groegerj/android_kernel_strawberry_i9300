@@ -23,22 +23,12 @@ comment "Crypto core or helper"
 
 config CRYPTO_FIPS
 	bool "FIPS 200 compliance"
-	depends on CRYPTO_ANSI_CPRNG
+	depends on CRYPTO_ANSI_CPRNG && !CRYPTO_MANAGER_DISABLE_TESTS
 	help
 	  This options enables the fips boot option which is
 	  required if you want to system to operate in a FIPS 200
 	  certification.  You should say no unless you know what
-	  this is. Note that CRYPTO_ANSI_CPRNG is required if this
-	  option is selected
-
-config CRYPTO_FIPS_INTEG_OFFSET
-	hex "FIPS integrity check zImage offset"
-        default 0x20000000
-        help
-          This options sets the offset from stext address where
-          zImage will be copied for integrity check if you want
-          to system to operate in FIPS mode, which enables
-	  kernel crypto module.
+	  this is.
 
 config CRYPTO_ALGAPI
 	tristate
@@ -110,13 +100,13 @@ config CRYPTO_MANAGER2
 	select CRYPTO_BLKCIPHER2
 	select CRYPTO_PCOMP2
 
-config CRYPTO_MANAGER_TESTS
-	bool "Run algolithms' self-tests"
+config CRYPTO_MANAGER_DISABLE_TESTS
+	bool "Disable run-time self tests"
 	default y
 	depends on CRYPTO_MANAGER2
 	help
-	  Run cryptomanager's tests for the new crypto algorithms being
-	  registered.
+	  Disable run-time self tests that normally take place at
+	  algorithm registration.
 
 config CRYPTO_GF128MUL
 	tristate "GF(2^128) multiplication functions (EXPERIMENTAL)"
@@ -171,6 +161,7 @@ config CRYPTO_AUTHENC
 
 config CRYPTO_TEST
 	tristate "Testing module"
+	depends on m
 	select CRYPTO_MANAGER
 	help
 	  Quick & dirty crypto test module.
@@ -363,7 +354,7 @@ config CRYPTO_RMD128
 	  RIPEMD-128 (ISO/IEC 10118-3:2004).
 
 	  RIPEMD-128 is a 128-bit cryptographic hash function. It should only
-	  to be used as a secure replacement for RIPEMD. For other use cases
+	  be used as a secure replacement for RIPEMD. For other use cases,
 	  RIPEMD-160 should be used.
 
 	  Developed by Hans Dobbertin, Antoon Bosselaers and Bart Preneel.
@@ -416,15 +407,6 @@ config CRYPTO_SHA1
 	help
 	  SHA-1 secure hash standard (FIPS 180-1/DFIPS 180-2).
 
-config CRYPTO_SHA1_ARM
-    tristate "SHA1 digest algorithm (ARM-asm)"
-    depends on ARM
-    select CRYPTO_SHA1
-    select CRYPTO_HASH
-    help
-      SHA-1 secure hash standard (FIPS 180-1/DFIPS 180-2) implemented
-      using optimized ARM assembler.
-
 config CRYPTO_SHA256
 	tristate "SHA224 and SHA256 digest algorithm"
 	select CRYPTO_HASH
@@ -476,7 +458,7 @@ config CRYPTO_WP512
 
 config CRYPTO_GHASH_CLMUL_NI_INTEL
 	tristate "GHASH digest algorithm (CLMUL-NI accelerated)"
-	depends on (X86 || UML_X86) && 64BIT
+	depends on X86 && 64BIT
 	select CRYPTO_SHASH
 	select CRYPTO_CRYPTD
 	help
@@ -551,7 +533,7 @@ config CRYPTO_AES_X86_64
 
 config CRYPTO_AES_NI_INTEL
 	tristate "AES cipher algorithms (AES-NI)"
-	depends on (X86 || UML_X86)
+	depends on X86
 	select CRYPTO_AES_X86_64 if 64BIT
 	select CRYPTO_AES_586 if !64BIT
 	select CRYPTO_CRYPTD
@@ -579,30 +561,6 @@ config CRYPTO_AES_NI_INTEL
 	  for some popular block cipher mode is supported too, including
 	  ECB, CBC, LRW, PCBC, XTS. The 64 bit version has additional
 	  acceleration for CTR.
-
-config CRYPTO_AES_ARM
-    tristate "AES cipher algorithms (ARM-asm)"
-    depends on ARM
-    select CRYPTO_ALGAPI
-    select CRYPTO_AES
-    help
-      Use optimized AES assembler routines for ARM platforms.
-
-      AES cipher algorithms (FIPS-197). AES uses the Rijndael
-      algorithm.
-
-      Rijndael appears to be consistently a very good performer in
-      both hardware and software across a wide range of computing
-      environments regardless of its use in feedback or non-feedback
-      modes. Its key setup time is excellent, and its key agility is
-      good. Rijndael's very low memory requirements make it very well
-      suited for restricted-space environments, in which it also
-      demonstrates excellent performance. Rijndael's operations are
-      among the easiest to defend against power and timing attacks.
-
-      The AES specifies three key sizes: 128, 192 and 256 bits
-
-      See <http://csrc.nist.gov/encryption/aes/> for more information.
 
 config CRYPTO_ANUBIS
 	tristate "Anubis cipher algorithm"
@@ -864,22 +822,6 @@ config CRYPTO_LZO
 	select LZO_DECOMPRESS
 	help
 	  This is the LZO algorithm.
-
-config CRYPTO_LZ4
-	tristate "LZ4 compression algorithm"
-	select CRYPTO_ALGAPI
-	select LZ4_COMPRESS
-	select LZ4_DECOMPRESS
-	help
-	  This is the LZ4 algorithm.
-
-config CRYPTO_LZ4HC
-	tristate "LZ4HC compression algorithm"
-	select CRYPTO_ALGAPI
-	select LZ4HC_COMPRESS
-	select LZ4_DECOMPRESS
-	help
-	  This is the LZ4 high compression mode algorithm.
 
 comment "Random Number Generation"
 
