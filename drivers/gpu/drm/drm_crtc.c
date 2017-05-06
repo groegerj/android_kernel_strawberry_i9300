@@ -499,6 +499,7 @@ void drm_connector_cleanup(struct drm_connector *connector)
 	mutex_lock(&dev->mode_config.mutex);
 	drm_mode_object_put(dev, &connector->base);
 	list_del(&connector->head);
+	dev->mode_config.num_connector--;
 	mutex_unlock(&dev->mode_config.mutex);
 }
 EXPORT_SYMBOL(drm_connector_cleanup);
@@ -529,6 +530,7 @@ void drm_encoder_cleanup(struct drm_encoder *encoder)
 	mutex_lock(&dev->mode_config.mutex);
 	drm_mode_object_put(dev, &encoder->base);
 	list_del(&encoder->head);
+	dev->mode_config.num_encoder--;
 	mutex_unlock(&dev->mode_config.mutex);
 }
 EXPORT_SYMBOL(drm_encoder_cleanup);
@@ -1866,10 +1868,6 @@ int drm_mode_dirtyfb_ioctl(struct drm_device *dev,
 	}
 
 	if (num_clips && clips_ptr) {
-		if (num_clips < 0 || num_clips > DRM_MODE_FB_DIRTY_MAX_CLIPS) {
-			ret = -EINVAL;
-			goto out_err1;
-		}
 		clips = kzalloc(num_clips * sizeof(*clips), GFP_KERNEL);
 		if (!clips) {
 			ret = -ENOMEM;

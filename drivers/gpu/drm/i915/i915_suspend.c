@@ -34,10 +34,6 @@ static bool i915_pipe_enabled(struct drm_device *dev, enum pipe pipe)
 	struct drm_i915_private *dev_priv = dev->dev_private;
 	u32	dpll_reg;
 
-	/* On IVB, 3rd pipe shares PLL with another one */
-	if (pipe > 1)
-		return false;
-
 	if (HAS_PCH_SPLIT(dev))
 		dpll_reg = (pipe == PIPE_A) ? _PCH_DPLL_A : _PCH_DPLL_B;
 	else
@@ -374,7 +370,6 @@ static void i915_save_modeset_reg(struct drm_device *dev)
 
 	/* Fences */
 	switch (INTEL_INFO(dev)->gen) {
-	case 7:
 	case 6:
 		for (i = 0; i < 16; i++)
 			dev_priv->saveFENCE[i] = I915_READ64(FENCE_REG_SANDYBRIDGE_0 + (i * 8));
@@ -409,7 +404,6 @@ static void i915_restore_modeset_reg(struct drm_device *dev)
 
 	/* Fences */
 	switch (INTEL_INFO(dev)->gen) {
-	case 7:
 	case 6:
 		for (i = 0; i < 16; i++)
 			I915_WRITE64(FENCE_REG_SANDYBRIDGE_0 + (i * 8), dev_priv->saveFENCE[i]);
@@ -739,11 +733,8 @@ static void i915_restore_display(struct drm_device *dev)
 	if (HAS_PCH_SPLIT(dev)) {
 		I915_WRITE(BLC_PWM_PCH_CTL1, dev_priv->saveBLC_PWM_CTL);
 		I915_WRITE(BLC_PWM_PCH_CTL2, dev_priv->saveBLC_PWM_CTL2);
-		/* NOTE: BLC_PWM_CPU_CTL must be written after BLC_PWM_CPU_CTL2;
-		 * otherwise we get blank eDP screen after S3 on some machines
-		 */
-		I915_WRITE(BLC_PWM_CPU_CTL2, dev_priv->saveBLC_CPU_PWM_CTL2);
 		I915_WRITE(BLC_PWM_CPU_CTL, dev_priv->saveBLC_CPU_PWM_CTL);
+		I915_WRITE(BLC_PWM_CPU_CTL2, dev_priv->saveBLC_CPU_PWM_CTL2);
 		I915_WRITE(PCH_PP_ON_DELAYS, dev_priv->savePP_ON_DELAYS);
 		I915_WRITE(PCH_PP_OFF_DELAYS, dev_priv->savePP_OFF_DELAYS);
 		I915_WRITE(PCH_PP_DIVISOR, dev_priv->savePP_DIVISOR);
@@ -769,15 +760,13 @@ static void i915_restore_display(struct drm_device *dev)
 	/* FIXME: restore TV & SDVO state */
 
 	/* only restore FBC info on the platform that supports FBC*/
+	intel_disable_fbc(dev);
 	if (I915_HAS_FBC(dev)) {
 		if (HAS_PCH_SPLIT(dev)) {
-			ironlake_disable_fbc(dev);
 			I915_WRITE(ILK_DPFC_CB_BASE, dev_priv->saveDPFC_CB_BASE);
 		} else if (IS_GM45(dev)) {
-			g4x_disable_fbc(dev);
 			I915_WRITE(DPFC_CB_BASE, dev_priv->saveDPFC_CB_BASE);
 		} else {
-			i8xx_disable_fbc(dev);
 			I915_WRITE(FBC_CFB_BASE, dev_priv->saveFBC_CFB_BASE);
 			I915_WRITE(FBC_LL_BASE, dev_priv->saveFBC_LL_BASE);
 			I915_WRITE(FBC_CONTROL2, dev_priv->saveFBC_CONTROL2);
@@ -882,15 +871,18 @@ int i915_restore_state(struct drm_device *dev)
 	}
 	mutex_unlock(&dev->struct_mutex);
 
-	intel_init_clock_gating(dev);
+	if (drm_core_check_feature(dev, DRIVER_MODESET))
+		intel_init_clock_gating(dev);
 
 	if (IS_IRONLAKE_M(dev)) {
 		ironlake_enable_drps(dev);
 		intel_init_emon(dev);
 	}
 
-	if (IS_GEN6(dev))
+	if (IS_GEN6(dev)) {
 		gen6_enable_rps(dev_priv);
+		gen6_update_ring_freq(dev_priv);
+	}
 
 	mutex_lock(&dev->struct_mutex);
 

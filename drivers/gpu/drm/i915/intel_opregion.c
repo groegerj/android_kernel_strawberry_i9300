@@ -227,7 +227,6 @@ void intel_opregion_asle_intr(struct drm_device *dev)
 	asle->aslc = asle_stat;
 }
 
-/* Only present on Ironlake+ */
 void intel_opregion_gse_intr(struct drm_device *dev)
 {
 	struct drm_i915_private *dev_priv = dev->dev_private;
@@ -297,19 +296,26 @@ static int intel_opregion_video_event(struct notifier_block *nb,
 	/* The only video events relevant to opregion are 0x80. These indicate
 	   either a docking event, lid switch or display switch request. In
 	   Linux, these are handled by the dock, button and video drivers.
-	   We might want to fix the video driver to be opregion-aware in
-	   future, but right now we just indicate to the firmware that the
-	   request has been handled */
+	*/
 
 	struct opregion_acpi *acpi;
+	struct acpi_bus_event *event = data;
+	int ret = NOTIFY_OK;
+
+	if (strcmp(event->device_class, ACPI_VIDEO_CLASS) != 0)
+		return NOTIFY_DONE;
 
 	if (!system_opregion)
 		return NOTIFY_DONE;
 
 	acpi = system_opregion->acpi;
+
+	if (event->type == 0x80 && !(acpi->cevt & 0x1))
+		ret = NOTIFY_BAD;
+
 	acpi->csts = 0;
 
-	return NOTIFY_OK;
+	return ret;
 }
 
 static struct notifier_block intel_opregion_notifier = {
@@ -413,25 +419,6 @@ blind_set:
 	goto end;
 }
 
-static void intel_setup_cadls(struct drm_device *dev)
-{
-	struct drm_i915_private *dev_priv = dev->dev_private;
-	struct intel_opregion *opregion = &dev_priv->opregion;
-	int i = 0;
-	u32 disp_id;
-
-	/* Initialize the CADL field by duplicating the DIDL values.
-	 * Technically, this is not always correct as display outputs may exist,
-	 * but not active. This initialization is necessary for some Clevo
-	 * laptops that check this field before processing the brightness and
-	 * display switching hotkeys. Just like DIDL, CADL is NULL-terminated if
-	 * there are less than eight devices. */
-	do {
-		disp_id = ioread32(&opregion->acpi->didl[i]);
-		iowrite32(disp_id, &opregion->acpi->cadl[i]);
-	} while (++i < 8 && disp_id != 0);
-}
-
 void intel_opregion_init(struct drm_device *dev)
 {
 	struct drm_i915_private *dev_priv = dev->dev_private;
@@ -441,10 +428,8 @@ void intel_opregion_init(struct drm_device *dev)
 		return;
 
 	if (opregion->acpi) {
-		if (drm_core_check_feature(dev, DRIVER_MODESET)) {
+		if (drm_core_check_feature(dev, DRIVER_MODESET))
 			intel_didl_outputs(dev);
-			intel_setup_cadls(dev);
-		}
 
 		/* Notify BIOS we are ready to handle ACPI video ext notifs.
 		 * Right now, all the events are handled by the ACPI video module.

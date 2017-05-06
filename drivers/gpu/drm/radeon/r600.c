@@ -762,14 +762,13 @@ void r600_hpd_init(struct radeon_device *rdev)
 	struct drm_device *dev = rdev->ddev;
 	struct drm_connector *connector;
 
-	list_for_each_entry(connector, &dev->mode_config.connector_list, head) {
-		struct radeon_connector *radeon_connector = to_radeon_connector(connector);
+	if (ASIC_IS_DCE3(rdev)) {
+		u32 tmp = DC_HPDx_CONNECTION_TIMER(0x9c4) | DC_HPDx_RX_INT_TIMER(0xfa);
+		if (ASIC_IS_DCE32(rdev))
+			tmp |= DC_HPDx_EN;
 
-		if (ASIC_IS_DCE3(rdev)) {
-			u32 tmp = DC_HPDx_CONNECTION_TIMER(0x9c4) | DC_HPDx_RX_INT_TIMER(0xfa);
-			if (ASIC_IS_DCE32(rdev))
-				tmp |= DC_HPDx_EN;
-
+		list_for_each_entry(connector, &dev->mode_config.connector_list, head) {
+			struct radeon_connector *radeon_connector = to_radeon_connector(connector);
 			switch (radeon_connector->hpd.hpd) {
 			case RADEON_HPD_1:
 				WREG32(DC_HPD1_CONTROL, tmp);
@@ -799,7 +798,10 @@ void r600_hpd_init(struct radeon_device *rdev)
 			default:
 				break;
 			}
-		} else {
+		}
+	} else {
+		list_for_each_entry(connector, &dev->mode_config.connector_list, head) {
+			struct radeon_connector *radeon_connector = to_radeon_connector(connector);
 			switch (radeon_connector->hpd.hpd) {
 			case RADEON_HPD_1:
 				WREG32(DC_HOT_PLUG_DETECT1_CONTROL, DC_HOT_PLUG_DETECTx_EN);
@@ -817,7 +819,6 @@ void r600_hpd_init(struct radeon_device *rdev)
 				break;
 			}
 		}
-		radeon_hpd_set_polarity(rdev, radeon_connector->hpd.hpd);
 	}
 	if (rdev->irq.installed)
 		r600_irq_set(rdev);
@@ -1661,6 +1662,7 @@ void r600_gpu_init(struct radeon_device *rdev)
 									       R6XX_MAX_BACKENDS_MASK) >> 16)),
 							(cc_rb_backend_disable >> 16));
 	rdev->config.r600.tile_config = tiling_config;
+	rdev->config.r600.backend_map = backend_map;
 	tiling_config |= BACKEND_MAP(backend_map);
 	WREG32(GB_TILING_CONFIG, tiling_config);
 	WREG32(DCP_TILING_CONFIG, tiling_config & 0xffff);
@@ -2212,9 +2214,6 @@ int r600_cp_resume(struct radeon_device *rdev)
 
 	/* set the wb address whether it's enabled or not */
 	WREG32(CP_RB_RPTR_ADDR,
-#ifdef __BIG_ENDIAN
-	       RB_RPTR_SWAP(2) |
-#endif
 	       ((rdev->wb.gpu_addr + RADEON_WB_CP_RPTR_OFFSET) & 0xFFFFFFFC));
 	WREG32(CP_RB_RPTR_ADDR_HI, upper_32_bits(rdev->wb.gpu_addr + RADEON_WB_CP_RPTR_OFFSET) & 0xFF);
 	WREG32(SCRATCH_ADDR, ((rdev->wb.gpu_addr + RADEON_WB_SCRATCH_OFFSET) >> 8) & 0xFFFFFFFF);
@@ -2995,10 +2994,6 @@ int r600_irq_init(struct radeon_device *rdev)
 	/* RPTR_REARM only works if msi's are enabled */
 	if (rdev->msi_enabled)
 		ih_cntl |= RPTR_REARM;
-
-#ifdef __BIG_ENDIAN
-	ih_cntl |= IH_MC_SWAP(IH_MC_SWAP_32BIT);
-#endif
 	WREG32(IH_CNTL, ih_cntl);
 
 	/* force the active interrupt state to all disabled */
@@ -3309,6 +3304,10 @@ int r600_irq_process(struct radeon_device *rdev)
 	if (!rdev->ih.enabled || rdev->shutdown)
 		return IRQ_NONE;
 
+	/* No MSIs, need a dummy read to flush PCI DMAs */
+	if (!rdev->msi_enabled)
+		RREG32(IH_RB_WPTR);
+
 	wptr = r600_get_ih_wptr(rdev);
 	rptr = rdev->ih.rptr;
 	DRM_DEBUG("r600_irq_process start: rptr %d, wptr %d\n", rptr, wptr);
@@ -3321,6 +3320,9 @@ int r600_irq_process(struct radeon_device *rdev)
 	}
 
 restart_ih:
+	/* Order reading of wptr vs. reading of IH ring data */
+	rmb();
+
 	/* display interrupts */
 	r600_irq_ack(rdev);
 

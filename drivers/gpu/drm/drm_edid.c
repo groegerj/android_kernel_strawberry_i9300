@@ -197,8 +197,8 @@ drm_edid_block_valid(u8 *raw_edid)
 bad:
 	if (raw_edid) {
 		printk(KERN_ERR "Raw EDID:\n");
-		print_hex_dump_bytes(KERN_ERR, DUMP_PREFIX_NONE, raw_edid, EDID_LENGTH);
-		printk(KERN_ERR "\n");
+		print_hex_dump(KERN_ERR, " \t", DUMP_PREFIX_NONE, 16, 1,
+			       raw_edid, EDID_LENGTH, false);
 	}
 	return 0;
 }
@@ -584,7 +584,7 @@ static bool
 drm_monitor_supports_rb(struct edid *edid)
 {
 	if (edid->revision >= 4) {
-		bool ret = false;
+		bool ret;
 		drm_for_each_detailed_block((u8 *)edid, is_rb, &ret);
 		return ret;
 	}
@@ -841,7 +841,7 @@ static struct drm_display_mode *drm_mode_detailed(struct drm_device *dev,
 	unsigned vblank = (pt->vactive_vblank_hi & 0xf) << 8 | pt->vblank_lo;
 	unsigned hsync_offset = (pt->hsync_vsync_offset_pulse_width_hi & 0xc0) << 2 | pt->hsync_offset_lo;
 	unsigned hsync_pulse_width = (pt->hsync_vsync_offset_pulse_width_hi & 0x30) << 4 | pt->hsync_pulse_width_lo;
-	unsigned vsync_offset = (pt->hsync_vsync_offset_pulse_width_hi & 0xc) << 2 | pt->vsync_offset_pulse_width_lo >> 4;
+	unsigned vsync_offset = (pt->hsync_vsync_offset_pulse_width_hi & 0xc) >> 2 | pt->vsync_offset_pulse_width_lo >> 4;
 	unsigned vsync_pulse_width = (pt->hsync_vsync_offset_pulse_width_hi & 0x3) << 4 | (pt->vsync_offset_pulse_width_lo & 0xf);
 
 	/* ignore tiny modes */
@@ -1451,6 +1451,8 @@ EXPORT_SYMBOL(drm_detect_monitor_audio);
 static void drm_add_display_info(struct edid *edid,
 				 struct drm_display_info *info)
 {
+	u8 *edid_ext;
+
 	info->width_mm = edid->width_cm * 10;
 	info->height_mm = edid->height_cm * 10;
 
@@ -1495,6 +1497,13 @@ static void drm_add_display_info(struct edid *edid,
 		info->color_formats = DRM_COLOR_FORMAT_YCRCB444;
 	if (info->color_formats & DRM_EDID_FEATURE_RGB_YCRCB422)
 		info->color_formats = DRM_COLOR_FORMAT_YCRCB422;
+
+	/* Get data from CEA blocks if present */
+	edid_ext = drm_find_cea_extension(edid);
+	if (!edid_ext)
+		return;
+
+	info->cea_rev = edid_ext[1];
 }
 
 /**
