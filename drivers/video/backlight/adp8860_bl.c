@@ -722,8 +722,7 @@ static int __devinit adp8860_probe(struct i2c_client *client,
 		goto out2;
 	}
 
-	bl->props.max_brightness =
-		bl->props.brightness = ADP8860_MAX_BRIGHTNESS;
+	bl->props.brightness = ADP8860_MAX_BRIGHTNESS;
 
 	data->bl = bl;
 
@@ -793,7 +792,7 @@ static int adp8860_i2c_suspend(struct i2c_client *client, pm_message_t message)
 
 static int adp8860_i2c_resume(struct i2c_client *client)
 {
-	adp8860_set_bits(client, ADP8860_MDCR, NSTBY | BLEN);
+	adp8860_set_bits(client, ADP8860_MDCR, NSTBY);
 
 	return 0;
 }
