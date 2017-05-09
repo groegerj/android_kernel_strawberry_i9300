@@ -2805,7 +2805,7 @@ static struct file_system_type tmpfs_fs_type = {
 	.kill_sb	= kill_litter_super,
 };
 
-int __init init_tmpfs(void)
+int __init shmem_init(void)
 {
 	int error;
 
@@ -2901,7 +2901,7 @@ static struct file_system_type tmpfs_fs_type = {
 	.kill_sb	= kill_litter_super,
 };
 
-int __init init_tmpfs(void)
+int __init shmem_init(void)
 {
 	BUG_ON(register_filesystem(&tmpfs_fs_type) != 0);
 
