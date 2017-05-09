@@ -35,8 +35,7 @@ enum mem_cgroup_page_stat_item {
 extern unsigned long mem_cgroup_isolate_pages(unsigned long nr_to_scan,
 					struct list_head *dst,
 					unsigned long *scanned, int order,
-					isolate_mode_t mode,
-					struct zone *z,
+					int mode, struct zone *z,
 					struct mem_cgroup *mem_cont,
 					int active, int file);
 
@@ -112,7 +111,7 @@ int mem_cgroup_inactive_anon_is_low(struct mem_cgroup *memcg);
 int mem_cgroup_inactive_file_is_low(struct mem_cgroup *memcg);
 int mem_cgroup_select_victim_node(struct mem_cgroup *memcg);
 unsigned long mem_cgroup_zone_nr_lru_pages(struct mem_cgroup *memcg,
-					int nid, int zid, unsigned int lrumask); 
+					int nid, int zid, unsigned int lrumask);
 struct zone_reclaim_stat *mem_cgroup_get_reclaim_stat(struct mem_cgroup *memcg,
 						      struct zone *zone);
 struct zone_reclaim_stat*
@@ -370,10 +369,6 @@ static inline void mem_cgroup_split_huge_fixup(struct page *head,
 
 static inline
 void mem_cgroup_count_vm_event(struct mm_struct *mm, enum vm_event_item idx)
-{
-}
-static inline void mem_cgroup_replace_page_cache(struct page *oldpage,
-				struct page *newpage)
 {
 }
 #endif /* CONFIG_CGROUP_MEM_CONT */
