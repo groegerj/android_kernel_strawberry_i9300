@@ -96,7 +96,7 @@ not exactly but comes from a stage between 3.0.101 and 3.1, for example. Or, the
 guys have added some optimisation of security fix or whatever. In such a case, I replace
 that smdk stuff with mainline. Step 1 is almost finished by now.
 
-## Step 2: mainlining-3.1
+### Step 2: mainlining-3.1
 
 A very important partial goal is to upgrade to 3.1 with the least possible differences to
 mainline-3.1. Notice that I keep speaking of "mainline-3.0.101" which is not quite correct.
@@ -119,7 +119,7 @@ from either mainline-3.0.101 or mainline-3.1 could be cut down to about half.
 Step 2 is still work in progress, but I work hard to reduct the differences with mainline-3.1
 to a minimum.
 
-## Step 3: further upgrade
+### Step 3: further upgrade
 
 Starting from "i9300-version3.1", I expect it to be much easier to upgrade to 3.2 than
 it was to come to 3.1. The number of differences to mainline has been cut down a lot,
