@@ -590,8 +590,6 @@ config AUDIENCE_ES305
 	  Audience A2220 series are same as ES305.
 	  A1026 also can use this driver.
 
-source "drivers/misc/2mic/Kconfig"
-
 config MUIC_MAX8997
 	tristate "MAX8997 MUIC"
 	depends on MFD_MAX8997
