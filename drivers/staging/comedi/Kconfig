@@ -424,7 +424,6 @@ config COMEDI_ADQ12B
 
 config COMEDI_NI_AT_A2150
 	tristate "NI AT-A2150 ISA card support"
-	select COMEDI_FC
 	depends on COMEDI_NI_COMMON
 	depends on VIRT_TO_BUS
 	default N
@@ -841,6 +840,16 @@ config COMEDI_DT3000
 
 	  To compile this driver as a module, choose M here: the module will be
 	  called dt3000.
+
+config COMEDI_DYNA_PCI10XX
+	tristate "Dynalog PCI DAQ series support"
+	default N
+	---help---
+	  Enable support for Dynalog PCI DAQ series
+	  PCI-1050
+
+	  To compile this driver as a module, choose M here: the module will be
+	  called dyna_pci10xx.
 
 config COMEDI_UNIOXX5
 	tristate "Fastwel UNIOxx-5 analog and digital io board support"

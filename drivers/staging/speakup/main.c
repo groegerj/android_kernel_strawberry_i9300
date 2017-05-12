@@ -23,7 +23,6 @@
 */
 
 #include <linux/kernel.h>
-#include <linux/version.h>
 #include <linux/vt.h>
 #include <linux/tty.h>
 #include <linux/mm.h>		/* __get_free_page() and friends */
@@ -1855,7 +1854,7 @@ static void speakup_bits(struct vc_data *vc)
 
 static int handle_goto(struct vc_data *vc, u_char type, u_char ch, u_short key)
 {
-	static u_char goto_buf[8];
+	static u_char *goto_buf = "\0\0\0\0\0\0";
 	static int num;
 	int maxlen, go_pos;
 	char *cp;
