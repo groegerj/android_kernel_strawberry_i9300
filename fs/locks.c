@@ -160,26 +160,20 @@ EXPORT_SYMBOL_GPL(unlock_flocks);
 
 static struct kmem_cache *filelock_cache __read_mostly;
 
-static void locks_init_lock_always(struct file_lock *fl)
+static void locks_init_lock_heads(struct file_lock *fl)
 {
-	fl->fl_next = NULL;
-	fl->fl_fasync = NULL;
-	fl->fl_owner = NULL;
-	fl->fl_pid = 0;
-	fl->fl_nspid = NULL;
-	fl->fl_file = NULL;
-	fl->fl_flags = 0;
-	fl->fl_type = 0;
-	fl->fl_start = fl->fl_end = 0;
+	INIT_LIST_HEAD(&fl->fl_link);
+	INIT_LIST_HEAD(&fl->fl_block);
+	init_waitqueue_head(&fl->fl_wait);
 }
 
 /* Allocate an empty lock structure. */
 struct file_lock *locks_alloc_lock(void)
 {
-	struct file_lock *fl = kmem_cache_alloc(filelock_cache, GFP_KERNEL);
+	struct file_lock *fl = kmem_cache_zalloc(filelock_cache, GFP_KERNEL);
 
 	if (fl)
-		locks_init_lock_always(fl);
+		locks_init_lock_heads(fl);
 
 	return fl;
 }
@@ -215,26 +209,11 @@ EXPORT_SYMBOL(locks_free_lock);
 
 void locks_init_lock(struct file_lock *fl)
 {
-	INIT_LIST_HEAD(&fl->fl_link);
-	INIT_LIST_HEAD(&fl->fl_block);
-	init_waitqueue_head(&fl->fl_wait);
-	fl->fl_ops = NULL;
-	fl->fl_lmops = NULL;
-	locks_init_lock_always(fl);
+	memset(fl, 0, sizeof(struct file_lock));
+	locks_init_lock_heads(fl);
 }
 
 EXPORT_SYMBOL(locks_init_lock);
-
-/*
- * Initialises the fields of the file lock which are invariant for
- * free file_locks.
- */
-static void init_once(void *foo)
-{
-	struct file_lock *lock = (struct file_lock *) foo;
-
-	locks_init_lock(lock);
-}
 
 static void locks_copy_private(struct file_lock *new, struct file_lock *fl)
 {
@@ -315,7 +294,7 @@ static int flock_make_lock(struct file *filp, struct file_lock **lock,
 	return 0;
 }
 
-static int assign_type(struct file_lock *fl, long type)
+static int assign_type(struct file_lock *fl, int type)
 {
 	switch (type) {
 	case F_RDLCK:
@@ -452,7 +431,7 @@ static const struct lock_manager_operations lease_manager_ops = {
 /*
  * Initialize a lease, use the default lock manager operations
  */
-static int lease_init(struct file *filp, long type, struct file_lock *fl)
+static int lease_init(struct file *filp, int type, struct file_lock *fl)
  {
 	if (assign_type(fl, type) != 0)
 		return -EINVAL;
@@ -470,7 +449,7 @@ static int lease_init(struct file *filp, long type, struct file_lock *fl)
 }
 
 /* Allocate a file_lock initialised to this type of lease */
-static struct file_lock *lease_alloc(struct file *filp, long type)
+static struct file_lock *lease_alloc(struct file *filp, int type)
 {
 	struct file_lock *fl = locks_alloc_lock();
 	int error = -ENOMEM;
@@ -1349,7 +1328,7 @@ int fcntl_getlease(struct file *filp)
  *	@arg: type of lease to obtain
  *	@flp: input - file_lock to use, output - file_lock inserted
  *
- *	The (input) flp->fl_lmops->fl_break function is required
+ *	The (input) flp->fl_lmops->lm_break function is required
  *	by break_lease().
  *
  *	Called with file_lock_lock held.
@@ -1453,7 +1432,7 @@ static int __vfs_setlease(struct file *filp, long arg, struct file_lock **lease)
  *	@lease: file_lock to use
  *
  *	Call this to establish a lease on the file.
- *	The (*lease)->fl_lmops->fl_break operation must be set; if not,
+ *	The (*lease)->fl_lmops->lm_break operation must be set; if not,
  *	break_lease will oops!
  *
  *	This will call the filesystem's setlease file method, if
@@ -1751,10 +1730,10 @@ out:
  * To avoid blocking kernel daemons, such as lockd, that need to acquire POSIX
  * locks, the ->lock() interface may return asynchronously, before the lock has
  * been granted or denied by the underlying filesystem, if (and only if)
- * fl_grant is set. Callers expecting ->lock() to return asynchronously
+ * lm_grant is set. Callers expecting ->lock() to return asynchronously
  * will only use F_SETLK, not F_SETLKW; they will set FL_SLEEP if (and only if)
  * the request is for a blocking lock. When ->lock() does return asynchronously,
- * it must return FILE_LOCK_DEFERRED, and call ->fl_grant() when the lock
+ * it must return FILE_LOCK_DEFERRED, and call ->lm_grant() when the lock
  * request completes.
  * If the request is for non-blocking lock the file system should return
  * FILE_LOCK_DEFERRED then try to get the lock and call the callback routine
@@ -1764,7 +1743,7 @@ out:
  * grants a lock so the VFS can find out which locks are locally held and do
  * the correct lock cleanup when required.
  * The underlying filesystem must not drop the kernel lock or call
- * ->fl_grant() before returning to the caller with a FILE_LOCK_DEFERRED
+ * ->lm_grant() before returning to the caller with a FILE_LOCK_DEFERRED
  * return code.
  */
 int vfs_lock_file(struct file *filp, unsigned int cmd, struct file_lock *fl, struct file_lock *conf)
@@ -2333,8 +2312,8 @@ EXPORT_SYMBOL(lock_may_write);
 static int __init filelock_init(void)
 {
 	filelock_cache = kmem_cache_create("file_lock_cache",
-			sizeof(struct file_lock), 0, SLAB_PANIC,
-			init_once);
+			sizeof(struct file_lock), 0, SLAB_PANIC, NULL);
+
 	return 0;
 }
 
