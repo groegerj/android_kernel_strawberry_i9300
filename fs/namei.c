@@ -178,12 +178,12 @@ EXPORT_SYMBOL(putname);
 /*
  * This does basic POSIX ACL permission checking
  */
-static int acl_permission_check(struct inode *inode, int mask, unsigned int flags)
+static int acl_permission_check(struct inode *inode, int mask)
 {
-	int (*check_acl)(struct inode *inode, int mask, unsigned int flags);
+	int (*check_acl)(struct inode *inode, int mask);
 	unsigned int mode = inode->i_mode;
 
-	mask &= MAY_READ | MAY_WRITE | MAY_EXEC;
+	mask &= MAY_READ | MAY_WRITE | MAY_EXEC | MAY_NOT_BLOCK;
 
 	if (current_user_ns() != inode_userns(inode))
 		goto other_perms;
@@ -193,7 +193,7 @@ static int acl_permission_check(struct inode *inode, int mask, unsigned int flag
 	else {
 		check_acl = inode->i_op->check_acl;
 		if (IS_POSIXACL(inode) && (mode & S_IRWXG) && check_acl) {
-			int error = check_acl(inode, mask, flags);
+			int error = check_acl(inode, mask);
 			if (error != -EAGAIN)
 				return error;
 		}
@@ -206,7 +206,7 @@ other_perms:
 	/*
 	 * If the DACs are ok we don't need any capability check.
 	 */
-	if ((mask & ~mode) == 0)
+	if ((mask & ~mode & (MAY_READ | MAY_WRITE | MAY_EXEC)) == 0)
 		return 0;
 	return -EACCES;
 }
@@ -233,7 +233,7 @@ int generic_permission(struct inode *inode, int mask, unsigned int flags)
 	/*
 	 * Do the basic POSIX ACL permission checks.
 	 */
-	ret = acl_permission_check(inode, mask, flags);
+	ret = acl_permission_check(inode, mask);
 	if (ret != -EACCES)
 		return ret;
 
@@ -518,11 +518,14 @@ static inline int exec_permission(struct inode *inode, unsigned int flags)
 {
 	int ret;
 	struct user_namespace *ns = inode_userns(inode);
+	int mask = MAY_EXEC;
+	if (flags & IPERM_FLAG_RCU)
+		mask |= MAY_NOT_BLOCK;
 
 	if (inode->i_op->permission) {
-		ret = inode->i_op->permission(inode, MAY_EXEC, flags);
+		ret = inode->i_op->permission(inode, mask, flags);
 	} else {
-		ret = acl_permission_check(inode, MAY_EXEC, flags);
+		ret = acl_permission_check(inode, mask);
 	}
 	if (likely(!ret))
 		goto ok;
