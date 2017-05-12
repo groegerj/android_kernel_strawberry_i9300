@@ -226,7 +226,7 @@ other_perms:
  * request cannot be satisfied (eg. requires blocking or too much complexity).
  * It would then be called again in ref-walk mode.
  */
-int generic_permission(struct inode *inode, int mask, unsigned int flags)
+int generic_permission(struct inode *inode, int mask)
 {
 	int ret;
 
@@ -289,9 +289,9 @@ int inode_permission(struct inode *inode, int mask)
 	}
 
 	if (inode->i_op->permission)
-		retval = inode->i_op->permission(inode, mask, 0);
+		retval = inode->i_op->permission(inode, mask);
 	else
-		retval = generic_permission(inode, mask, 0);
+		retval = generic_permission(inode, mask);
 
 	if (retval)
 		return retval;
@@ -523,7 +523,7 @@ static inline int exec_permission(struct inode *inode, unsigned int flags)
 		mask |= MAY_NOT_BLOCK;
 
 	if (inode->i_op->permission) {
-		ret = inode->i_op->permission(inode, mask, flags);
+		ret = inode->i_op->permission(inode, mask);
 	} else {
 		ret = acl_permission_check(inode, mask);
 	}
