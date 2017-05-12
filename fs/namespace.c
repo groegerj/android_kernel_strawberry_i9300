@@ -2529,21 +2529,6 @@ out_type:
 }
 
 /*
- * Return true if path is reachable from root
- *
- * namespace_sem or vfsmount_lock is held
- */
-bool is_path_reachable(struct vfsmount *mnt, struct dentry *dentry,
-			 const struct path *root)
-{
-	while (mnt != root->mnt && mnt != mnt->mnt_parent) {
-		dentry = mnt->mnt_mountpoint;
-		mnt = mnt->mnt_parent;
-	}
-	return mnt == root->mnt && is_subdir(dentry, root->dentry);
-}
-
-/*
  * pivot_root Semantics:
  * Moves the root file system of the current process to the directory put_old,
  * makes new_root as the new root file system of the current process, and sets
