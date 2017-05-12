@@ -1,5 +1,7 @@
 /*
- * Generic C implementation of atomic counter operations
+ * Generic C implementation of atomic counter operations. Usable on
+ * UP systems only. Do not include in machine independent code.
+ *
  * Originally implemented for MN10300.
  *
  * Copyright (C) 2007 Red Hat, Inc. All Rights Reserved.
@@ -129,13 +131,13 @@ static inline void atomic_dec(atomic_t *v)
 
 #define cmpxchg64_local(ptr, o, n) __cmpxchg64_local_generic((ptr), (o), (n))
 
-static inline int atomic_add_unless(atomic_t *v, int a, int u)
+static inline int __atomic_add_unless(atomic_t *v, int a, int u)
 {
   int c, old;
   c = atomic_read(v);
   while (c != u && (old = atomic_cmpxchg(v, c, c + a)) != c)
     c = old;
-  return c != u;
+  return c;
 }
 
 static inline void atomic_clear_mask(unsigned long mask, unsigned long *addr)
@@ -153,8 +155,6 @@ static inline void atomic_clear_mask(unsigned long mask, unsigned long *addr)
 #define smp_mb__after_atomic_dec()	barrier()
 #define smp_mb__before_atomic_inc()	barrier()
 #define smp_mb__after_atomic_inc()	barrier()
-
-#include <asm-generic/atomic-long.h>
 
 #endif /* __KERNEL__ */
 #endif /* __ASM_GENERIC_ATOMIC_H */
