@@ -397,7 +397,7 @@ struct inodes_stat_t {
 #include <linux/rculist_bl.h>
 #include <linux/shrinker.h>
 
-#include <asm/atomic.h>
+#include <linux/atomic.h>
 #include <asm/byteorder.h>
 
 struct export_operations;
@@ -2260,31 +2260,14 @@ static inline struct inode *file_inode(struct file *f)
  * to do the change if sign is wrong. Exclusion between them is provided by
  * the inode->i_lock spinlock.
  */
-static inline int get_write_access(struct inode * inode)
+static inline int get_write_access(struct inode *inode)
 {
-	spin_lock(&inode->i_lock);
-	if (atomic_read(&inode->i_writecount) < 0) {
-		spin_unlock(&inode->i_lock);
-		return -ETXTBSY;
-	}
-	atomic_inc(&inode->i_writecount);
-	spin_unlock(&inode->i_lock);
-
-	return 0;
+	return atomic_inc_unless_negative(&inode->i_writecount) ? 0 : -ETXTBSY;
 }
-static inline int deny_write_access(struct file * file)
+static inline int deny_write_access(struct file *file)
 {
 	struct inode *inode = file->f_path.dentry->d_inode;
-
-	spin_lock(&inode->i_lock);
-	if (atomic_read(&inode->i_writecount) > 0) {
-		spin_unlock(&inode->i_lock);
-		return -ETXTBSY;
-	}
-	atomic_dec(&inode->i_writecount);
-	spin_unlock(&inode->i_lock);
-
-	return 0;
+	return atomic_dec_unless_positive(&inode->i_writecount) ? 0 : -ETXTBSY;
 }
 static inline void put_write_access(struct inode * inode)
 {
