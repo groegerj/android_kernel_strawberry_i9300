@@ -91,9 +91,6 @@ static void __uart_start(struct tty_struct *tty)
 	struct uart_state *state = tty->driver_data;
 	struct uart_port *port = state->uart_port;
 
-	if (port->ops->wake_peer)
-		port->ops->wake_peer(port);
-
 	if (!uart_circ_empty(&state->xmit) && state->xmit.buf &&
 	    !tty->stopped && !tty->hw_stopped)
 		port->ops->start_tx(port);
@@ -162,17 +159,13 @@ static int uart_startup(struct tty_struct *tty, struct uart_state *state, int in
 	 * buffer.
 	 */
 	if (!state->xmit.buf) {
-		unsigned long flags;
-
 		/* This is protected by the per port mutex */
 		page = get_zeroed_page(GFP_KERNEL);
 		if (!page)
 			return -ENOMEM;
 
-		spin_lock_irqsave(&uport->lock, flags);
 		state->xmit.buf = (unsigned char *) page;
 		uart_circ_clear(&state->xmit);
-		spin_unlock_irqrestore(&uport->lock, flags);
 	}
 
 	retval = uport->ops->startup(uport);
@@ -207,6 +200,11 @@ static int uart_startup(struct tty_struct *tty, struct uart_state *state, int in
 		clear_bit(TTY_IO_ERROR, &tty->flags);
 	}
 
+	/*
+	 * This is to allow setserial on this port. People may want to set
+	 * port/irq/type and then reconfigure the port properly if it failed
+	 * now.
+	 */
 	if (retval && capable(CAP_SYS_ADMIN))
 		retval = 0;
 
@@ -265,11 +263,8 @@ static void uart_shutdown(struct tty_struct *tty, struct uart_state *state)
 	 * Free the transmit buffer page.
 	 */
 	if (state->xmit.buf) {
-		unsigned long flags;
-		spin_lock_irqsave(&uport->lock, flags);
 		free_page((unsigned long)state->xmit.buf);
 		state->xmit.buf = NULL;
-		spin_unlock_irqrestore(&uport->lock, flags);
 	}
 }
 
@@ -478,12 +473,10 @@ static inline int __uart_put_char(struct uart_port *port,
 	unsigned long flags;
 	int ret = 0;
 
-	spin_lock_irqsave(&port->lock, flags);
-	if (!circ->buf) {
-		spin_unlock_irqrestore(&port->lock, flags);
+	if (!circ->buf)
 		return 0;
-	}
 
+	spin_lock_irqsave(&port->lock, flags);
 	if (uart_circ_chars_free(circ) != 0) {
 		circ->buf[circ->head] = c;
 		circ->head = (circ->head + 1) & (UART_XMIT_SIZE - 1);
@@ -526,12 +519,10 @@ static int uart_write(struct tty_struct *tty,
 	port = state->uart_port;
 	circ = &state->xmit;
 
-	spin_lock_irqsave(&port->lock, flags);
-	if (!circ->buf) {
-		spin_unlock_irqrestore(&port->lock, flags);
+	if (!circ->buf)
 		return 0;
-	}
 
+	spin_lock_irqsave(&port->lock, flags);
 	while (1) {
 		c = CIRC_SPACE_TO_END(circ->head, circ->tail, UART_XMIT_SIZE);
 		if (count < c)
@@ -1931,8 +1922,6 @@ int uart_suspend_port(struct uart_driver *drv, struct uart_port *uport)
 		mutex_unlock(&port->mutex);
 		return 0;
 	}
-	put_device(tty_dev);
-
 	if (console_suspend_enabled || !uart_console(uport))
 		uport->suspended = 1;
 
@@ -1998,11 +1987,9 @@ int uart_resume_port(struct uart_driver *drv, struct uart_port *uport)
 			disable_irq_wake(uport->irq);
 			uport->irq_wake = 0;
 		}
-		put_device(tty_dev);
 		mutex_unlock(&port->mutex);
 		return 0;
 	}
-	put_device(tty_dev);
 	uport->suspended = 0;
 
 	/*
@@ -2021,8 +2008,6 @@ int uart_resume_port(struct uart_driver *drv, struct uart_port *uport)
 		if (port->tty && port->tty->termios && termios.c_cflag == 0)
 			termios = *(port->tty->termios);
 
-		if (console_suspend_enabled)
-			uart_change_pm(state, 0);
 		uport->ops->set_termios(uport, &termios, NULL);
 		if (console_suspend_enabled)
 			console_start(uport->cons);
@@ -2343,7 +2328,6 @@ void uart_unregister_driver(struct uart_driver *drv)
 	tty_unregister_driver(p);
 	put_tty_driver(p);
 	kfree(drv->state);
-	drv->state = NULL;
 	drv->tty_driver = NULL;
 }
 
