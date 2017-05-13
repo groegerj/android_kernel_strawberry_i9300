@@ -7,6 +7,7 @@
  */
 
 #include <linux/bug.h>
+#include <linux/compiler.h>
 #include <linux/delay.h>
 #include <linux/device.h>
 #include <linux/ethtool.h>
@@ -73,7 +74,7 @@ struct rfc2734_arp {
 	__be32 fifo_lo;		/* lo 32bits of sender's FIFO addr	*/
 	__be32 sip;		/* Sender's IP Address			*/
 	__be32 tip;		/* IP Address of requested hw addr	*/
-} __attribute__((packed));
+} __packed;
 
 /* This header format is specific to this driver implementation. */
 #define FWNET_ALEN	8
@@ -81,7 +82,7 @@ struct rfc2734_arp {
 struct fwnet_header {
 	u8 h_dest[FWNET_ALEN];	/* destination address */
 	__be16 h_proto;		/* packet type ID field */
-} __attribute__((packed));
+} __packed;
 
 /* IPv4 and IPv6 encapsulation header */
 struct rfc2734_header {
@@ -261,16 +262,16 @@ static int fwnet_header_rebuild(struct sk_buff *skb)
 }
 
 static int fwnet_header_cache(const struct neighbour *neigh,
-			      struct hh_cache *hh)
+			      struct hh_cache *hh, __be16 type)
 {
 	struct net_device *net;
 	struct fwnet_header *h;
 
-	if (hh->hh_type == cpu_to_be16(ETH_P_802_3))
+	if (type == cpu_to_be16(ETH_P_802_3))
 		return -1;
 	net = neigh->dev;
 	h = (struct fwnet_header *)((u8 *)hh->hh_data + 16 - sizeof(*h));
-	h->h_proto = hh->hh_type;
+	h->h_proto = type;
 	memcpy(h->h_dest, neigh->ha, net->addr_len);
 	hh->hh_len = FWNET_HLEN;
 
@@ -863,8 +864,8 @@ static void fwnet_receive_broadcast(struct fw_iso_context *context,
 	if (specifier_id == IANA_SPECIFIER_ID && ver == RFC2734_SW_VERSION) {
 		buf_ptr += 2;
 		length -= IEEE1394_GASP_HDR_SIZE;
-		fwnet_incoming_packet(dev, buf_ptr, length, source_node_id,
-				      context->card->generation, true);
+		fwnet_incoming_packet(dev, buf_ptr, length,
+				      source_node_id, -1, true);
 	}
 
 	packet.payload_length = dev->rcv_buffer_size;
@@ -959,12 +960,7 @@ static void fwnet_transmit_packet_done(struct fwnet_packet_task *ptask)
 			break;
 		}
 
-		if (ptask->dest_node == IEEE1394_ALL_NODES) {
-			skb_pull(skb,
-				 ptask->max_payload + IEEE1394_GASP_HDR_SIZE);
-		} else {
-			skb_pull(skb, ptask->max_payload);
-		}
+		skb_pull(skb, ptask->max_payload);
 		if (ptask->outstanding_pkts > 1) {
 			fwnet_make_sf_hdr(&ptask->hdr, RFC2374_HDR_INTFRAG,
 					  dg_size, fg_off, datagram_label);
@@ -1067,7 +1063,7 @@ static int fwnet_send_packet(struct fwnet_packet_task *ptask)
 		smp_rmb();
 		node_id = dev->card->node_id;
 
-		p = skb_push(ptask->skb, IEEE1394_GASP_HDR_SIZE);
+		p = skb_push(ptask->skb, 8);
 		put_unaligned_be32(node_id << 16 | IANA_SPECIFIER_ID >> 8, p);
 		put_unaligned_be32((IANA_SPECIFIER_ID & 0xff) << 24
 						| RFC2734_SW_VERSION, &p[4]);
