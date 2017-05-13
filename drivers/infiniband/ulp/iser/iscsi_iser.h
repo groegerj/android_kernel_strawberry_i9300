@@ -45,6 +45,7 @@
 #include <scsi/libiscsi.h>
 #include <scsi/scsi_transport_iscsi.h>
 
+#include <linux/interrupt.h>
 #include <linux/wait.h>
 #include <linux/sched.h>
 #include <linux/list.h>
@@ -88,7 +89,7 @@
 	} while (0)
 
 #define SHIFT_4K	12
-#define SIZE_4K	(1UL << SHIFT_4K)
+#define SIZE_4K	(1ULL << SHIFT_4K)
 #define MASK_4K	(~(SIZE_4K-1))
 
 					/* support up to 512KB in one RDMA */
@@ -365,5 +366,4 @@ int iser_dma_map_task_data(struct iscsi_iser_task *iser_task,
 void iser_dma_unmap_task_data(struct iscsi_iser_task *iser_task);
 int  iser_initialize_task_headers(struct iscsi_task *task,
 			struct iser_tx_desc *tx_desc);
-int iser_alloc_rx_descriptors(struct iser_conn *ib_conn);
 #endif
