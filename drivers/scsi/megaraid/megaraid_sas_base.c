@@ -18,7 +18,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  *
  *  FILE: megaraid_sas_base.c
- *  Version : v00.00.05.38-rc1
+ *  Version : v00.00.05.40-rc1
  *
  *  Authors: LSI Corporation
  *           Sreenivas Bagalkote
@@ -54,6 +54,7 @@
 #include <scsi/scsi_cmnd.h>
 #include <scsi/scsi_device.h>
 #include <scsi/scsi_host.h>
+#include <scsi/scsi_tcq.h>
 #include "megaraid_sas_fusion.h"
 #include "megaraid_sas.h"
 
@@ -1906,6 +1907,7 @@ static int megasas_generic_reset(struct scsi_cmnd *scmd)
 static enum
 blk_eh_timer_return megasas_reset_timer(struct scsi_cmnd *scmd)
 {
+	struct megasas_cmd *cmd = (struct megasas_cmd *)scmd->SCp.ptr;
 	struct megasas_instance *instance;
 	unsigned long flags;
 
@@ -1914,7 +1916,7 @@ blk_eh_timer_return megasas_reset_timer(struct scsi_cmnd *scmd)
 		return BLK_EH_NOT_HANDLED;
 	}
 
-	instance = (struct megasas_instance *)scmd->device->host->hostdata;
+	instance = cmd->instance;
 	if (!(instance->flag & MEGASAS_FW_BUSY)) {
 		/* FW is busy, throttle IO */
 		spin_lock_irqsave(instance->host->host_lock, flags);
@@ -2056,6 +2058,20 @@ megasas_service_aen(struct megasas_instance *instance, struct megasas_cmd *cmd)
 	}
 }
 
+static int megasas_change_queue_depth(struct scsi_device *sdev,
+				      int queue_depth, int reason)
+{
+	if (reason != SCSI_QDEPTH_DEFAULT)
+		return -EOPNOTSUPP;
+
+	if (queue_depth > sdev->host->can_queue)
+		queue_depth = sdev->host->can_queue;
+	scsi_adjust_queue_depth(sdev, scsi_get_tag_type(sdev),
+				queue_depth);
+
+	return queue_depth;
+}
+
 /*
  * Scsi host template for megaraid_sas driver
  */
@@ -2073,6 +2089,7 @@ static struct scsi_host_template megasas_template = {
 	.eh_timed_out = megasas_reset_timer,
 	.bios_param = megasas_bios_param,
 	.use_clustering = ENABLE_CLUSTERING,
+	.change_queue_depth = megasas_change_queue_depth,
 };
 
 /**
@@ -4052,6 +4069,7 @@ megasas_probe_one(struct pci_dev *pdev, const struct pci_device_id *id)
 	spin_lock_init(&instance->cmd_pool_lock);
 	spin_lock_init(&instance->hba_lock);
 	spin_lock_init(&instance->completion_lock);
+	spin_lock_init(&poll_aen_lock);
 
 	mutex_init(&instance->aen_mutex);
 	mutex_init(&instance->reset_mutex);
@@ -4746,12 +4764,10 @@ megasas_mgmt_fw_ioctl(struct megasas_instance *instance,
 				    sense, sense_handle);
 	}
 
-	for (i = 0; i < ioc->sge_count; i++) {
-		if (kbuff_arr[i])
-			dma_free_coherent(&instance->pdev->dev,
-					  kern_sge32[i].length,
-					  kbuff_arr[i],
-					  kern_sge32[i].phys_addr);
+	for (i = 0; i < ioc->sge_count && kbuff_arr[i]; i++) {
+		dma_free_coherent(&instance->pdev->dev,
+				    kern_sge32[i].length,
+				    kbuff_arr[i], kern_sge32[i].phys_addr);
 	}
 
 	megasas_return_cmd(instance, cmd);
@@ -5380,8 +5396,6 @@ static int __init megasas_init(void)
 	 */
 	printk(KERN_INFO "megasas: %s %s\n", MEGASAS_VERSION,
 	       MEGASAS_EXT_VERSION);
-
-	spin_lock_init(&poll_aen_lock);
 
 	support_poll_for_event = 2;
 	support_device_change = 1;
