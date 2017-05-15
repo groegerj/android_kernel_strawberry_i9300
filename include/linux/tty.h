@@ -5,24 +5,6 @@
  * 'tty.h' defines some structures used by tty_io.c and some defines.
  */
 
-#ifdef __KERNEL__
-#include <linux/fs.h>
-#include <linux/major.h>
-#include <linux/termios.h>
-#include <linux/workqueue.h>
-#include <linux/tty_driver.h>
-#include <linux/tty_ldisc.h>
-#include <linux/mutex.h>
-
-#include <asm/system.h>
-
-
-/*
- * (Note: the *_driver.minor_start values 1, 64, 128, 192 are
- * hardcoded at present.)
- */
-#define NR_UNIX98_PTY_DEFAULT	4096      /* Default maximum for Unix98 ptys */
-#define NR_UNIX98_PTY_MAX	(1 << MINORBITS) /* Absolute limit */
 #define NR_LDISCS		30
 
 /* line disciplines */
@@ -52,6 +34,25 @@
 #define N_TI_WL		22	/* for TI's WL BT, FM, GPS combo chips */
 #define N_TRACESINK	23	/* Trace data routing for MIPI P1149.7 */
 #define N_TRACEROUTER	24	/* Trace data routing for MIPI P1149.7 */
+
+#ifdef __KERNEL__
+#include <linux/fs.h>
+#include <linux/major.h>
+#include <linux/termios.h>
+#include <linux/workqueue.h>
+#include <linux/tty_driver.h>
+#include <linux/tty_ldisc.h>
+#include <linux/mutex.h>
+
+#include <asm/system.h>
+
+
+/*
+ * (Note: the *_driver.minor_start values 1, 64, 128, 192 are
+ * hardcoded at present.)
+ */
+#define NR_UNIX98_PTY_DEFAULT	4096      /* Default maximum for Unix98 ptys */
+#define NR_UNIX98_PTY_MAX	(1 << MINORBITS) /* Absolute limit */
 
 /*
  * This character is the same as _POSIX_VDISABLE: it cannot be used as
@@ -218,7 +219,7 @@ struct tty_port_operations {
 	/* Called on the final put of a port */
 	void (*destruct)(struct tty_port *port);
 };
-
+	
 struct tty_port {
 	struct tty_struct	*tty;		/* Back pointer */
 	const struct tty_port_operations *ops;	/* Port operations */
@@ -294,11 +295,7 @@ struct tty_struct {
 	void *driver_data;
 	struct list_head tty_files;
 
-#ifdef CONFIG_MDM_HSIC_PM
-#define N_TTY_BUF_SIZE 16384
-#else
 #define N_TTY_BUF_SIZE 4096
-#endif
 
 	/*
 	 * The following is data for the N_TTY line discipline.  For
@@ -476,9 +473,7 @@ extern void proc_clear_tty(struct task_struct *p);
 extern struct tty_struct *get_current_tty(void);
 extern void tty_default_fops(struct file_operations *fops);
 extern struct tty_struct *alloc_tty_struct(void);
-extern int tty_alloc_file(struct file *file);
-extern void tty_add_file(struct tty_struct *tty, struct file *file);
-extern void tty_free_file(struct file *file);
+extern int tty_add_file(struct tty_struct *tty, struct file *file);
 extern void free_tty_struct(struct tty_struct *tty);
 extern void initialize_tty_struct(struct tty_struct *tty,
 		struct tty_driver *driver, int idx);
