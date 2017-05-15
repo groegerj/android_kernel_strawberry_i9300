@@ -76,11 +76,6 @@
 #define CONFIG_GPS_S3C_UART	1
 #endif
 
-#ifdef CONFIG_SERIAL_SAMSUNG_CONSOLE_SWITCH
-static unsigned uart_debug; /* Initialized automatically with 0 by compiler */
-module_param_named(uart_debug, uart_debug, uint, 0644);
-#endif
-
 static inline struct s3c24xx_uart_port *to_ourport(struct uart_port *port)
 {
 	return container_of(port, struct s3c24xx_uart_port, port);
@@ -201,6 +196,7 @@ static int s3c24xx_serial_rx_fifocnt(struct s3c24xx_uart_port *ourport,
 	return (ufstat & info->rx_fifomask) >> info->rx_fifoshift;
 }
 
+
 /* ? - where has parity gone?? */
 #define S3C2410_UERSTAT_PARITY (0x1000)
 
@@ -259,12 +255,11 @@ s3c24xx_serial_rx_chars(int irq, void *dev_id)
 				    goto ignore_char;
 			}
 
-			if (uerstat & S3C2410_UERSTAT_FRAME) {
+			if (uerstat & S3C2410_UERSTAT_FRAME)
 				port->icount.frame++;
-			}
-			if (uerstat & S3C2410_UERSTAT_OVERRUN) {
+			if (uerstat & S3C2410_UERSTAT_OVERRUN)
 				port->icount.overrun++;
-			}
+
 			uerstat &= port->read_status_mask;
 
 			if (uerstat & S3C2410_UERSTAT_BREAK)
@@ -276,10 +271,8 @@ s3c24xx_serial_rx_chars(int irq, void *dev_id)
 				flag = TTY_FRAME;
 		}
 
-		if (uart_handle_sysrq_char(port, ch)) {
-			printk(KERN_ERR KERN_DEBUG "break-sysrq\n");
+		if (uart_handle_sysrq_char(port, ch))
 			goto ignore_char;
-		}
 
 		uart_insert_char(port, uerstat, S3C2410_UERSTAT_OVERRUN,
 				 ch, flag);
@@ -417,39 +410,28 @@ static void s3c24xx_serial_break_ctl(struct uart_port *port, int break_state)
 static void s3c24xx_serial_shutdown(struct uart_port *port)
 {
 	struct s3c24xx_uart_port *ourport = to_ourport(port);
-	struct s3c2410_uartcfg *cfg = s3c24xx_port_to_cfg(port);
 
 	if (ourport->tx_claimed) {
-		disable_irq(ourport->tx_irq);
 		free_irq(ourport->tx_irq, ourport);
 		tx_enabled(port) = 0;
 		ourport->tx_claimed = 0;
 	}
 
 	if (ourport->rx_claimed) {
-		disable_irq(ourport->rx_irq);
 		free_irq(ourport->rx_irq, ourport);
 		ourport->rx_claimed = 0;
 		rx_enabled(port) = 0;
 	}
-
-	if (cfg->set_runstate)
-		cfg->set_runstate(0);
 }
 
 
 static int s3c24xx_serial_startup(struct uart_port *port)
 {
 	struct s3c24xx_uart_port *ourport = to_ourport(port);
-	struct s3c2410_uartcfg *cfg = s3c24xx_port_to_cfg(port);
 	int ret;
 
 	dbg("s3c24xx_serial_startup: port=%p (%08lx,%p)\n",
 	    port->mapbase, port->membase);
-
-	/* runstate should be 1 before request_irq is called */
-	if (cfg->set_runstate)
-		cfg->set_runstate(1);
 
 	rx_enabled(port) = 1;
 
@@ -458,7 +440,7 @@ static int s3c24xx_serial_startup(struct uart_port *port)
 
 	if (ret != 0) {
 		printk(KERN_ERR "cannot get irq %d\n", ourport->rx_irq);
-		goto err;
+		return ret;
 	}
 
 	ourport->rx_claimed = 1;
@@ -627,7 +609,7 @@ static unsigned int s3c24xx_serial_getclk(struct uart_port *port,
 		 */
 
 		if (strcmp(clkp->name, "fclk") == 0) {
-			struct s3c24xx_uart_clksrc src = { "", 0, };
+			struct s3c24xx_uart_clksrc src;
 
 			s3c24xx_serial_getsource(port, &src);
 
@@ -649,7 +631,6 @@ static unsigned int s3c24xx_serial_getclk(struct uart_port *port,
 	} else {
 		resptr = res;
 
-		best = res;
 		for (i = 0; i < cfg->clocks_size; i++, clkp++) {
 			if (s3c24xx_serial_calcbaud(resptr, port, clkp, baud))
 				resptr++;
@@ -662,7 +643,6 @@ static unsigned int s3c24xx_serial_getclk(struct uart_port *port,
 		unsigned int deviation = (1<<30)|((1<<30)-1);
 		int calc_deviation;
 
-		best = res;
 		for (sptr = res; sptr < resptr; sptr++) {
 			calc_deviation = baud - sptr->calc;
 			if (calc_deviation < 0)
@@ -952,11 +932,7 @@ static struct uart_driver s3c24xx_uart_drv = {
 	.owner		= THIS_MODULE,
 	.driver_name	= "s3c2410_serial",
 	.nr		= CONFIG_SERIAL_SAMSUNG_UARTS,
-#ifdef CONFIG_SERIAL_SAMSUNG_CONSOLE_SWITCH
-	.cons		= NULL,
-#else
 	.cons		= S3C24XX_SERIAL_CONSOLE,
-#endif
 	.dev_name	= S3C24XX_SERIAL_NAME,
 	.major		= S3C24XX_SERIAL_MAJOR,
 	.minor		= S3C24XX_SERIAL_MINOR,
@@ -1181,7 +1157,7 @@ static int s3c24xx_serial_init_port(struct s3c24xx_uart_port *ourport,
 		ourport->rx_irq = ret;
 		ourport->tx_irq = ret + 1;
 	}
-
+	
 	ret = platform_get_irq(platdev, 1);
 	if (ret > 0)
 		ourport->tx_irq = ret;
@@ -1204,8 +1180,7 @@ static ssize_t s3c24xx_serial_show_clksrc(struct device *dev,
 	struct uart_port *port = s3c24xx_dev_to_port(dev);
 	struct s3c24xx_uart_port *ourport = to_ourport(port);
 
-	return snprintf(buf, PAGE_SIZE, "* %s\n",
-			ourport->clksrc ? ourport->clksrc->name : "(null)");
+	return snprintf(buf, PAGE_SIZE, "* %s\n", ourport->clksrc->name);
 }
 
 static DEVICE_ATTR(clock_source, S_IRUGO, s3c24xx_serial_show_clksrc, NULL);
@@ -1317,10 +1292,7 @@ EXPORT_SYMBOL_GPL(s3c24xx_serial_init);
 static int __init s3c24xx_serial_modinit(void)
 {
 	int ret;
-#ifdef CONFIG_SERIAL_SAMSUNG_CONSOLE_SWITCH
-	if (uart_debug)
-		s3c24xx_uart_drv.cons = S3C24XX_SERIAL_CONSOLE;
-#endif
+
 	ret = uart_register_driver(&s3c24xx_uart_drv);
 	if (ret < 0) {
 		printk(KERN_ERR "failed to register UART driver\n");
@@ -1383,7 +1355,7 @@ static void __init
 s3c24xx_serial_get_options(struct uart_port *port, int *baud,
 			   int *parity, int *bits)
 {
-	struct s3c24xx_uart_clksrc clksrc = { "", 0, };
+	struct s3c24xx_uart_clksrc clksrc;
 	struct clk *clk;
 	unsigned int ulcon;
 	unsigned int ucon;
@@ -1440,6 +1412,7 @@ s3c24xx_serial_get_options(struct uart_port *port, int *baud,
 			rate = clk_get_rate(clk) / clksrc.divisor;
 		else
 			rate = 1;
+
 
 		*baud = rate / (16 * (ubrdiv + 1));
 		dbg("calculated baud %d\n", *baud);
