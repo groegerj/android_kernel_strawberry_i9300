@@ -689,8 +689,6 @@ drivers/net/cxgb3/l2t.h
 drivers/net/cxgb3/t3cdev.h
 drivers/net/cxgb4/cxgb4_uld.h
 drivers/net/cxgb4/l2t.h
-drivers/net/hamradio/6pack.c
-drivers/net/hamradio/dmascc.c
 drivers/net/ibmveth.c
 drivers/net/phy/phy.c
 drivers/net/ppp_generic.c
