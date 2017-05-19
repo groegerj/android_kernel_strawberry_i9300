@@ -1092,6 +1092,7 @@ include/linux/platform_data/ntc_thermistor.h
 include/linux/platform_data/ram_console.h
 include/linux/platform_data/usb3503.h
 include/linux/platform_data/usb3503_otg_conn.h
+include/linux/platform_device.h
 include/linux/plist.h
 include/linux/pm_qos_params.h
 include/linux/pn544.h

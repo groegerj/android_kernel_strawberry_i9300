@@ -548,7 +548,7 @@
 0| <<| <<<: drivers/base/dma-contiguous.c
  | > |    : drivers/base/iommu.c
 !| !!| !!!: drivers/base/memory.c
-0| !!| !!!: drivers/base/platform.c
+!| !0| !!!: drivers/base/platform.c
 0| !!| !!!: drivers/base/power/main.c
 0| !!| !!!: drivers/base/power/opp.c
 0| !!| !!!: drivers/base/power/runtime.c
@@ -1092,6 +1092,7 @@
 0| <<| <<<: include/linux/platform_data/ram_console.h
 0| <<| <<<: include/linux/platform_data/usb3503.h
 0| <<| <<<: include/linux/platform_data/usb3503_otg_conn.h
+!| !0| !!!: include/linux/platform_device.h
 0| !0| 000: include/linux/plist.h
 0| !!| <<<: include/linux/pm_qos_params.h
 0| <<| <<<: include/linux/pn544.h
