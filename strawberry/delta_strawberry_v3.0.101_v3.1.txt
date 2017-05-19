@@ -322,10 +322,6 @@
  | >>|    : arch/arm/mach-exynos4/sleep.S
  | > |    : arch/arm/mach-exynos4/time.c
 <| <<| <<<: arch/arm/mach-exynos4/tmu.c
-!| !0| !!!: arch/arm/mach-omap1/pm.c
-!| !!| !!<: arch/arm/mach-s3c2440/clock.c
-!| !!| !!<: arch/arm/mach-s3c2440/s3c2442.c
-!| !0| 0!<: arch/arm/mach-s3c2440/s3c244x-clock.c
 !| !!| !!!: arch/arm/mm/Kconfig
 0| !!| !!!: arch/arm/mm/Makefile
 !| !0| 000: arch/arm/mm/abort-ev4.S
