@@ -689,7 +689,6 @@
 !| !!| <<<: drivers/net/ppp_generic.c
 0| <<| <<<: drivers/net/pppolac.c
 0| <<| <<<: drivers/net/pppopns.c
-!| !0| 0!!: drivers/net/wimax/i2400m/i2400m.h
 0| !!| !!!: drivers/net/wireless/Kconfig
 0| !!| !!!: drivers/net/wireless/Makefile
 !| !!| !!!: drivers/net/wireless/b43legacy/b43legacy.h

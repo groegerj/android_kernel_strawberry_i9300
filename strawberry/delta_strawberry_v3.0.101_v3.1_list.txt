@@ -689,7 +689,6 @@ drivers/net/phy/phy.c
 drivers/net/ppp_generic.c
 drivers/net/pppolac.c
 drivers/net/pppopns.c
-drivers/net/wimax/i2400m/i2400m.h
 drivers/net/wireless/Kconfig
 drivers/net/wireless/Makefile
 drivers/net/wireless/b43legacy/b43legacy.h
