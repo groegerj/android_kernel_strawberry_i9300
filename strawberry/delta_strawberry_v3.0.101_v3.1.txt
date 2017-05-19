@@ -560,7 +560,6 @@
 !| !!| !!!: drivers/char/Kconfig
 !| !!| !!!: drivers/char/Makefile
 0| <<| <<<: drivers/char/exynos_mem.c
-!| !0| !!!: drivers/char/ipmi/ipmi_watchdog.c
 0| !!| !!!: drivers/char/mem.c
 !| !!| !!!: drivers/char/mspec.c
 !| !!| !!!: drivers/char/ps3flash.c

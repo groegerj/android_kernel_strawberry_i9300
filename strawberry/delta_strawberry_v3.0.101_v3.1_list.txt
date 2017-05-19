@@ -560,7 +560,6 @@ drivers/battery
 drivers/char/Kconfig
 drivers/char/Makefile
 drivers/char/exynos_mem.c
-drivers/char/ipmi/ipmi_watchdog.c
 drivers/char/mem.c
 drivers/char/mspec.c
 drivers/char/ps3flash.c
