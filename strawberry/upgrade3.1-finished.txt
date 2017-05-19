@@ -21,6 +21,7 @@ drivers/media/video/tlg2300/
 drivers/media/video/uvc/
 drivers/message/
 drivers/mfd/
+drivers/net/atlx/
 drivers/net/bonding/
 drivers/net/cxgb3/
 drivers/net/cxgb4/

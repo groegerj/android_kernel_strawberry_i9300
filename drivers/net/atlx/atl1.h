@@ -753,14 +753,14 @@ struct atl1_adapter {
 	struct pci_dev *pdev;
 
 	struct atl1_sft_stats soft_stats;
-	struct vlan_group *vlgrp;
 	u32 rx_buffer_len;
 	u32 wol;
 	u16 link_speed;
 	u16 link_duplex;
 	spinlock_t lock;
-	struct work_struct reset_dev_task;
+	struct work_struct tx_timeout_task;
 	struct work_struct link_chg_task;
+	struct work_struct pcie_dma_to_rst_task;
 
 	struct timer_list phy_config_timer;
 	bool phy_timer_pending;
