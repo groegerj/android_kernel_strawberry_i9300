@@ -704,8 +704,6 @@ drivers/net/wireless/b43legacy/dma.h
 drivers/net/wireless/bcmdhd
 drivers/net/wireless/btlock
 drivers/oprofile/oprofile_stats.h
-drivers/pci/hotplug/cpci_hotplug_core.c
-drivers/pci/xen-pcifront.c
 drivers/power/Kconfig
 drivers/power/Makefile
 drivers/power/power_supply_core.c
