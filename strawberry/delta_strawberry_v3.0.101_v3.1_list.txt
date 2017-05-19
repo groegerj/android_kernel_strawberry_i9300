@@ -629,10 +629,6 @@ drivers/media/video/s5p-tv
 drivers/media/video/samsung
 drivers/media/video/sr030pc30.c
 drivers/media/video/tlg2300/pd-dvb.c
-drivers/media/video/uvc/uvc_ctrl.c
-drivers/media/video/uvc/uvc_queue.c
-drivers/media/video/uvc/uvc_v4l2.c
-drivers/media/video/uvc/uvc_video.c
 drivers/media/video/v4l2-common.c
 drivers/media/video/v4l2-fh.c
 drivers/media/video/v4l2-mem2mem.c

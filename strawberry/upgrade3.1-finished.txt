@@ -16,6 +16,7 @@ drivers/media/video/s5p-mfc/
 drivers/media/video/s5p-tv/
 drivers/mfd/
 drivers/gpu/
+drivers/media/video/uvc/
 drivers/net/bonding/
 drivers/nfc/
 drivers/s390/
