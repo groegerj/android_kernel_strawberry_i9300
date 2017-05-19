@@ -687,8 +687,6 @@ drivers/net/pppolac.c
 drivers/net/pppopns.c
 drivers/net/wireless/Kconfig
 drivers/net/wireless/Makefile
-drivers/net/wireless/b43legacy/b43legacy.h
-drivers/net/wireless/b43legacy/dma.h
 drivers/net/wireless/bcmdhd
 drivers/net/wireless/btlock
 drivers/power/Kconfig
