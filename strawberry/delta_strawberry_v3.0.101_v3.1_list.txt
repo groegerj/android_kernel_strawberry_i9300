@@ -599,10 +599,6 @@ drivers/md/dm-kcopyd.c
 drivers/md/dm-mpath.c
 drivers/md/dm-queue-length.c
 drivers/md/dm-table.c
-drivers/media/Kconfig
-drivers/media/Makefile
-drivers/media/isdbt
-drivers/media/tdmb
 drivers/media/video/Kconfig
 drivers/media/video/Makefile
 drivers/media/video/exynos
