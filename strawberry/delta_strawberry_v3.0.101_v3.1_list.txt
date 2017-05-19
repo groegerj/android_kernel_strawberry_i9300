@@ -703,7 +703,6 @@ drivers/net/wireless/b43legacy/b43legacy.h
 drivers/net/wireless/b43legacy/dma.h
 drivers/net/wireless/bcmdhd
 drivers/net/wireless/btlock
-drivers/oprofile/oprofile_stats.h
 drivers/power/Kconfig
 drivers/power/Makefile
 drivers/power/power_supply_core.c

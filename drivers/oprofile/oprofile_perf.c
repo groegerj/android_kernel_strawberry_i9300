@@ -25,13 +25,13 @@ static int oprofile_perf_enabled;
 static DEFINE_MUTEX(oprofile_perf_mutex);
 
 static struct op_counter_config *counter_config;
-static struct perf_event **perf_events[NR_CPUS];
+static struct perf_event **perf_events[nr_cpumask_bits];
 static int num_counters;
 
 /*
  * Overflow callback for oprofile.
  */
-static void op_overflow_handler(struct perf_event *event, int unused,
+static void op_overflow_handler(struct perf_event *event,
 			struct perf_sample_data *data, struct pt_regs *regs)
 {
 	int id;
@@ -79,7 +79,7 @@ static int op_create_counter(int cpu, int event)
 
 	pevent = perf_event_create_kernel_counter(&counter_config[event].attr,
 						  cpu, NULL,
-						  op_overflow_handler);
+						  op_overflow_handler, NULL);
 
 	if (IS_ERR(pevent))
 		return PTR_ERR(pevent);

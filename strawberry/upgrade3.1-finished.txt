@@ -23,6 +23,7 @@ drivers/message/
 drivers/mfd/
 drivers/net/bonding/
 drivers/nfc/
+drivers/oprofile/
 drivers/pci/
 drivers/s390/
 drivers/sbus/

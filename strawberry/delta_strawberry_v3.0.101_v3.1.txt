@@ -703,7 +703,6 @@
 !| !0| !!!: drivers/net/wireless/b43legacy/dma.h
 !| <<| <<<: drivers/net/wireless/bcmdhd
 0| <<| <<<: drivers/net/wireless/btlock
-!| !0| 000: drivers/oprofile/oprofile_stats.h
 !| !!| !!!: drivers/power/Kconfig
 !| !!| !!!: drivers/power/Makefile
 0| !!| !!!: drivers/power/power_supply_core.c
