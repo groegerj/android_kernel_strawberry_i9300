@@ -618,7 +618,6 @@ drivers/media/tdmb
 drivers/media/video/Kconfig
 drivers/media/video/Makefile
 drivers/media/video/exynos
-drivers/media/video/hdpvr/hdpvr-core.c
 drivers/media/video/marvell-ccic
 drivers/media/video/mhl
 drivers/media/video/s5c73m3.c
@@ -628,7 +627,6 @@ drivers/media/video/s5p-mfc
 drivers/media/video/s5p-tv
 drivers/media/video/samsung
 drivers/media/video/sr030pc30.c
-drivers/media/video/tlg2300/pd-dvb.c
 drivers/media/video/v4l2-common.c
 drivers/media/video/v4l2-fh.c
 drivers/media/video/v4l2-mem2mem.c

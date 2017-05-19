@@ -4,6 +4,7 @@ drivers/block/
 drivers/connector/
 drivers/edac/
 drivers/firewire/
+drivers/gpu/
 drivers/hid/
 drivers/hwmon/
 drivers/infiniband/
@@ -11,12 +12,13 @@ drivers/input/misc/
 drivers/input/touchscreen/
 drivers/isdn/
 drivers/leds/
+drivers/media/video/hdpvr/
 drivers/media/video/marvell-ccic/
 drivers/media/video/s5p-mfc/
 drivers/media/video/s5p-tv/
-drivers/mfd/
-drivers/gpu/
+drivers/media/video/tlg2300/
 drivers/media/video/uvc/
+drivers/mfd/
 drivers/net/bonding/
 drivers/nfc/
 drivers/s390/
