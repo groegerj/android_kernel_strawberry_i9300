@@ -23,6 +23,7 @@ drivers/message/
 drivers/mfd/
 drivers/net/bonding/
 drivers/net/cxgb3/
+drivers/net/cxgb4/
 drivers/net/hamradio/
 drivers/nfc/
 drivers/oprofile/

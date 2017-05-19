@@ -684,8 +684,6 @@ drivers/net/atlx/atl2.c
 drivers/net/atlx/atl2.h
 drivers/net/cassini.c
 drivers/net/cpmac.c
-drivers/net/cxgb4/cxgb4_uld.h
-drivers/net/cxgb4/l2t.h
 drivers/net/ibmveth.c
 drivers/net/phy/phy.c
 drivers/net/ppp_generic.c
