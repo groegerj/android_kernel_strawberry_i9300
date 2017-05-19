@@ -12,6 +12,7 @@ drivers/input/misc/
 drivers/input/touchscreen/
 drivers/isdn/
 drivers/leds/
+drivers/media/rc/
 drivers/media/video/hdpvr/
 drivers/media/video/marvell-ccic/
 drivers/media/video/s5p-mfc/

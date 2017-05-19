@@ -613,7 +613,6 @@ drivers/md/dm-table.c
 drivers/media/Kconfig
 drivers/media/Makefile
 drivers/media/isdbt
-drivers/media/rc/rc-main.c
 drivers/media/tdmb
 drivers/media/video/Kconfig
 drivers/media/video/Makefile
@@ -1238,6 +1237,7 @@ include/media/exynos_gscaler.h
 include/media/exynos_mc.h
 include/media/isdbt_pdata.h
 include/media/m5mols.h
+include/media/rc-map.h
 include/media/s5c73m3_platform.h
 include/media/s5p_fimc.h
 include/media/v4l2-fh.h
