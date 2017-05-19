@@ -26,6 +26,7 @@ drivers/net/bonding/
 drivers/net/cxgb3/
 drivers/net/cxgb4/
 drivers/net/hamradio/
+drivers/net/phy/
 drivers/net/wimax/
 drivers/nfc/
 drivers/oprofile/

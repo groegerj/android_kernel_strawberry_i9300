@@ -682,7 +682,6 @@ drivers/net/Makefile
 drivers/net/cassini.c
 drivers/net/cpmac.c
 drivers/net/ibmveth.c
-drivers/net/phy/phy.c
 drivers/net/ppp_generic.c
 drivers/net/pppolac.c
 drivers/net/pppopns.c

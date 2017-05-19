@@ -589,7 +589,7 @@ static void decode_rxts(struct dp83640_private *dp83640,
 	prune_rx_ts(dp83640);
 
 	if (list_empty(&dp83640->rxpool)) {
-		pr_warning("dp83640: rx timestamp pool is empty\n");
+		pr_debug("dp83640: rx timestamp pool is empty\n");
 		goto out;
 	}
 	rxts = list_first_entry(&dp83640->rxpool, struct rxts, list);
@@ -612,7 +612,7 @@ static void decode_txts(struct dp83640_private *dp83640,
 	skb = skb_dequeue(&dp83640->tx_queue);
 
 	if (!skb) {
-		pr_warning("dp83640: have timestamp but tx_queue empty\n");
+		pr_debug("dp83640: have timestamp but tx_queue empty\n");
 		return;
 	}
 	ns = phy2txts(phy_txts);
@@ -875,19 +875,12 @@ static void dp83640_remove(struct phy_device *phydev)
 	struct dp83640_clock *clock;
 	struct list_head *this, *next;
 	struct dp83640_private *tmp, *dp83640 = phydev->priv;
-	struct sk_buff *skb;
 
 	if (phydev->addr == BROADCAST_ADDR)
 		return;
 
 	enable_status_frames(phydev, false);
 	cancel_work_sync(&dp83640->ts_work);
-
-	while ((skb = skb_dequeue(&dp83640->rx_queue)) != NULL)
-		kfree_skb(skb);
-
-	while ((skb = skb_dequeue(&dp83640->tx_queue)) != NULL)
-		skb_complete_tx_timestamp(skb, NULL);
 
 	clock = dp83640_clock_get(dp83640->clock);
 
@@ -1067,7 +1060,7 @@ static void dp83640_txtstamp(struct phy_device *phydev,
 	struct dp83640_private *dp83640 = phydev->priv;
 
 	if (!dp83640->hwts_tx_en) {
-		skb_complete_tx_timestamp(skb, NULL);
+		kfree_skb(skb);
 		return;
 	}
 	skb_queue_tail(&dp83640->tx_queue, skb);

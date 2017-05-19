@@ -682,7 +682,6 @@
 !| !!| <<<: drivers/net/cassini.c
 !| !!| <<<: drivers/net/cpmac.c
 !| !!| <<<: drivers/net/ibmveth.c
-!| !0| 000: drivers/net/phy/phy.c
 !| !!| <<<: drivers/net/ppp_generic.c
 0| <<| <<<: drivers/net/pppolac.c
 0| <<| <<<: drivers/net/pppopns.c
