@@ -19,6 +19,7 @@ drivers/media/video/s5p-mfc/
 drivers/media/video/s5p-tv/
 drivers/media/video/tlg2300/
 drivers/media/video/uvc/
+drivers/message/
 drivers/mfd/
 drivers/net/bonding/
 drivers/nfc/

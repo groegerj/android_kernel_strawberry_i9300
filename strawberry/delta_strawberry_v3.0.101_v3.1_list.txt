@@ -634,7 +634,6 @@ drivers/media/video/videobuf2-cma-phys.c
 drivers/media/video/videobuf2-core.c
 drivers/media/video/videobuf2-dma-contig.c
 drivers/media/video/videobuf2-ion.c
-drivers/message/i2o/i2o_scsi.c
 drivers/misc/Kconfig
 drivers/misc/Makefile
 drivers/misc/max77693-muic.c
