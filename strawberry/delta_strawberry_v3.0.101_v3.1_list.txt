@@ -95,10 +95,6 @@ arch/arm/lib/getuser.S
 arch/arm/lib/memcpy.S
 arch/arm/lib/memset.S
 arch/arm/lib/putuser.S
-arch/arm/mach-at91/pm.c
-arch/arm/mach-bcmring/dma.c
-arch/arm/mach-cns3xxx/include/mach/pm.h
-arch/arm/mach-cns3xxx/pm.c
 arch/arm/mach-exynos4/Kconfig
 arch/arm/mach-exynos4/Kconfig.local
 arch/arm/mach-exynos4/Makefile
