@@ -684,9 +684,6 @@ drivers/net/atlx/atl2.c
 drivers/net/atlx/atl2.h
 drivers/net/cassini.c
 drivers/net/cpmac.c
-drivers/net/cxgb3/cxgb3_offload.c
-drivers/net/cxgb3/l2t.h
-drivers/net/cxgb3/t3cdev.h
 drivers/net/cxgb4/cxgb4_uld.h
 drivers/net/cxgb4/l2t.h
 drivers/net/ibmveth.c
