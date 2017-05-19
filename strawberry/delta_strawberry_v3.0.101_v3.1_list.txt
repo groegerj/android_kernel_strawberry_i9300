@@ -537,8 +537,6 @@ arch/arm/plat-samsung/pm.c
 arch/arm/plat-samsung/pwm.c
 arch/arm/plat-samsung/s3c-pl330.c
 arch/arm/tools/mach-types
-arch/arm/vfp/vfphw.S
-arch/arm/vfp/vfpmodule.c
 arch/mips/include/asm/pmc-sierra/msp71xx/msp_slp_int.h
 arch/mips/pmc-sierra/msp71xx/msp_irq_slp.c
 block/Kconfig.iosched

@@ -1,6 +1,7 @@
 arch/arm/mach-at91/
 arch/arm/mach-bcmring/
 arch/arm/mach-cns3xxx/
+arch/arm/vfp/
 crypto/
 drivers/atm/
 drivers/block/
