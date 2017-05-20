@@ -114,12 +114,6 @@ arch/arm/mach-exynos4/clock-domain.c
 arch/arm/mach-exynos4/clock-exynos4.c
 arch/arm/mach-exynos4/clock-exynos4212.c
 arch/arm/mach-exynos4/clock.c
-arch/arm/mach-exynos4/coresight-etb.c
-arch/arm/mach-exynos4/coresight-etm.c
-arch/arm/mach-exynos4/coresight-funnel.c
-arch/arm/mach-exynos4/coresight-tpiu.c
-arch/arm/mach-exynos4/coresight.c
-arch/arm/mach-exynos4/coresight.h
 arch/arm/mach-exynos4/cpu-exynos4.c
 arch/arm/mach-exynos4/cpu.c
 arch/arm/mach-exynos4/cpufreq-4x12.c
