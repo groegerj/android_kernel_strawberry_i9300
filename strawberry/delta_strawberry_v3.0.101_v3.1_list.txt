@@ -167,7 +167,6 @@ arch/arm/mach-exynos4/include/mach/gpio-rev02-midas.h
 arch/arm/mach-exynos4/include/mach/gpio.h
 arch/arm/mach-exynos4/include/mach/gpufreq.h
 arch/arm/mach-exynos4/include/mach/iic-hdmiphy.h
-arch/arm/mach-exynos4/include/mach/io.h
 arch/arm/mach-exynos4/include/mach/irqs-exynos4.h
 arch/arm/mach-exynos4/include/mach/irqs.h
 arch/arm/mach-exynos4/include/mach/map-exynos4.h
@@ -188,7 +187,6 @@ arch/arm/mach-exynos4/include/mach/pld_pdata.h
 arch/arm/mach-exynos4/include/mach/pm-core.h
 arch/arm/mach-exynos4/include/mach/pmu.h
 arch/arm/mach-exynos4/include/mach/ppmu.h
-arch/arm/mach-exynos4/include/mach/pwm-clock.h
 arch/arm/mach-exynos4/include/mach/regs-audss.h
 arch/arm/mach-exynos4/include/mach/regs-cec.h
 arch/arm/mach-exynos4/include/mach/regs-clock.h
