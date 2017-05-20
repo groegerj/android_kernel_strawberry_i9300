@@ -122,7 +122,6 @@ arch/arm/mach-exynos4/cpuidle-exynos4.c
 arch/arm/mach-exynos4/cpuidle.c
 arch/arm/mach-exynos4/cyttsp4_img.h
 arch/arm/mach-exynos4/cyttsp4_params.h
-arch/arm/mach-exynos4/dev-ahci.c
 arch/arm/mach-exynos4/dev-audio.c
 arch/arm/mach-exynos4/dev-fimc-is.c
 arch/arm/mach-exynos4/dev-fimc-lite.c
@@ -169,7 +168,6 @@ arch/arm/mach-exynos4/include/mach/gpio-rev01-midas.h
 arch/arm/mach-exynos4/include/mach/gpio-rev02-midas.h
 arch/arm/mach-exynos4/include/mach/gpio.h
 arch/arm/mach-exynos4/include/mach/gpufreq.h
-arch/arm/mach-exynos4/include/mach/hardware.h
 arch/arm/mach-exynos4/include/mach/iic-hdmiphy.h
 arch/arm/mach-exynos4/include/mach/io.h
 arch/arm/mach-exynos4/include/mach/irqs-exynos4.h
@@ -200,9 +198,7 @@ arch/arm/mach-exynos4/include/mach/regs-fimg2d3x.h
 arch/arm/mach-exynos4/include/mach/regs-gpio.h
 arch/arm/mach-exynos4/include/mach/regs-hdmi.h
 arch/arm/mach-exynos4/include/mach/regs-iem.h
-arch/arm/mach-exynos4/include/mach/regs-irq.h
 arch/arm/mach-exynos4/include/mach/regs-mct.h
-arch/arm/mach-exynos4/include/mach/regs-mem.h
 arch/arm/mach-exynos4/include/mach/regs-mfc.h
 arch/arm/mach-exynos4/include/mach/regs-mixer.h
 arch/arm/mach-exynos4/include/mach/regs-pmu-4210.h
@@ -231,10 +227,7 @@ arch/arm/mach-exynos4/include/mach/sromc-exynos4.h
 arch/arm/mach-exynos4/include/mach/subsystem_notif.h
 arch/arm/mach-exynos4/include/mach/subsystem_restart.h
 arch/arm/mach-exynos4/include/mach/sysmmu.h
-arch/arm/mach-exynos4/include/mach/system.h
 arch/arm/mach-exynos4/include/mach/tdmb_pdata.h
-arch/arm/mach-exynos4/include/mach/timex.h
-arch/arm/mach-exynos4/include/mach/uncompress.h
 arch/arm/mach-exynos4/include/mach/usb_bridge.h
 arch/arm/mach-exynos4/include/mach/usb_switch.h
 arch/arm/mach-exynos4/include/mach/usbdiag.h
