@@ -287,8 +287,6 @@ arch/arm/mach-exynos4/setup-fimc0.c
 arch/arm/mach-exynos4/setup-fimc1.c
 arch/arm/mach-exynos4/setup-fimc2.c
 arch/arm/mach-exynos4/setup-fimc3.c
-arch/arm/mach-exynos4/setup-i2c0.c
-arch/arm/mach-exynos4/setup-i2c1.c
 arch/arm/mach-exynos4/setup-i2c2.c
 arch/arm/mach-exynos4/setup-i2c3.c
 arch/arm/mach-exynos4/setup-i2c4.c
