@@ -37,7 +37,7 @@
 #include <plat/regs-watchdog.h>
 #endif
 
-extern void exynos_secondary_startup(void);
+extern void exynos4_secondary_startup(void);
 extern unsigned int gic_bank_offset;
 
 struct _cpu_boot_info {
@@ -181,7 +181,7 @@ int __cpuinit boot_secondary(unsigned int cpu, struct task_struct *idle)
 	while (time_before(jiffies, timeout)) {
 		smp_rmb();
 
-		__raw_writel(BSYM(virt_to_phys(exynos_secondary_startup)),
+		__raw_writel(BSYM(virt_to_phys(exynos4_secondary_startup)),
 			cpu_boot_info[cpu].boot_base);
 
 #ifdef CONFIG_ARM_TRUSTZONE

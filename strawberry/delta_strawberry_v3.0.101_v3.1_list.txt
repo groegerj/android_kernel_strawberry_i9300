@@ -135,7 +135,6 @@ arch/arm/mach-exynos4/dev.c
 arch/arm/mach-exynos4/dispfreq_opp_exynos4.c
 arch/arm/mach-exynos4/dma.c
 arch/arm/mach-exynos4/exynos4-smc.c
-arch/arm/mach-exynos4/headsmp.S
 arch/arm/mach-exynos4/hotplug.c
 arch/arm/mach-exynos4/idle-exynos4.S
 arch/arm/mach-exynos4/include/mach/asv.h
@@ -151,7 +150,6 @@ arch/arm/mach-exynos4/include/mach/c2c.h
 arch/arm/mach-exynos4/include/mach/clkdev.h
 arch/arm/mach-exynos4/include/mach/clock-domain.h
 arch/arm/mach-exynos4/include/mach/cpufreq.h
-arch/arm/mach-exynos4/include/mach/debug-macro.S
 arch/arm/mach-exynos4/include/mach/dev-sysmmu.h
 arch/arm/mach-exynos4/include/mach/dev.h
 arch/arm/mach-exynos4/include/mach/diag_bridge.h
