@@ -44,6 +44,7 @@ drivers/sbus/
 drivers/scsi/
 drivers/spi/
 drivers/staging/
+drivers/usb/misc/
 drivers/vhost/
 drivers/video/
 drivers/w1/

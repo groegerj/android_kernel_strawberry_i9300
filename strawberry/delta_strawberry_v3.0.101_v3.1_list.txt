@@ -744,8 +744,6 @@ drivers/usb/host/ehci-s5p.c
 drivers/usb/host/ehci.h
 drivers/usb/host/ohci-hcd.c
 drivers/usb/host/ohci-s5p.c
-drivers/usb/misc/Kconfig
-drivers/usb/misc/Makefile
 drivers/usb/notify
 drivers/usb/otg/Kconfig
 drivers/usb/otg/Makefile
