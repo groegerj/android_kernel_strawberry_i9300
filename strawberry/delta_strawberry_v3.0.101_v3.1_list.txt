@@ -523,10 +523,6 @@ drivers/base/dma-contiguous.c
 drivers/base/iommu.c
 drivers/base/memory.c
 drivers/base/platform.c
-drivers/base/power/main.c
-drivers/base/power/opp.c
-drivers/base/power/runtime.c
-drivers/base/power/sysfs.c
 drivers/base/s5p-iommu.c
 drivers/base/sw_sync.c
 drivers/base/sync.c
@@ -1032,7 +1028,9 @@ include/linux/platform_data/usb3503.h
 include/linux/platform_data/usb3503_otg_conn.h
 include/linux/platform_device.h
 include/linux/plist.h
+include/linux/pm.h
 include/linux/pm_qos_params.h
+include/linux/pm_runtime.h
 include/linux/pn544.h
 include/linux/poison.h
 include/linux/posix_acl.h

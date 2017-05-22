@@ -6,6 +6,7 @@ arch/arm/mach-s3c2440/
 arch/arm/vfp/
 crypto/
 drivers/atm/
+drivers/base/power/
 drivers/block/
 drivers/char/ipmi/
 drivers/connector/
