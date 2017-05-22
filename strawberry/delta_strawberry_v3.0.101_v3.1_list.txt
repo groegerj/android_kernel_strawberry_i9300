@@ -100,8 +100,6 @@ arch/arm/mach-exynos4/Kconfig.local
 arch/arm/mach-exynos4/Makefile
 arch/arm/mach-exynos4/asv-4x12.c
 arch/arm/mach-exynos4/asv.c
-arch/arm/mach-exynos4/bcm47511.c
-arch/arm/mach-exynos4/bcm4752.c
 arch/arm/mach-exynos4/board-bluetooth-bcm4334.c
 arch/arm/mach-exynos4/board-gps-bcm475x.c
 arch/arm/mach-exynos4/board-m0-modems.c
@@ -132,7 +130,6 @@ arch/arm/mach-exynos4/dev-spi.c
 arch/arm/mach-exynos4/dev-sysmmu-exynos4.c
 arch/arm/mach-exynos4/dev-sysmmu.c
 arch/arm/mach-exynos4/dev.c
-arch/arm/mach-exynos4/dispfreq_opp_exynos4.c
 arch/arm/mach-exynos4/dma.c
 arch/arm/mach-exynos4/exynos4-smc.c
 arch/arm/mach-exynos4/hotplug.c
