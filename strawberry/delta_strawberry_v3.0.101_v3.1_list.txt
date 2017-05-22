@@ -701,8 +701,6 @@ drivers/usb/gadget/android.c
 drivers/usb/gadget/composite.c
 drivers/usb/gadget/epautoconf.c
 drivers/usb/gadget/ether.c
-drivers/usb/gadget/exynos_ss_udc.c
-drivers/usb/gadget/exynos_ss_udc.h
 drivers/usb/gadget/f_accessory.c
 drivers/usb/gadget/f_acm.c
 drivers/usb/gadget/f_adb.c
@@ -752,7 +750,6 @@ drivers/usb/host/xhci-pci.c
 drivers/usb/host/xhci-ring.c
 drivers/usb/host/xhci.c
 drivers/usb/host/xhci.h
-drivers/usb/image/microtek.c
 drivers/usb/misc/Kconfig
 drivers/usb/misc/Makefile
 drivers/usb/misc/appledisplay.c
