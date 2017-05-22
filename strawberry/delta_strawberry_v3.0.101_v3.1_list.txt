@@ -864,12 +864,10 @@ include/linux/android_aid.h
 include/linux/android_alarm.h
 include/linux/ashmem.h
 include/linux/atmdev.h
-include/linux/atmel_mxt1386.h
 include/linux/atomic.h
 include/linux/backing-dev.h
 include/linux/backlight.h
 include/linux/battery
-include/linux/bh1721fvc.h
 include/linux/binfmts.h
 include/linux/bit_spinlock.h
 include/linux/bitmap.h
@@ -945,7 +943,6 @@ include/linux/i2c/mms114.h
 include/linux/i2c/mxt224_u1.h
 include/linux/i2c/si47xx_common.h
 include/linux/i2c/touchkey_i2c.h
-include/linux/i2c/voice_processor.h
 include/linux/ieee80211.h
 include/linux/if_packet.h
 include/linux/if_pppolac.h
@@ -958,8 +955,6 @@ include/linux/interrupt.h
 include/linux/iommu.h
 include/linux/ion.h
 include/linux/ipc_namespace.h
-include/linux/ir_remote_con.h
-include/linux/ir_remote_con_mc96.h
 include/linux/irq.h
 include/linux/isa1200_vibrator.h
 include/linux/jack.h
@@ -981,7 +976,6 @@ include/linux/leds-an30259a.h
 include/linux/leds-lp5521.h
 include/linux/leds-max77693.h
 include/linux/leds-max8997.h
-include/linux/leds-spfcw043.h
 include/linux/leds.h
 include/linux/lockdep.h
 include/linux/loop.h
@@ -1004,7 +998,6 @@ include/linux/mfd/s5m87xx
 include/linux/mfd/wm8994/core.h
 include/linux/mfd/wm8994/pdata.h
 include/linux/mfd/wm8994/registers.h
-include/linux/mhd9234.h
 include/linux/migrate.h
 include/linux/miscdevice.h
 include/linux/mlx4/device.h
@@ -1021,8 +1014,6 @@ include/linux/mmc/pm.h
 include/linux/mmc/sdhci.h
 include/linux/mmc/sdio.h
 include/linux/mmc/sdio_func.h
-include/linux/mms152.h
-include/linux/mms_ts_gc.h
 include/linux/mmzone.h
 include/linux/mod_devicetable.h
 include/linux/module.h
@@ -1030,13 +1021,7 @@ include/linux/mount.h
 include/linux/mpu.h
 include/linux/mpu3050.h
 include/linux/mpu6000.h
-include/linux/mpu6050a2.h
-include/linux/mpu6050b1.h
-include/linux/mpu6x.h
-include/linux/mpu_411.h
 include/linux/msdos_fs.h
-include/linux/msm_charm.h
-include/linux/msm_rmnet.h
 include/linux/mutex.h
 include/linux/namei.h
 include/linux/netdevice.h
@@ -1079,8 +1064,6 @@ include/linux/power/charger-manager.h
 include/linux/power/max17042_fuelgauge_px.h
 include/linux/power/max17042_fuelgauge_u1.h
 include/linux/power/max8922_charger_u1.h
-include/linux/power/sec_battery_px.h
-include/linux/power/sec_battery_u1.h
 include/linux/power/smb136_charger.h
 include/linux/power/smb136_charger_q1.h
 include/linux/power/smb328_charger.h
@@ -1094,8 +1077,6 @@ include/linux/radix-tree.h
 include/linux/rbtree.h
 include/linux/rcupdate.h
 include/linux/regmap.h
-include/linux/regulator/lp8720.h
-include/linux/rmi.h
 include/linux/rtmutex.h
 include/linux/rtnetlink.h
 include/linux/rwsem.h
@@ -1109,7 +1090,6 @@ include/linux/serial_core.h
 include/linux/shm.h
 include/linux/shmem_fs.h
 include/linux/shrinker.h
-include/linux/si4705_pdata.h
 include/linux/sii9234.h
 include/linux/sii9234_rcp.h
 include/linux/skbuff.h
@@ -1132,8 +1112,6 @@ include/linux/sw_sync.h
 include/linux/swap.h
 include/linux/swapops.h
 include/linux/switch.h
-include/linux/synaptics_i2c_rmi.h
-include/linux/synaptics_s7301.h
 include/linux/sync.h
 include/linux/sysfs.h
 include/linux/tcp.h
@@ -1197,7 +1175,6 @@ include/rxrpc/types.h
 include/scsi/scsi_device.h
 include/scsi/scsi_host.h
 include/trace/events/asoc.h
-include/trace/events/cpufreq_interactive.h
 include/trace/events/ext4.h
 include/trace/events/f2fs.h
 include/trace/events/sock.h
