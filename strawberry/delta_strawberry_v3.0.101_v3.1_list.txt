@@ -744,12 +744,6 @@ drivers/usb/host/ehci-s5p.c
 drivers/usb/host/ehci.h
 drivers/usb/host/ohci-hcd.c
 drivers/usb/host/ohci-s5p.c
-drivers/usb/host/xhci-exynos.c
-drivers/usb/host/xhci-mem.c
-drivers/usb/host/xhci-pci.c
-drivers/usb/host/xhci-ring.c
-drivers/usb/host/xhci.c
-drivers/usb/host/xhci.h
 drivers/usb/misc/Kconfig
 drivers/usb/misc/Makefile
 drivers/usb/misc/appledisplay.c
