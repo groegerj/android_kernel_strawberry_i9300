@@ -746,13 +746,6 @@ drivers/usb/host/ohci-hcd.c
 drivers/usb/host/ohci-s5p.c
 drivers/usb/misc/Kconfig
 drivers/usb/misc/Makefile
-drivers/usb/misc/appledisplay.c
-drivers/usb/misc/diag_bridge.c
-drivers/usb/misc/diag_bridge_test.c
-drivers/usb/misc/exynos-usb-switch.c
-drivers/usb/misc/exynos-usb-switch.h
-drivers/usb/misc/mdm_ctrl_bridge.c
-drivers/usb/misc/mdm_data_bridge.c
 drivers/usb/notify
 drivers/usb/otg/Kconfig
 drivers/usb/otg/Makefile
