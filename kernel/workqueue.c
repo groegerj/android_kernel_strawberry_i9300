@@ -993,7 +993,7 @@ static void __queue_work(unsigned int cpu, struct workqueue_struct *wq,
 	debug_work_activate(work);
 
 	/* if dying, only works from the same workqueue are allowed */
-	if (unlikely(wq->flags & WQ_DYING) &&
+	if (unlikely(wq->flags & WQ_DRAINING) &&
 	    WARN_ON_ONCE(!is_chained_work(wq)))
 		return;
 
@@ -1118,7 +1118,7 @@ static void __queue_work_front(unsigned int cpu, struct workqueue_struct *wq,
 	debug_work_activate(work);
 
 	/* if dying, only works from the same workqueue are allowed */
-	if (unlikely(wq->flags & WQ_DYING) &&
+	if (unlikely(wq->flags & WQ_DRAINING) &&
 	    WARN_ON_ONCE(!is_chained_work(wq)))
 		return;
 
@@ -3179,14 +3179,14 @@ void destroy_workqueue(struct workqueue_struct *wq)
 	unsigned int cpu;
 
 	/*
-	 * Mark @wq dying and drain all pending works.  Once WQ_DYING is
+	 * Mark @wq dying and drain all pending works.  Once WQ_DRAINING is
 	 * set, only chain queueing is allowed.  IOW, only currently
 	 * pending or running work items on @wq can queue further work
 	 * items on it.  @wq is flushed repeatedly until it becomes empty.
 	 * The number of flushing is detemined by the depth of chaining and
 	 * should be relatively short.  Whine if it takes too long.
 	 */
-	wq->flags |= WQ_DYING;
+	wq->flags |= WQ_DRAINING;
 reflush:
 	flush_workqueue(wq);
 
