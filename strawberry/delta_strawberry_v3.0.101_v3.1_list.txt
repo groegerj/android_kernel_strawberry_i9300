@@ -227,7 +227,6 @@ arch/arm/mach-exynos4/include/mach/usbdiag.h
 arch/arm/mach-exynos4/include/mach/videonode-exynos4.h
 arch/arm/mach-exynos4/include/mach/videonode.h
 arch/arm/mach-exynos4/include/mach/vmalloc.h
-arch/arm/mach-exynos4/init.c
 arch/arm/mach-exynos4/irq-combiner.c
 arch/arm/mach-exynos4/irq-eint.c
 arch/arm/mach-exynos4/irq-sgi.c

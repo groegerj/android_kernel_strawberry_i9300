@@ -14,7 +14,7 @@
 
 struct s3c2410_uartcfg;
 
-extern void exynos_common_init_uarts(struct s3c2410_uartcfg *cfg, int no);
+extern void exynos4_common_init_uarts(struct s3c2410_uartcfg *cfg, int no);
 extern void exynos5_register_clocks(void);
 extern void exynos5_setup_clocks(void);
 
@@ -26,7 +26,7 @@ extern void exynos5_map_io(void);
 extern void exynos5_init_clocks(int xtal);
 extern struct sys_timer exynos4_timer;
 
-#define exynos5_init_uarts exynos_common_init_uarts
+#define exynos5_init_uarts exynos4_common_init_uarts
 
 #else
 #define exynos5_init_clocks NULL
