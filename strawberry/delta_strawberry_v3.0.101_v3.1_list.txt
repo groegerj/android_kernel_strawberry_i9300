@@ -1006,6 +1006,7 @@ include/linux/nls.h
 include/linux/opp.h
 include/linux/oprofile.h
 include/linux/page-isolation.h
+include/linux/pagemap.h
 include/linux/pci.h
 include/linux/pda_power.h
 include/linux/perf_event.h
