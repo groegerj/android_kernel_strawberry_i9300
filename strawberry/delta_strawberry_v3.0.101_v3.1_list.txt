@@ -1241,6 +1241,7 @@ mm/internal.h
 mm/kmemleak.c
 mm/madvise.c
 mm/memcontrol.c
+mm/mempolicy.c
 mm/migrate-cma.c
 mm/migrate.c
 mm/mincore.c
