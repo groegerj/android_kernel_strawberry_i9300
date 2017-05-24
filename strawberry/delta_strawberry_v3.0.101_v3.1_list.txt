@@ -1249,10 +1249,14 @@ mm/mempolicy.c
 mm/migrate-cma.c
 mm/migrate.c
 mm/mincore.c
+mm/nobootmem.c
+mm/nommu.c
+mm/oom_kill.c
 mm/page-writeback.c
 mm/page_alloc-cma.c
 mm/page_alloc.c
 mm/page_isolation-cma.c
+mm/pagewalk.c
 mm/percpu-vm.c
 mm/percpu.c
 mm/rmap.c
