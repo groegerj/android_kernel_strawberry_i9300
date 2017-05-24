@@ -1249,6 +1249,7 @@
 !| !!| !!!: mm/shmem.c
 !| !!| !!!: mm/slob.c
 !| !!| !!!: mm/sparse.c
+!| !!| !!!: mm/swapfile.c
 !| !!| !!!: mm/truncate.c
 !| !!| !!!: mm/vmalloc.c
 !| !!| !!!: mm/vmscan.c
