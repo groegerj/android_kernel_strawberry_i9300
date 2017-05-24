@@ -570,6 +570,4 @@ config SENSORS_HALL
 
 source "drivers/input/keyboard/cypress/Kconfig"
 
-source "drivers/input/keyboard/cypressbln/Kconfig"
-
 endif

@@ -34,10 +34,6 @@ arch/arm/Kconfig.debug
 arch/arm/Makefile
 arch/arm/common/Kconfig
 arch/arm/common/Makefile
-arch/arm/common/fiq_debugger.c
-arch/arm/common/fiq_debugger_ringbuf.h
-arch/arm/common/fiq_glue.S
-arch/arm/common/fiq_glue_setup.c
 arch/arm/common/gic.c
 arch/arm/common/pl330.c
 arch/arm/configs/lineageos_i9300_defconfig
@@ -49,8 +45,6 @@ arch/arm/include/asm/cacheflush.h
 arch/arm/include/asm/device.h
 arch/arm/include/asm/dma-contiguous.h
 arch/arm/include/asm/dma-mapping.h
-arch/arm/include/asm/fiq_debugger.h
-arch/arm/include/asm/fiq_glue.h
 arch/arm/include/asm/hardirq.h
 arch/arm/include/asm/hardware/cache-l2x0.h
 arch/arm/include/asm/hardware/coresight.h
@@ -149,7 +143,6 @@ arch/arm/mach-exynos4/include/mach/clock-domain.h
 arch/arm/mach-exynos4/include/mach/cpufreq.h
 arch/arm/mach-exynos4/include/mach/dev-sysmmu.h
 arch/arm/mach-exynos4/include/mach/dev.h
-arch/arm/mach-exynos4/include/mach/diag_bridge.h
 arch/arm/mach-exynos4/include/mach/dsim.h
 arch/arm/mach-exynos4/include/mach/dwmci.h
 arch/arm/mach-exynos4/include/mach/entry-macro.S
@@ -180,7 +173,6 @@ arch/arm/mach-exynos4/include/mach/midas-wacom.h
 arch/arm/mach-exynos4/include/mach/mipi_ddi.h
 arch/arm/mach-exynos4/include/mach/msm_smd.h
 arch/arm/mach-exynos4/include/mach/msm_smsm.h
-arch/arm/mach-exynos4/include/mach/pld_pdata.h
 arch/arm/mach-exynos4/include/mach/pm-core.h
 arch/arm/mach-exynos4/include/mach/pmu.h
 arch/arm/mach-exynos4/include/mach/ppmu.h
@@ -217,8 +209,6 @@ arch/arm/mach-exynos4/include/mach/secmem.h
 arch/arm/mach-exynos4/include/mach/smc.h
 arch/arm/mach-exynos4/include/mach/spi-clocks.h
 arch/arm/mach-exynos4/include/mach/sromc-exynos4.h
-arch/arm/mach-exynos4/include/mach/subsystem_notif.h
-arch/arm/mach-exynos4/include/mach/subsystem_restart.h
 arch/arm/mach-exynos4/include/mach/sysmmu.h
 arch/arm/mach-exynos4/include/mach/tdmb_pdata.h
 arch/arm/mach-exynos4/include/mach/usb_bridge.h
@@ -415,7 +405,6 @@ arch/arm/plat-s5p/include/plat/regs_jpeg_v2_x.h
 arch/arm/plat-s5p/include/plat/s5p-clock.h
 arch/arm/plat-s5p/include/plat/s5p-iovmm.h
 arch/arm/plat-s5p/include/plat/s5p-mfc.h
-arch/arm/plat-s5p/include/plat/s5p-otghost.h
 arch/arm/plat-s5p/include/plat/s5p-sysmmu.h
 arch/arm/plat-s5p/include/plat/s5p-tmu.h
 arch/arm/plat-s5p/include/plat/sysmmu.h
@@ -557,7 +546,6 @@ drivers/input/input.c
 drivers/input/keyboard/Kconfig
 drivers/input/keyboard/Makefile
 drivers/input/keyboard/cypress
-drivers/input/keyboard/cypressbln
 drivers/input/keyboard/gpio_keys.c
 drivers/input/keyboard/samsung-keypad.c
 drivers/input/keyreset.c
@@ -872,7 +860,6 @@ include/linux/devfreq
 include/linux/devfreq.h
 include/linux/device-mapper.h
 include/linux/device.h
-include/linux/diagchar.h
 include/linux/dma-buf.h
 include/linux/dma-contiguous.h
 include/linux/earlysuspend.h
@@ -913,7 +900,6 @@ include/linux/hwmon.h
 include/linux/i2c/ak8975.h
 include/linux/i2c/es305.h
 include/linux/i2c/fm34_we395.h
-include/linux/i2c/mms114.h
 include/linux/i2c/mxt224_u1.h
 include/linux/i2c/si47xx_common.h
 include/linux/i2c/touchkey_i2c.h
@@ -965,9 +951,6 @@ include/linux/mfd/max77686-private.h
 include/linux/mfd/max77686.h
 include/linux/mfd/max77693-private.h
 include/linux/mfd/max77693.h
-include/linux/mfd/max8698-private.h
-include/linux/mfd/max8698.h
-include/linux/mfd/mc1n2_pdata.h
 include/linux/mfd/s5m87xx
 include/linux/mfd/wm8994/core.h
 include/linux/mfd/wm8994/pdata.h
@@ -1038,11 +1021,7 @@ include/linux/pn544.h
 include/linux/poison.h
 include/linux/posix_acl.h
 include/linux/power/charger-manager.h
-include/linux/power/max17042_fuelgauge_px.h
-include/linux/power/max17042_fuelgauge_u1.h
 include/linux/power/max8922_charger_u1.h
-include/linux/power/smb136_charger.h
-include/linux/power/smb136_charger_q1.h
 include/linux/power/smb328_charger.h
 include/linux/power/smb347_charger.h
 include/linux/power_supply.h
@@ -1068,7 +1047,6 @@ include/linux/shm.h
 include/linux/shmem_fs.h
 include/linux/shrinker.h
 include/linux/sii9234.h
-include/linux/sii9234_rcp.h
 include/linux/skbuff.h
 include/linux/slab.h
 include/linux/slub_def.h
@@ -1129,7 +1107,6 @@ include/linux/workqueue.h
 include/linux/writeback.h
 include/linux/xattr.h
 include/linux/zsmalloc.h
-include/media/db8131m_platform.h
 include/media/exynos_camera.h
 include/media/exynos_fimc_is.h
 include/media/exynos_flite.h
