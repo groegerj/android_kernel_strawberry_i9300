@@ -1234,7 +1234,11 @@ mm/cma-best-fit.c
 mm/cma.c
 mm/compaction-cma.c
 mm/compaction.c
+mm/dmapool.c
+mm/fadvise.c
+mm/failslab.c
 mm/filemap.c
+mm/filemap_xip.c
 mm/highmem.c
 mm/hugetlb.c
 mm/init-mm.c
