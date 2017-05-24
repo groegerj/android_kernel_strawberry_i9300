@@ -464,8 +464,6 @@ int add_to_page_cache_locked(struct page *page, struct address_space *mapping,
 		if (likely(!error)) {
 			mapping->nrpages++;
 			__inc_zone_page_state(page, NR_FILE_PAGES);
-			if (PageSwapBacked(page))
-				__inc_zone_page_state(page, NR_SHMEM);
 			spin_unlock_irq(&mapping->tree_lock);
 		} else {
 			page->mapping = NULL;
@@ -485,15 +483,6 @@ int add_to_page_cache_lru(struct page *page, struct address_space *mapping,
 				pgoff_t offset, gfp_t gfp_mask)
 {
 	int ret;
-
-	/*
-	 * Splice_read and readahead add shmem/tmpfs pages into the page cache
-	 * before shmem_readpage has a chance to mark them as SwapBacked: they
-	 * need to go on the anon lru below, and mem_cgroup_cache_charge
-	 * (called in add_to_page_cache) needs to know where they're going too.
-	 */
-	if (mapping_cap_swap_backed(mapping))
-		SetPageSwapBacked(page);
 
 	ret = add_to_page_cache(page, mapping, offset, gfp_mask);
 	if (ret == 0) {
@@ -702,10 +691,14 @@ repeat:
 		if (unlikely(!page))
 			goto out;
 		if (radix_tree_exception(page)) {
-			if (radix_tree_exceptional_entry(page))
-				goto out;
-			/* radix_tree_deref_retry(page) */
-			goto repeat;
+			if (radix_tree_deref_retry(page))
+				goto repeat;
+			/*
+			 * Otherwise, shmem/tmpfs must be storing a swap entry
+			 * here as an exceptional entry: so return it without
+			 * attempting to raise page count.
+			 */
+			goto out;
 		}
 		if (!page_cache_get_speculative(page))
 			goto repeat;
@@ -840,15 +833,21 @@ repeat:
 			continue;
 
 		if (radix_tree_exception(page)) {
-			if (radix_tree_exceptional_entry(page))
-				continue;
+			if (radix_tree_deref_retry(page)) {
+				/*
+				 * Transient condition which can only trigger
+				 * when entry at index 0 moves out of or back
+				 * to root: none yet gotten, safe to restart.
+				 */
+				WARN_ON(start | i);
+				goto restart;
+			}
 			/*
-			 * radix_tree_deref_retry(page):
-			 * can only trigger when entry at index 0 moves out of
-			 * or back to root: none yet gotten, safe to restart.
+			 * Otherwise, shmem/tmpfs must be storing a swap entry
+			 * here as an exceptional entry: so skip over it -
+			 * we only reach this from invalidate_mapping_pages().
 			 */
-			WARN_ON(start | i);
-			goto restart;
+			continue;
 		}
 
 		if (!page_cache_get_speculative(page))
@@ -906,14 +905,20 @@ repeat:
 			continue;
 
 		if (radix_tree_exception(page)) {
-			if (radix_tree_exceptional_entry(page))
-				break;
+			if (radix_tree_deref_retry(page)) {
+				/*
+				 * Transient condition which can only trigger
+				 * when entry at index 0 moves out of or back
+				 * to root: none yet gotten, safe to restart.
+				 */
+				goto restart;
+			}
 			/*
-			 * radix_tree_deref_retry(page):
-			 * can only trigger when entry at index 0 moves out of
-			 * or back to root: none yet gotten, safe to restart.
+			 * Otherwise, shmem/tmpfs must be storing a swap entry
+			 * here as an exceptional entry: so stop looking for
+			 * contiguous pages.
 			 */
-			goto restart;
+			break;
 		}
 
 		if (!page_cache_get_speculative(page))
@@ -975,13 +980,19 @@ repeat:
 			continue;
 
 		if (radix_tree_exception(page)) {
-			BUG_ON(radix_tree_exceptional_entry(page));
+			if (radix_tree_deref_retry(page)) {
+				/*
+				 * Transient condition which can only trigger
+				 * when entry at index 0 moves out of or back
+				 * to root: none yet gotten, safe to restart.
+				 */
+				goto restart;
+			}
 			/*
-			 * radix_tree_deref_retry(page):
-			 * can only trigger when entry at index 0 moves out of
-			 * or back to root: none yet gotten, safe to restart.
+			 * This function is never used on a shmem/tmpfs
+			 * mapping, so a swap entry won't be found here.
 			 */
-			goto restart;
+			BUG();
 		}
 
 		if (!page_cache_get_speculative(page))
