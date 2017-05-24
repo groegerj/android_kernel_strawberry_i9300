@@ -807,6 +807,7 @@ fs/proc/meminfo.c
 fs/proc/proc_sysctl.c
 fs/proc/task_mmu.c
 fs/splice.c
+fs/stack.c
 fs/stat.c
 fs/super.c
 fs/sync.c
@@ -1242,6 +1243,7 @@ mm/madvise.c
 mm/memcontrol.c
 mm/migrate-cma.c
 mm/migrate.c
+mm/mincore.c
 mm/page-writeback.c
 mm/page_alloc-cma.c
 mm/page_isolation-cma.c
