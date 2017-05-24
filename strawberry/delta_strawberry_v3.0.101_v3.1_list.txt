@@ -862,6 +862,7 @@ include/linux/cpuacct.h
 include/linux/cpufreq.h
 include/linux/cpufreq_pegasusq.h
 include/linux/cpuidle.h
+include/linux/cpuset.h
 include/linux/cred.h
 include/linux/crypto.h
 include/linux/dcache.h
@@ -1247,6 +1248,7 @@ mm/migrate.c
 mm/mincore.c
 mm/page-writeback.c
 mm/page_alloc-cma.c
+mm/page_alloc.c
 mm/page_isolation-cma.c
 mm/rmap.c
 mm/shmem.c
