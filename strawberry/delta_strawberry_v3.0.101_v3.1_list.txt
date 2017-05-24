@@ -1242,6 +1242,9 @@ mm/internal.h
 mm/kmemleak.c
 mm/madvise.c
 mm/memcontrol.c
+mm/memory-failure.c
+mm/memory.c
+mm/memory_hotplug.c
 mm/mempolicy.c
 mm/migrate-cma.c
 mm/migrate.c
@@ -1256,10 +1259,13 @@ mm/slab.c
 mm/slob.c
 mm/slub.c
 mm/sparse.c
+mm/swap.c
+mm/swap_state.c
 mm/swapfile.c
 mm/truncate.c
 mm/vmalloc.c
 mm/vmscan.c
+mm/vmstat.c
 mm/zsmalloc.c
 scripts/mkmodimg.sh
 security/capability.c
