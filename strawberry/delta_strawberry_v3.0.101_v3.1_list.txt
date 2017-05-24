@@ -1250,6 +1250,7 @@ mm/page_alloc-cma.c
 mm/page_isolation-cma.c
 mm/rmap.c
 mm/shmem.c
+mm/slab.c
 mm/slob.c
 mm/slub.c
 mm/sparse.c

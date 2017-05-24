@@ -1250,6 +1250,7 @@
 0| <<| <<<: mm/page_isolation-cma.c
 !| !0| !!!: mm/rmap.c
 !| !!| !!!: mm/shmem.c
+!| !0| !!!: mm/slab.c
 !| !0| !!!: mm/slob.c
 !| !0| !!!: mm/slub.c
 !| !0| !!!: mm/sparse.c
