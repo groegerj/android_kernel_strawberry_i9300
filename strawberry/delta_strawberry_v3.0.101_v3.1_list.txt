@@ -761,6 +761,7 @@ firmware/tsp_atmel
 firmware/tsp_melfas
 fs/Kconfig
 fs/Makefile
+fs/attr.c
 fs/bad_inode.c
 fs/binfmt_elf.c
 fs/binfmt_misc.c
@@ -1236,6 +1237,7 @@ mm/hugetlb.c
 mm/init-mm.c
 mm/internal.h
 mm/kmemleak.c
+mm/madvise.c
 mm/memcontrol.c
 mm/migrate-cma.c
 mm/migrate.c
@@ -1246,6 +1248,7 @@ mm/rmap.c
 mm/shmem.c
 mm/slob.c
 mm/sparse.c
+mm/truncate.c
 mm/vmalloc.c
 mm/vmscan.c
 mm/zsmalloc.c

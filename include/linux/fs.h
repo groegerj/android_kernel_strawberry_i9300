@@ -786,7 +786,6 @@ struct inode {
 	blkcnt_t		i_blocks;
 	unsigned short          i_bytes;
 	atomic_t		i_dio_count;
-	struct rw_semaphore	i_alloc_sem;
 	const struct file_operations	*i_fop;	/* former ->i_op->default_file_ops */
 	struct file_lock	*i_flock;
 	struct address_space	*i_mapping;
@@ -1854,7 +1853,6 @@ struct file_system_type {
 	struct lock_class_key i_lock_key;
 	struct lock_class_key i_mutex_key;
 	struct lock_class_key i_mutex_dir_key;
-	struct lock_class_key i_alloc_sem_key;
 };
 
 #define MODULE_ALIAS_FS(NAME) MODULE_ALIAS("fs-" NAME)
