@@ -1251,6 +1251,7 @@ mm/page_isolation-cma.c
 mm/rmap.c
 mm/shmem.c
 mm/slob.c
+mm/slub.c
 mm/sparse.c
 mm/swapfile.c
 mm/truncate.c
