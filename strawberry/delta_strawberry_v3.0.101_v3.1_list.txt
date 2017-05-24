@@ -1242,6 +1242,7 @@ mm/migrate.c
 mm/page-writeback.c
 mm/page_alloc-cma.c
 mm/page_isolation-cma.c
+mm/rmap.c
 mm/shmem.c
 mm/slob.c
 mm/sparse.c
