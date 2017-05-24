@@ -256,7 +256,7 @@ struct vmap_area {
 	struct rb_node rb_node;		/* address sorted rbtree */
 	struct list_head list;		/* address sorted list */
 	struct list_head purge_list;	/* "lazy purge" list */
-	struct vm_struct *vm;
+	void *private;
 	struct rcu_head rcu_head;
 };
 
@@ -452,13 +452,6 @@ overflow:
 	return ERR_PTR(-EBUSY);
 }
 
-static void rcu_free_va(struct rcu_head *head)
-{
-	struct vmap_area *va = container_of(head, struct vmap_area, rcu_head);
-
-	kfree(va);
-}
-
 static void __free_vmap_area(struct vmap_area *va)
 {
 	BUG_ON(RB_EMPTY_NODE(&va->rb_node));
@@ -491,7 +484,7 @@ static void __free_vmap_area(struct vmap_area *va)
 	if (va->va_end > VMALLOC_START && va->va_end <= VMALLOC_END)
 		vmap_area_pcpu_hole = max(vmap_area_pcpu_hole, va->va_end);
 
-	call_rcu(&va->rcu_head, rcu_free_va);
+	kfree_rcu(va, rcu_head);
 }
 
 /*
@@ -838,13 +831,6 @@ static struct vmap_block *new_vmap_block(gfp_t gfp_mask)
 	return vb;
 }
 
-static void rcu_free_vb(struct rcu_head *head)
-{
-	struct vmap_block *vb = container_of(head, struct vmap_block, rcu_head);
-
-	kfree(vb);
-}
-
 static void free_vmap_block(struct vmap_block *vb)
 {
 	struct vmap_block *tmp;
@@ -857,7 +843,7 @@ static void free_vmap_block(struct vmap_block *vb)
 	BUG_ON(tmp != vb);
 
 	free_vmap_area_noflush(vb->va);
-	call_rcu(&vb->rcu_head, rcu_free_vb);
+	kfree_rcu(vb, rcu_head);
 }
 
 static void purge_fragmented_blocks(int cpu)
@@ -1174,10 +1160,9 @@ void __init vmalloc_init(void)
 	/* Import existing vmlist entries. */
 	for (tmp = vmlist; tmp; tmp = tmp->next) {
 		va = kzalloc(sizeof(struct vmap_area), GFP_NOWAIT);
-		va->flags = VM_VM_AREA;
+		va->flags = tmp->flags | VM_VM_AREA;
 		va->va_start = (unsigned long)tmp->addr;
 		va->va_end = va->va_start + tmp->size;
-		va->vm = tmp;
 		__insert_vmap_area(va);
 	}
 
@@ -1268,22 +1253,18 @@ EXPORT_SYMBOL_GPL(map_vm_area);
 DEFINE_RWLOCK(vmlist_lock);
 struct vm_struct *vmlist;
 
-static void setup_vmalloc_vm(struct vm_struct *vm, struct vmap_area *va,
+static void insert_vmalloc_vm(struct vm_struct *vm, struct vmap_area *va,
 			      unsigned long flags, void *caller)
 {
+	struct vm_struct *tmp, **p;
+
 	vm->flags = flags;
 	vm->addr = (void *)va->va_start;
 	vm->size = va->va_end - va->va_start;
 	vm->caller = caller;
-	va->vm = vm;
+	va->private = vm;
 	va->flags |= VM_VM_AREA;
-}
 
-static void insert_vmalloc_vmlist(struct vm_struct *vm)
-{
-	struct vm_struct *tmp, **p;
-
-	vm->flags &= ~VM_UNLIST;
 	write_lock(&vmlist_lock);
 	for (p = &vmlist; (tmp = *p) != NULL; p = &tmp->next) {
 		if (tmp->addr >= vm->addr)
@@ -1292,13 +1273,6 @@ static void insert_vmalloc_vmlist(struct vm_struct *vm)
 	vm->next = *p;
 	*p = vm;
 	write_unlock(&vmlist_lock);
-}
-
-static void insert_vmalloc_vm(struct vm_struct *vm, struct vmap_area *va,
-			      unsigned long flags, void *caller)
-{
-	setup_vmalloc_vm(vm, va, flags, caller);
-	insert_vmalloc_vmlist(vm);
 }
 
 static struct vm_struct *__get_vm_area_node(unsigned long size,
@@ -1339,18 +1313,7 @@ static struct vm_struct *__get_vm_area_node(unsigned long size,
 		return NULL;
 	}
 
-	/*
-	 * When this function is called from __vmalloc_node_range,
-	 * we do not add vm_struct to vmlist here to avoid
-	 * accessing uninitialized members of vm_struct such as
-	 * pages and nr_pages fields. They will be set later.
-	 * To distinguish it from others, we use a VM_UNLIST flag.
-	 */
-	if (flags & VM_UNLIST)
-		setup_vmalloc_vm(area, va, flags, caller);
-	else
-		insert_vmalloc_vm(area, va, flags, caller);
-
+	insert_vmalloc_vm(area, va, flags, caller);
 	return area;
 }
 
@@ -1398,7 +1361,7 @@ static struct vm_struct *find_vm_area(const void *addr)
 
 	va = find_vmap_area((unsigned long)addr);
 	if (va && va->flags & VM_VM_AREA)
-		return va->vm;
+		return va->private;
 
 	return NULL;
 }
@@ -1417,21 +1380,18 @@ struct vm_struct *remove_vm_area(const void *addr)
 
 	va = find_vmap_area((unsigned long)addr);
 	if (va && va->flags & VM_VM_AREA) {
-		struct vm_struct *vm = va->vm;
-
-		if (!(vm->flags & VM_UNLIST)) {
-			struct vm_struct *tmp, **p;
-			/*
-			 * remove from list and disallow access to
-			 * this vm_struct before unmap. (address range
-			 * confliction is maintained by vmap.)
-			 */
-			write_lock(&vmlist_lock);
-			for (p = &vmlist; (tmp = *p) != vm; p = &tmp->next)
-				;
-			*p = tmp->next;
-			write_unlock(&vmlist_lock);
-		}
+		struct vm_struct *vm = va->private;
+		struct vm_struct *tmp, **p;
+		/*
+		 * remove from list and disallow access to this vm_struct
+		 * before unmap. (address range confliction is maintained by
+		 * vmap.)
+		 */
+		write_lock(&vmlist_lock);
+		for (p = &vmlist; (tmp = *p) != vm; p = &tmp->next)
+			;
+		*p = tmp->next;
+		write_unlock(&vmlist_lock);
 
 		vmap_debug_free_range(va->va_start, va->va_end);
 		free_unmap_vmap_area(va);
@@ -1642,21 +1602,13 @@ void *__vmalloc_node_range(unsigned long size, unsigned long align,
 	if (!size || (size >> PAGE_SHIFT) > totalram_pages)
 		return NULL;
 
-	area = __get_vm_area_node(size, align, VM_ALLOC | VM_UNLIST,
-				  start, end, node, gfp_mask, caller);
+	area = __get_vm_area_node(size, align, VM_ALLOC, start, end, node,
+				  gfp_mask, caller);
 
 	if (!area)
 		return NULL;
 
 	addr = __vmalloc_area_node(area, gfp_mask, prot, node, caller);
-	if (!addr)
-		return NULL;
-
-	/*
-	 * In this function, newly allocated vm_struct is not added
-	 * to vmlist at __get_vm_area_node(). so, it is added here.
-	 */
-	insert_vmalloc_vmlist(area);
 
 	/*
 	 * A ref_count = 3 is needed because the vm_struct and vmap_area
