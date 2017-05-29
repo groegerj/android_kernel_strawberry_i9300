@@ -1220,7 +1220,6 @@ mm/highmem.c
 mm/huge_memory.c
 mm/hugetlb.c
 mm/init-mm.c
-mm/internal.h
 mm/kmemleak.c
 mm/madvise.c
 mm/memblock.c
