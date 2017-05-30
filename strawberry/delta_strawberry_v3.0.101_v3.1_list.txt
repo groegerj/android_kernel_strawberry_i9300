@@ -855,6 +855,7 @@ include/linux/f2fs_fs.h
 include/linux/fault-inject.h
 include/linux/fb.h
 include/linux/fdtable.h
+include/linux/fib_rules.h
 include/linux/filter.h
 include/linux/firewire.h
 include/linux/fs.h
