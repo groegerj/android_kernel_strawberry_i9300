@@ -862,6 +862,8 @@ include/linux/device-mapper.h
 include/linux/device.h
 include/linux/dma-buf.h
 include/linux/dma-contiguous.h
+include/linux/dma-direction.h
+include/linux/dma-mapping.h
 include/linux/earlysuspend.h
 include/linux/edac.h
 include/linux/etherdevice.h
