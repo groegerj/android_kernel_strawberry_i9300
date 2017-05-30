@@ -758,11 +758,6 @@ fs/f2fs
 fs/fhandle.c
 fs/file_table.c
 fs/fs-writeback.c
-fs/fuse/dev.c
-fs/fuse/dir.c
-fs/fuse/file.c
-fs/fuse/fuse_i.h
-fs/fuse/inode.c
 fs/generic_acl.c
 fs/inode.c
 fs/internal.h
@@ -867,6 +862,7 @@ include/linux/fs.h
 include/linux/fsnotify_backend.h
 include/linux/ftrace.h
 include/linux/ftrace_event.h
+include/linux/fuse.h
 include/linux/genalloc.h
 include/linux/generic_acl.h
 include/linux/genhd.h
