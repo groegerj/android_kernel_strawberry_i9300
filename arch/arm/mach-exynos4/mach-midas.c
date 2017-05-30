@@ -2602,7 +2602,6 @@ static void __init exynos4_reserve_mem(void)
 	};
 #ifdef CONFIG_EXYNOS_CONTENT_PATH_PROTECTION
 	static struct cma_region regions_secure[] = {
-#ifndef CONFIG_DMA_CMA
 #ifdef CONFIG_ION_EXYNOS_CONTIGHEAP_SIZE
 		{
 			.name	= "ion",
@@ -2619,46 +2618,7 @@ static void __init exynos4_reserve_mem(void)
 			.name = "sectbl",
 			.size = SZ_1M,
 		},
-#else
-#if defined(CONFIG_USE_MFC_CMA) && defined(CONFIG_MACH_M0)
-#ifdef CONFIG_ION_EXYNOS_CONTIGHEAP_SIZE
-		{
-			.name = "ion",
-			.size = CONFIG_ION_EXYNOS_CONTIGHEAP_SIZE * SZ_1K,
-			.start = 0x5F200000,
-		},
-#endif
-#ifdef CONFIG_VIDEO_SAMSUNG_MEMSIZE_MFC_SECURE
-		{
-			.name = "mfc-secure",
-			.size = CONFIG_VIDEO_SAMSUNG_MEMSIZE_MFC_SECURE * SZ_1K,
-			.start = 0x5C100000,
-		},
-#endif
-		{
-			.name = "sectbl",
-			.size = SZ_1M,
-			.start = 0x5C000000,
-		},
-#else
-#ifdef CONFIG_ION_EXYNOS_CONTIGHEAP_SIZE
-		{
-			.name   = "ion",
-			.size   = CONFIG_ION_EXYNOS_CONTIGHEAP_SIZE * SZ_1K,
-		},
-#endif
-#ifdef CONFIG_VIDEO_SAMSUNG_MEMSIZE_MFC_SECURE
-		{
-			.name = "mfc-secure",
-			.size = CONFIG_VIDEO_SAMSUNG_MEMSIZE_MFC_SECURE * SZ_1K,
-		},
-#endif
-		{
-			.name = "sectbl",
-			.size = SZ_1M,
-		},
-#endif
-#endif
+
 		{
 			.size = 0
 		},
@@ -3423,8 +3383,6 @@ MACHINE_START(SMDK4412, "SMDK4x12")
 	.timer		= &exynos4_timer,
 #if defined(CONFIG_EXYNOS_C2C)
 	.reserve	= &exynos_c2c_reserve,
-#elif defined(CONFIG_DMA_CMA)
-	.reserve	= &exynos4_reserve,
 #endif
 	.init_early	= &exynos_init_reserve,
 MACHINE_END
@@ -3437,8 +3395,6 @@ MACHINE_START(SMDK4212, "SMDK4x12")
 	.timer		= &exynos4_timer,
 #if defined(CONFIG_EXYNOS_C2C)
 	.reserve	= &exynos_c2c_reserve,
-#elif defined(CONFIG_DMA_CMA)
-	.reserve	= &exynos4_reserve,
 #endif
 	.init_early	= &exynos_init_reserve,
 MACHINE_END

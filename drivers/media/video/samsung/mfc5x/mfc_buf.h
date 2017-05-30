@@ -147,10 +147,6 @@ struct mfc_alloc_buffer {
 	unsigned char *addr;	/* kernel virtual address space */
 	unsigned int type;	/* buffer type			*/
 	int owner;		/* instance context id		*/
-#if defined(CONFIG_DMA_CMA) && defined(CONFIG_USE_MFC_CMA)
-	struct device *dev;
-	dma_addr_t dma_addr;
-#endif
 #if defined(CONFIG_VIDEO_MFC_VCM_UMP)
 	struct vcm_mmu_res *vcm_s;
 	struct vcm_res *vcm_k;
