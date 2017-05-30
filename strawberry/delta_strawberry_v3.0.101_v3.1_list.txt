@@ -777,9 +777,13 @@ fs/proc/meminfo.c
 fs/proc/proc_net.c
 fs/proc/proc_sysctl.c
 fs/proc/task_mmu.c
+fs/read_write.c
+fs/seq_file.c
+fs/signalfd.c
 fs/splice.c
 fs/stack.c
 fs/stat.c
+fs/statfs.c
 fs/super.c
 fs/sync.c
 include/acpi/platform/aclinux.h

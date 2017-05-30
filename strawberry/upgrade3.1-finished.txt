@@ -93,6 +93,8 @@ fs/ntfs/
 fs/ocfs2/
 fs/omfs/
 fs/partitions/
+fs/pstore/
+fs/ramfs/
 fs/reiserfs/
 fs/squashfs/
 fs/sysfs/
