@@ -191,21 +191,19 @@ static struct posix_acl *f2fs_get_acl(struct inode *inode, int type)
 
 int f2fs_check_acl(struct inode *inode, int mask, unsigned int flags)
 {
+	struct posix_acl *acl;
 	int error = -EAGAIN;
 
-	if (flags & IPERM_FLAG_RCU) {
-		if (!negative_cached_acl(inode, ACL_TYPE_ACCESS))
-			error = -ECHILD;
-	} else {
-		struct posix_acl *acl;
+	if (flags & IPERM_FLAG_RCU)
+		return -ECHILD;
 
-		acl = f2fs_get_acl(inode, ACL_TYPE_ACCESS);
-		if (IS_ERR(acl))
-			return PTR_ERR(acl);
-		if (acl) {
-			error = posix_acl_permission(inode, acl, mask);
-			posix_acl_release(acl);
-		}
+	acl = f2fs_get_acl(inode, ACL_TYPE_ACCESS);
+
+	if (IS_ERR(acl))
+		return PTR_ERR(acl);
+	if (acl) {
+		error = posix_acl_permission(inode, acl, mask);
+		posix_acl_release(acl);
 	}
 
 	return error;

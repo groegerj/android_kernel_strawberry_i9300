@@ -853,12 +853,10 @@ include/linux/f2fs_fs.h
 include/linux/fault-inject.h
 include/linux/fb.h
 include/linux/fdtable.h
-include/linux/fib_rules.h
 include/linux/filter.h
 include/linux/firewire.h
 include/linux/fs.h
 include/linux/fsnotify_backend.h
-include/linux/ftrace.h
 include/linux/ftrace_event.h
 include/linux/fuse.h
 include/linux/genalloc.h
