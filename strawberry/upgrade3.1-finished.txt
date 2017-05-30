@@ -50,6 +50,7 @@ drivers/vhost/
 drivers/video/
 drivers/w1/
 drivers/watchdog/
+fs/9p/
 fs/affs/
 fs/afs/
 fs/autofs4/
@@ -57,6 +58,7 @@ fs/btrfs/
 fs/ceph/
 fs/cifs/
 fs/coda/
+fs/dlm/
 fs/ecryptfs/
 fs/exofs/
 fs/ext2/
@@ -74,8 +76,11 @@ fs/jffs2/
 fs/jfs/
 fs/minix/
 fs/nilfs2/
+fs/nfs/
+fs/nfsd/
 fs/nls/
 fs/notify/
+fs/ntfs/
 fs/ocfs2/
 fs/partitions/
 fs/reiserfs/
