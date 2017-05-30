@@ -56,10 +56,6 @@
 #include <linux/delay.h>
 #include <linux/bootmem.h>
 
-#ifdef CONFIG_DMA_CMA
-#include <linux/dma-contiguous.h>
-#endif
-
 #include <asm/mach/arch.h>
 #include <asm/mach-types.h>
 
@@ -3411,39 +3407,6 @@ static void __init exynos_c2c_reserve(void)
 
 	pr_info("%s %10s %8x %8x\n", __func__,
 		region.name, region.start, region.size);
-}
-#endif
-
-#ifdef CONFIG_DMA_CMA
-static void __init exynos4_reserve(void)
-{
-	int ret = 0;
-
-#ifdef CONFIG_USE_FIMC_CMA
-	ret = dma_declare_contiguous(&s3c_device_fimc1.dev,
-		CONFIG_VIDEO_SAMSUNG_MEMSIZE_FIMC1 * SZ_1K, 0x65800000, 0);
-	if (ret != 0)
-		panic("alloc failed for FIMC1\n");
-	else {
-		static struct cma_region fimc_reg = {
-			.name = "fimc1",
-			.size = CONFIG_VIDEO_SAMSUNG_MEMSIZE_FIMC1 * SZ_1K,
-			.start = 0x65800000,
-			.reserved = 1,
-		};
-
-		if (cma_early_region_register(&fimc_reg))
-			pr_err("S5P/CMA: Failed to register '%s'\n",
-						fimc_reg.name);
-	}
-#endif
-
-#if defined(CONFIG_USE_MFC_CMA) && defined(CONFIG_MACH_M0)
-	ret = dma_declare_contiguous(&s5p_device_mfc.dev,
-			0x02800000, 0x5C800000, 0);
-#endif
-	if (ret != 0)
-		printk(KERN_ERR "%s Fail\n", __func__);
 }
 #endif
 
