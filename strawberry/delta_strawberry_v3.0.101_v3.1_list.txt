@@ -768,7 +768,9 @@ fs/namespace.c
 fs/pipe.c
 fs/posix_acl.c
 fs/proc/base.c
+fs/proc/generic.c
 fs/proc/meminfo.c
+fs/proc/proc_net.c
 fs/proc/proc_sysctl.c
 fs/proc/task_mmu.c
 fs/splice.c
@@ -912,7 +914,6 @@ include/linux/leds-lp5521.h
 include/linux/leds-max77693.h
 include/linux/leds-max8997.h
 include/linux/leds.h
-include/linux/lockdep.h
 include/linux/loop.h
 include/linux/lsm_audit.h
 include/linux/magic.h
@@ -999,7 +1000,6 @@ include/linux/power/max8922_charger_u1.h
 include/linux/power/smb328_charger.h
 include/linux/power/smb347_charger.h
 include/linux/power_supply.h
-include/linux/prctl.h
 include/linux/proc_fs.h
 include/linux/ptrace.h
 include/linux/quota.h
@@ -1027,7 +1027,6 @@ include/linux/slub_def.h
 include/linux/snmp.h
 include/linux/sock_diag.h
 include/linux/socket.h
-include/linux/sockios.h
 include/linux/sonet.h
 include/linux/spinlock.h
 include/linux/splice.h
