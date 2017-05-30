@@ -59,6 +59,7 @@ fs/fuse/
 fs/jbd2/
 fs/nls/
 fs/notify/
+fs/partitions/
 fs/sysfs/
 include/crypto/
 include/linux/netfilter/

@@ -765,7 +765,6 @@ fs/libfs.c
 fs/locks.c
 fs/namei.c
 fs/namespace.c
-fs/partitions/check.c
 fs/pipe.c
 fs/posix_acl.c
 fs/proc/base.c
