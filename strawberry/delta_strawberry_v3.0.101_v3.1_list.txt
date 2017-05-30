@@ -759,7 +759,6 @@ fs/block_dev.c
 fs/buffer.c
 fs/dcache.c
 fs/direct-io.c
-fs/drop_caches.c
 fs/ecryptfs/file.c
 fs/ecryptfs/inode.c
 fs/eventpoll.c
@@ -777,7 +776,6 @@ fs/generic_acl.c
 fs/inode.c
 fs/internal.h
 fs/jbd2/checkpoint.c
-fs/jbd2/transaction.c
 fs/libfs.c
 fs/locks.c
 fs/namei.c
