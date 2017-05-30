@@ -761,7 +761,6 @@
 !| !!| !!!: fs/generic_acl.c
 !| !!| !!!: fs/inode.c
 !| !0| 0!!: fs/internal.h
-0| !!| !!!: fs/jbd2/checkpoint.c
 !| !0| !!!: fs/libfs.c
 !| !0| !!!: fs/locks.c
 !| !!| !!!: fs/namei.c

@@ -761,7 +761,6 @@ fs/fs-writeback.c
 fs/generic_acl.c
 fs/inode.c
 fs/internal.h
-fs/jbd2/checkpoint.c
 fs/libfs.c
 fs/locks.c
 fs/namei.c

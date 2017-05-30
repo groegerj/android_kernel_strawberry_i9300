@@ -56,6 +56,7 @@ fs/ext3/
 fs/ext4/
 fs/fat/
 fs/fuse/
+fs/jbd2/
 fs/nls/
 fs/notify/
 fs/sysfs/
