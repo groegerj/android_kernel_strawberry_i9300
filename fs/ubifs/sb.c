@@ -674,15 +674,15 @@ static int fixup_leb(struct ubifs_info *c, int lnum, int len)
 
 	if (len == 0) {
 		dbg_mnt("unmap empty LEB %d", lnum);
-		return ubi_leb_unmap(c->ubi, lnum);
+		return ubifs_leb_unmap(c, lnum);
 	}
 
 	dbg_mnt("fixup LEB %d, data len %d", lnum, len);
-	err = ubi_read(c->ubi, lnum, c->sbuf, 0, len);
+	err = ubifs_leb_read(c, lnum, c->sbuf, 0, len, 1);
 	if (err)
 		return err;
 
-	return ubi_leb_change(c->ubi, lnum, c->sbuf, len, UBI_UNKNOWN);
+	return ubifs_leb_change(c, lnum, c->sbuf, len, UBI_UNKNOWN);
 }
 
 /**
@@ -715,12 +715,8 @@ static int fixup_free_space(struct ubifs_info *c)
 		lnum = ubifs_next_log_lnum(c, lnum);
 	}
 
-	/*
-	 * Fixup the log head which contains the only a CS node at the
-	 * beginning.
-	 */
-	err = fixup_leb(c, c->lhead_lnum,
-			ALIGN(UBIFS_CS_NODE_SZ, c->min_io_size));
+	/* Fixup the current log head */
+	err = fixup_leb(c, c->lhead_lnum, c->lhead_offs);
 	if (err)
 		goto out;
 

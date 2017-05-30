@@ -314,6 +314,8 @@ void cifsFileInfo_put(struct cifsFileInfo *cifs_file)
 	}
 	spin_unlock(&cifs_file_list_lock);
 
+	cancel_work_sync(&cifs_file->oplock_break);
+
 	if (!tcon->need_reconnect && !cifs_file->invalidHandle) {
 		int xid, rc;
 
@@ -973,11 +975,10 @@ struct cifsFileInfo *find_readable_file(struct cifsInodeInfo *cifs_inode,
 struct cifsFileInfo *find_writable_file(struct cifsInodeInfo *cifs_inode,
 					bool fsuid_only)
 {
-	struct cifsFileInfo *open_file, *inv_file = NULL;
+	struct cifsFileInfo *open_file;
 	struct cifs_sb_info *cifs_sb;
 	bool any_available = false;
 	int rc;
-	unsigned int refind = 0;
 
 	/* Having a null inode here (because mapping->host was set to zero by
 	the VFS or MM) should not happen but we had reports of on oops (due to
@@ -997,25 +998,40 @@ struct cifsFileInfo *find_writable_file(struct cifsInodeInfo *cifs_inode,
 
 	spin_lock(&cifs_file_list_lock);
 refind_writable:
-	if (refind > MAX_REOPEN_ATT) {
-		spin_unlock(&cifs_file_list_lock);
-		return NULL;
-	}
 	list_for_each_entry(open_file, &cifs_inode->openFileList, flist) {
 		if (!any_available && open_file->pid != current->tgid)
 			continue;
 		if (fsuid_only && open_file->uid != current_fsuid())
 			continue;
 		if (OPEN_FMODE(open_file->f_flags) & FMODE_WRITE) {
+			cifsFileInfo_get(open_file);
+
 			if (!open_file->invalidHandle) {
 				/* found a good writable file */
-				cifsFileInfo_get(open_file);
 				spin_unlock(&cifs_file_list_lock);
 				return open_file;
-			} else {
-				if (!inv_file)
-					inv_file = open_file;
 			}
+
+			spin_unlock(&cifs_file_list_lock);
+
+			/* Had to unlock since following call can block */
+			rc = cifs_reopen_file(open_file, false);
+			if (!rc)
+				return open_file;
+
+			/* if it fails, try another handle if possible */
+			cFYI(1, "wp failed on reopen file");
+			cifsFileInfo_put(open_file);
+
+			spin_lock(&cifs_file_list_lock);
+
+			/* else we simply continue to the next entry. Thus
+			   we do not loop on reopen errors.  If we
+			   can not reopen the file, for example if we
+			   reconnected to a server with another client
+			   racing to delete or lock the file we would not
+			   make progress if we restarted before the beginning
+			   of the loop here. */
 		}
 	}
 	/* couldn't find useable FH with same pid, try any available */
@@ -1023,30 +1039,7 @@ refind_writable:
 		any_available = true;
 		goto refind_writable;
 	}
-
-	if (inv_file) {
-		any_available = false;
-		cifsFileInfo_get(inv_file);
-	}
-
 	spin_unlock(&cifs_file_list_lock);
-
-	if (inv_file) {
-		rc = cifs_reopen_file(inv_file, false);
-		if (!rc)
-			return inv_file;
-		else {
-			spin_lock(&cifs_file_list_lock);
-			list_move_tail(&inv_file->flist,
-					&cifs_inode->openFileList);
-			spin_unlock(&cifs_file_list_lock);
-			cifsFileInfo_put(inv_file);
-			spin_lock(&cifs_file_list_lock);
-			++refind;
-			goto refind_writable;
-		}
-	}
-
 	return NULL;
 }
 
@@ -1410,7 +1403,8 @@ static int cifs_write_end(struct file *file, struct address_space *mapping,
 	return rc;
 }
 
-int cifs_strict_fsync(struct file *file, int datasync)
+int cifs_strict_fsync(struct file *file, loff_t start, loff_t end,
+		      int datasync)
 {
 	int xid;
 	int rc = 0;
@@ -1418,6 +1412,11 @@ int cifs_strict_fsync(struct file *file, int datasync)
 	struct cifsFileInfo *smbfile = file->private_data;
 	struct inode *inode = file->f_path.dentry->d_inode;
 	struct cifs_sb_info *cifs_sb = CIFS_SB(inode->i_sb);
+
+	rc = filemap_write_and_wait_range(inode->i_mapping, start, end);
+	if (rc)
+		return rc;
+	mutex_lock(&inode->i_mutex);
 
 	xid = GetXid();
 
@@ -1437,16 +1436,23 @@ int cifs_strict_fsync(struct file *file, int datasync)
 		rc = CIFSSMBFlush(xid, tcon, smbfile->netfid);
 
 	FreeXid(xid);
+	mutex_unlock(&inode->i_mutex);
 	return rc;
 }
 
-int cifs_fsync(struct file *file, int datasync)
+int cifs_fsync(struct file *file, loff_t start, loff_t end, int datasync)
 {
 	int xid;
 	int rc = 0;
 	struct cifs_tcon *tcon;
 	struct cifsFileInfo *smbfile = file->private_data;
 	struct cifs_sb_info *cifs_sb = CIFS_SB(file->f_path.dentry->d_sb);
+	struct inode *inode = file->f_mapping->host;
+
+	rc = filemap_write_and_wait_range(inode->i_mapping, start, end);
+	if (rc)
+		return rc;
+	mutex_lock(&inode->i_mutex);
 
 	xid = GetXid();
 
@@ -1458,6 +1464,7 @@ int cifs_fsync(struct file *file, int datasync)
 		rc = CIFSSMBFlush(xid, tcon, smbfile->netfid);
 
 	FreeXid(xid);
+	mutex_unlock(&inode->i_mutex);
 	return rc;
 }
 
@@ -2413,31 +2420,6 @@ void cifs_oplock_break(struct work_struct *work)
 				 cinode->clientCanCacheRead ? 1 : 0);
 		cFYI(1, "Oplock release rc = %d", rc);
 	}
-
-	/*
-	 * We might have kicked in before is_valid_oplock_break()
-	 * finished grabbing reference for us.  Make sure it's done by
-	 * waiting for cifs_file_list_lock.
-	 */
-	spin_lock(&cifs_file_list_lock);
-	spin_unlock(&cifs_file_list_lock);
-
-	cifs_oplock_break_put(cfile);
-}
-
-/* must be called while holding cifs_file_list_lock */
-void cifs_oplock_break_get(struct cifsFileInfo *cfile)
-{
-	cifs_sb_active(cfile->dentry->d_sb);
-	cifsFileInfo_get(cfile);
-}
-
-void cifs_oplock_break_put(struct cifsFileInfo *cfile)
-{
-	struct super_block *sb = cfile->dentry->d_sb;
-
-	cifsFileInfo_put(cfile);
-	cifs_sb_deactive(sb);
 }
 
 const struct address_space_operations cifs_addr_ops = {

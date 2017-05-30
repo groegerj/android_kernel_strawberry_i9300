@@ -38,7 +38,9 @@ static struct dentry *hfsplus_lookup(struct inode *dir, struct dentry *dentry,
 	sb = dir->i_sb;
 
 	dentry->d_fsdata = NULL;
-	hfs_find_init(HFSPLUS_SB(sb)->cat_tree, &fd);
+	err = hfs_find_init(HFSPLUS_SB(sb)->cat_tree, &fd);
+	if (err)
+		return ERR_PTR(err);
 	hfsplus_cat_build_key(sb, fd.search_key, dir->i_ino, &dentry->d_name);
 again:
 	err = hfs_brec_read(&fd, &entry, sizeof(entry));
@@ -132,7 +134,9 @@ static int hfsplus_readdir(struct file *filp, void *dirent, filldir_t filldir)
 	if (filp->f_pos >= inode->i_size)
 		return 0;
 
-	hfs_find_init(HFSPLUS_SB(sb)->cat_tree, &fd);
+	err = hfs_find_init(HFSPLUS_SB(sb)->cat_tree, &fd);
+	if (err)
+		return err;
 	hfsplus_cat_build_key(sb, fd.search_key, inode->i_ino, NULL);
 	err = hfs_brec_find(&fd);
 	if (err)
@@ -146,11 +150,6 @@ static int hfsplus_readdir(struct file *filp, void *dirent, filldir_t filldir)
 		filp->f_pos++;
 		/* fall through */
 	case 1:
-		if (fd.entrylength > sizeof(entry) || fd.entrylength < 0) {
-			err = -EIO;
-			goto out;
-		}
-
 		hfs_bnode_read(fd.bnode, &entry, fd.entryoffset,
 			fd.entrylength);
 		if (be16_to_cpu(entry.type) != HFSPLUS_FOLDER_THREAD) {
@@ -182,12 +181,6 @@ static int hfsplus_readdir(struct file *filp, void *dirent, filldir_t filldir)
 			err = -EIO;
 			goto out;
 		}
-
-		if (fd.entrylength > sizeof(entry) || fd.entrylength < 0) {
-			err = -EIO;
-			goto out;
-		}
-
 		hfs_bnode_read(fd.bnode, &entry, fd.entryoffset,
 			fd.entrylength);
 		type = be16_to_cpu(entry.type);

@@ -127,6 +127,8 @@ xfs_iozero(
 STATIC int
 xfs_file_fsync(
 	struct file		*file,
+	loff_t			start,
+	loff_t			end,
 	int			datasync)
 {
 	struct inode		*inode = file->f_mapping->host;
@@ -138,12 +140,18 @@ xfs_file_fsync(
 
 	trace_xfs_file_fsync(ip);
 
+	error = filemap_write_and_wait_range(inode->i_mapping, start, end);
+	if (error)
+		return error;
+
 	if (XFS_FORCED_SHUTDOWN(mp))
 		return -XFS_ERROR(EIO);
 
 	xfs_iflags_clear(ip, XFS_ITRUNCATED);
 
+	xfs_ilock(ip, XFS_IOLOCK_SHARED);
 	xfs_ioend_wait(ip);
+	xfs_iunlock(ip, XFS_IOLOCK_SHARED);
 
 	if (mp->m_flags & XFS_MOUNT_BARRIER) {
 		/*
@@ -309,19 +317,7 @@ xfs_file_aio_read(
 	if (XFS_FORCED_SHUTDOWN(mp))
 		return -EIO;
 
-	/*
-	 * Locking is a bit tricky here. If we take an exclusive lock
-	 * for direct IO, we effectively serialise all new concurrent
-	 * read IO to this file and block it behind IO that is currently in
-	 * progress because IO in progress holds the IO lock shared. We only
-	 * need to hold the lock exclusive to blow away the page cache, so
-	 * only take lock exclusively if the page cache needs invalidation.
-	 * This allows the normal direct IO case of no page cache pages to
-	 * proceeed concurrently without serialisation.
-	 */
-	xfs_rw_ilock(ip, XFS_IOLOCK_SHARED);
-	if ((ioflags & IO_ISDIRECT) && inode->i_mapping->nrpages) {
-		xfs_rw_iunlock(ip, XFS_IOLOCK_SHARED);
+	if (unlikely(ioflags & IO_ISDIRECT)) {
 		xfs_rw_ilock(ip, XFS_IOLOCK_EXCL);
 
 		if (inode->i_mapping->nrpages) {
@@ -334,7 +330,8 @@ xfs_file_aio_read(
 			}
 		}
 		xfs_rw_ilock_demote(ip, XFS_IOLOCK_EXCL);
-	}
+	} else
+		xfs_rw_ilock(ip, XFS_IOLOCK_SHARED);
 
 	trace_xfs_file_read(ip, size, iocb->ki_pos, ioflags);
 
@@ -669,7 +666,6 @@ xfs_file_aio_write_checks(
 	xfs_fsize_t		new_size;
 	int			error = 0;
 
-	xfs_rw_ilock(ip, XFS_ILOCK_EXCL);
 	error = generic_write_checks(file, pos, count, S_ISBLK(inode->i_mode));
 	if (error) {
 		xfs_rw_iunlock(ip, XFS_ILOCK_EXCL | *iolock);
@@ -761,24 +757,14 @@ xfs_file_dio_aio_write(
 		*iolock = XFS_IOLOCK_EXCL;
 	else
 		*iolock = XFS_IOLOCK_SHARED;
-	xfs_rw_ilock(ip, *iolock);
+	xfs_rw_ilock(ip, XFS_ILOCK_EXCL | *iolock);
 
 	ret = xfs_file_aio_write_checks(file, &pos, &count, iolock);
 	if (ret)
 		return ret;
 
-	/*
-	 * Recheck if there are cached pages that need invalidate after we got
-	 * the iolock to protect against other threads adding new pages while
-	 * we were waiting for the iolock.
-	 */
-	if (mapping->nrpages && *iolock == XFS_IOLOCK_SHARED) {
-		xfs_rw_iunlock(ip, *iolock);
-		*iolock = XFS_IOLOCK_EXCL;
-		xfs_rw_ilock(ip, *iolock);
-	}
-
 	if (mapping->nrpages) {
+		WARN_ON(*iolock != XFS_IOLOCK_EXCL);
 		ret = -xfs_flushinval_pages(ip, (pos & PAGE_CACHE_MASK), -1,
 							FI_REMAPF_LOCKED);
 		if (ret)
@@ -823,7 +809,7 @@ xfs_file_buffered_aio_write(
 	size_t			count = ocount;
 
 	*iolock = XFS_IOLOCK_EXCL;
-	xfs_rw_ilock(ip, *iolock);
+	xfs_rw_ilock(ip, XFS_ILOCK_EXCL | *iolock);
 
 	ret = xfs_file_aio_write_checks(file, &pos, &count, iolock);
 	if (ret)
@@ -897,18 +883,14 @@ xfs_file_aio_write(
 	/* Handle various SYNC-type writes */
 	if ((file->f_flags & O_DSYNC) || IS_SYNC(inode)) {
 		loff_t end = pos + ret - 1;
-		int error, error2;
+		int error;
 
 		xfs_rw_iunlock(ip, iolock);
-		error = filemap_write_and_wait_range(mapping, pos, end);
+		error = xfs_file_fsync(file, pos, end,
+				      (file->f_flags & __O_SYNC) ? 0 : 1);
 		xfs_rw_ilock(ip, iolock);
-
-		error2 = -xfs_file_fsync(file,
-					 (file->f_flags & __O_SYNC) ? 0 : 1);
 		if (error)
 			ret = error;
-		else if (error2)
-			ret = error2;
 	}
 
 out_unlock:
@@ -966,7 +948,7 @@ xfs_file_fallocate(
 
 		iattr.ia_valid = ATTR_SIZE;
 		iattr.ia_size = new_size;
-		error = -xfs_setattr(ip, &iattr, XFS_ATTR_NOLOCK);
+		error = -xfs_setattr_size(ip, &iattr, XFS_ATTR_NOLOCK);
 	}
 
 out_unlock:

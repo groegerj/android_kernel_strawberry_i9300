@@ -1158,6 +1158,8 @@ kernel/sched_fair.c
 kernel/signal.c
 kernel/stop_machine.c
 kernel/sys.c
+kernel/sysctl_binary.c
+kernel/sysctl_check.c
 kernel/taskstats.c
 kernel/timeconst.bc
 kernel/trace/trace.h

@@ -212,7 +212,7 @@ xfs_qm_dquot_logitem_pushbuf(
 		return true;
 	if (XFS_BUF_ISDELAYWRITE(bp))
 		xfs_buf_delwri_promote(bp);
-	if (XFS_BUF_ISPINNED(bp))
+	if (xfs_buf_ispinned(bp))
 		ret = false;
 	xfs_buf_relse(bp);
 	return ret;

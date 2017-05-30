@@ -33,7 +33,6 @@
 #include "xfs_dinode.h"
 #include "xfs_inode.h"
 #include "xfs_btree.h"
-#include "xfs_btree_trace.h"
 #include "xfs_ialloc.h"
 #include "xfs_bmap.h"
 #include "xfs_rtalloc.h"
@@ -357,6 +356,8 @@ xfs_parseargs(
 			mp->m_flags |= XFS_MOUNT_DELAYLOG;
 		} else if (!strcmp(this_char, MNTOPT_NODELAYLOG)) {
 			mp->m_flags &= ~XFS_MOUNT_DELAYLOG;
+			xfs_warn(mp,
+	"nodelaylog is deprecated and will be removed in Linux 3.3");
 		} else if (!strcmp(this_char, MNTOPT_DISCARD)) {
 			mp->m_flags |= XFS_MOUNT_DISCARD;
 		} else if (!strcmp(this_char, MNTOPT_NODISCARD)) {
@@ -871,6 +872,27 @@ xfs_fs_dirty_inode(
 }
 
 STATIC int
+xfs_log_inode(
+	struct xfs_inode	*ip)
+{
+	struct xfs_mount	*mp = ip->i_mount;
+	struct xfs_trans	*tp;
+	int			error;
+
+	tp = xfs_trans_alloc(mp, XFS_TRANS_FSYNC_TS);
+	error = xfs_trans_reserve(tp, 0, XFS_FSYNC_TS_LOG_RES(mp), 0, 0, 0);
+	if (error) {
+		xfs_trans_cancel(tp, 0);
+		return error;
+	}
+
+	xfs_ilock(ip, XFS_ILOCK_EXCL);
+	xfs_trans_ijoin_ref(tp, ip, XFS_ILOCK_EXCL);
+	xfs_trans_log_inode(tp, ip, XFS_ILOG_CORE);
+	return xfs_trans_commit(tp, 0);
+}
+
+STATIC int
 xfs_fs_write_inode(
 	struct inode		*inode,
 	struct writeback_control *wbc)
@@ -883,8 +905,10 @@ xfs_fs_write_inode(
 
 	if (XFS_FORCED_SHUTDOWN(mp))
 		return -XFS_ERROR(EIO);
+	if (!ip->i_update_core)
+		return 0;
 
-	if (wbc->sync_mode == WB_SYNC_ALL || wbc->for_kupdate) {
+	if (wbc->sync_mode == WB_SYNC_ALL) {
 		/*
 		 * Make sure the inode has made it it into the log.  Instead
 		 * of forcing it all the way to stable storage using a
@@ -893,14 +917,11 @@ xfs_fs_write_inode(
 		 * of synchronous log foces dramatically.
 		 */
 		xfs_ioend_wait(ip);
-		error = xfs_log_dirty_inode(ip, NULL, 0);
+		error = xfs_log_inode(ip);
 		if (error)
 			goto out;
 		return 0;
 	} else {
-		if (!ip->i_update_core)
-			return 0;
-
 		/*
 		 * We make this non-blocking if the inode is contended, return
 		 * EAGAIN to indicate to the caller that they did not succeed.
@@ -989,11 +1010,6 @@ xfs_fs_put_super(
 {
 	struct xfs_mount	*mp = XFS_M(sb);
 
-	/*
-	 * Unregister the memory shrinker before we tear down the mount
-	 * structure so we don't have memory reclaim racing with us here.
-	 */
-	xfs_inode_shrinker_unregister(mp);
 	xfs_syncd_stop(mp);
 
 	/*
@@ -1376,8 +1392,6 @@ xfs_fs_fill_super(
 	sb->s_time_gran = 1;
 	set_posix_acl_flag(sb);
 
-	xfs_inode_shrinker_register(mp);
-
 	error = xfs_mountfs(mp);
 	if (error)
 		goto out_filestream_unmount;
@@ -1404,7 +1418,6 @@ xfs_fs_fill_super(
 	return 0;
 
  out_filestream_unmount:
-	xfs_inode_shrinker_unregister(mp);
 	xfs_filestream_unmount(mp);
  out_free_sb:
 	xfs_freesb(mp);
@@ -1423,8 +1436,6 @@ xfs_fs_fill_super(
  out_syncd_stop:
 	xfs_syncd_stop(mp);
  out_unmount:
-	xfs_inode_shrinker_unregister(mp);
-
 	/*
 	 * Blow away any referenced inode in the filestreams cache.
 	 * This can and will cause log traffic as inodes go inactive
@@ -1448,6 +1459,21 @@ xfs_fs_mount(
 	return mount_bdev(fs_type, flags, dev_name, data, xfs_fs_fill_super);
 }
 
+static int
+xfs_fs_nr_cached_objects(
+	struct super_block	*sb)
+{
+	return xfs_reclaim_inodes_count(XFS_M(sb));
+}
+
+static void
+xfs_fs_free_cached_objects(
+	struct super_block	*sb,
+	int			nr_to_scan)
+{
+	xfs_reclaim_inodes_nr(XFS_M(sb), nr_to_scan);
+}
+
 static const struct super_operations xfs_super_operations = {
 	.alloc_inode		= xfs_fs_alloc_inode,
 	.destroy_inode		= xfs_fs_destroy_inode,
@@ -1461,6 +1487,8 @@ static const struct super_operations xfs_super_operations = {
 	.statfs			= xfs_fs_statfs,
 	.remount_fs		= xfs_fs_remount,
 	.show_options		= xfs_fs_show_options,
+	.nr_cached_objects	= xfs_fs_nr_cached_objects,
+	.free_cached_objects	= xfs_fs_free_cached_objects,
 };
 
 static struct file_system_type xfs_fs_type = {
