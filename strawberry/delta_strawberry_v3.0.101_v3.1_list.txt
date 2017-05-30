@@ -838,7 +838,6 @@ include/linux/cleancache.h
 include/linux/clocksource.h
 include/linux/cma.h
 include/linux/cn_proc.h
-include/linux/compaction.h
 include/linux/configfs.h
 include/linux/connector.h
 include/linux/cpu.h
@@ -893,7 +892,6 @@ include/linux/gpio_keys.h
 include/linux/hash.h
 include/linux/hashtable.h
 include/linux/hid.h
-include/linux/highmem.h
 include/linux/host_notify.h
 include/linux/hw_breakpoint.h
 include/linux/hwmon.h
@@ -990,7 +988,6 @@ include/linux/nl80211.h
 include/linux/nls.h
 include/linux/opp.h
 include/linux/oprofile.h
-include/linux/page-isolation.h
 include/linux/pagemap.h
 include/linux/pci.h
 include/linux/pda_power.h
