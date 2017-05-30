@@ -396,10 +396,10 @@ SYSCALL_DEFINE1(fchdir, unsigned int, fd)
 {
 	struct file *file;
 	struct inode *inode;
-	int error, fput_needed;
+	int error;
 
 	error = -EBADF;
-	file = fget_raw_light(fd, &fput_needed);
+	file = fget(fd);
 	if (!file)
 		goto out;
 
@@ -413,7 +413,7 @@ SYSCALL_DEFINE1(fchdir, unsigned int, fd)
 	if (!error)
 		set_fs_pwd(current->fs, &file->f_path);
 out_putf:
-	fput_light(file, fput_needed);
+	fput(file);
 out:
 	return error;
 }
@@ -446,74 +446,52 @@ out:
 	return error;
 }
 
-SYSCALL_DEFINE2(fchmod, unsigned int, fd, mode_t, mode)
+static int chmod_common(struct path *path, umode_t mode)
 {
-	struct inode * inode;
-	struct dentry * dentry;
-	struct file * file;
-	int err = -EBADF;
+	struct inode *inode = path->dentry->d_inode;
 	struct iattr newattrs;
+	int error;
 
-	file = fget(fd);
-	if (!file)
-		goto out;
-
-	dentry = file->f_path.dentry;
-	inode = dentry->d_inode;
-
-	audit_inode(NULL, dentry);
-
-	err = mnt_want_write_file(file);
-	if (err)
-		goto out_putf;
+	error = mnt_want_write(path->mnt);
+	if (error)
+		return error;
 	mutex_lock(&inode->i_mutex);
-	err = security_path_chmod(dentry, file->f_vfsmnt, mode);
-	if (err)
+	error = security_path_chmod(path->dentry, path->mnt, mode);
+	if (error)
 		goto out_unlock;
-	if (mode == (mode_t) -1)
-		mode = inode->i_mode;
 	newattrs.ia_mode = (mode & S_IALLUGO) | (inode->i_mode & ~S_IALLUGO);
 	newattrs.ia_valid = ATTR_MODE | ATTR_CTIME;
-	err = notify_change(dentry, &newattrs);
+	error = notify_change(path->dentry, &newattrs);
 out_unlock:
 	mutex_unlock(&inode->i_mutex);
-	mnt_drop_write(file->f_path.mnt);
-out_putf:
-	fput(file);
-out:
+	mnt_drop_write(path->mnt);
+	return error;
+}
+
+SYSCALL_DEFINE2(fchmod, unsigned int, fd, mode_t, mode)
+{
+	struct file * file;
+	int err = -EBADF;
+
+	file = fget(fd);
+	if (file) {
+		audit_inode(NULL, file->f_path.dentry);
+		err = chmod_common(&file->f_path, mode);
+		fput(file);
+	}
 	return err;
 }
 
 SYSCALL_DEFINE3(fchmodat, int, dfd, const char __user *, filename, mode_t, mode)
 {
 	struct path path;
-	struct inode *inode;
 	int error;
-	struct iattr newattrs;
 
 	error = user_path_at(dfd, filename, LOOKUP_FOLLOW, &path);
-	if (error)
-		goto out;
-	inode = path.dentry->d_inode;
-
-	error = mnt_want_write(path.mnt);
-	if (error)
-		goto dput_and_out;
-	mutex_lock(&inode->i_mutex);
-	error = security_path_chmod(path.dentry, path.mnt, mode);
-	if (error)
-		goto out_unlock;
-	if (mode == (mode_t) -1)
-		mode = inode->i_mode;
-	newattrs.ia_mode = (mode & S_IALLUGO) | (inode->i_mode & ~S_IALLUGO);
-	newattrs.ia_valid = ATTR_MODE | ATTR_CTIME;
-	error = notify_change(path.dentry, &newattrs);
-out_unlock:
-	mutex_unlock(&inode->i_mutex);
-	mnt_drop_write(path.mnt);
-dput_and_out:
-	path_put(&path);
-out:
+	if (!error) {
+		error = chmod_common(&path, mode);
+		path_put(&path);
+	}
 	return error;
 }
 
@@ -793,7 +771,7 @@ out:
 	return nd->intent.open.file;
 out_err:
 	release_open_intent(nd);
-	nd->intent.open.file = (struct file *)dentry;
+	nd->intent.open.file = ERR_CAST(dentry);
 	goto out;
 }
 EXPORT_SYMBOL_GPL(lookup_instantiate_filp);
@@ -900,10 +878,9 @@ static inline int build_open_flags(int flags, int mode, struct open_flags *op)
 	int lookup_flags = 0;
 	int acc_mode;
 
-	if (flags & O_CREAT)
-		op->mode = (mode & S_IALLUGO) | S_IFREG;
-	else
-		op->mode = 0;
+	if (!(flags & O_CREAT))
+		mode = 0;
+	op->mode = mode;
 
 	/* Must never be set by userspace */
 	flags &= ~FMODE_NONOTIFY;

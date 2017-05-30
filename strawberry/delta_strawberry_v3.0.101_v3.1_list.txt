@@ -742,9 +742,13 @@ firmware/tsp_atmel
 firmware/tsp_melfas
 fs/Kconfig
 fs/Makefile
+fs/aio.c
+fs/anon_inodes.c
 fs/attr.c
 fs/bad_inode.c
 fs/binfmt_elf.c
+fs/binfmt_elf_fdpic.c
+fs/binfmt_em86.c
 fs/binfmt_misc.c
 fs/binfmt_script.c
 fs/bio.c
@@ -764,6 +768,7 @@ fs/libfs.c
 fs/locks.c
 fs/namei.c
 fs/namespace.c
+fs/open.c
 fs/pipe.c
 fs/posix_acl.c
 fs/proc/base.c
