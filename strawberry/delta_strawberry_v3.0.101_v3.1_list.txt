@@ -1209,6 +1209,7 @@ mm/Kconfig
 mm/Makefile
 mm/ashmem.c
 mm/backing-dev.c
+mm/bootmem.c
 mm/cma-best-fit.c
 mm/cma.c
 mm/compaction.c
