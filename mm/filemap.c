@@ -33,7 +33,6 @@
 #include <linux/cpuset.h>
 #include <linux/hardirq.h> /* for BUG_ON(!in_atomic()) only */
 #include <linux/memcontrol.h>
-#include <linux/mm_inline.h> /* for page_is_file_cache() */
 #include <linux/cleancache.h>
 #include "internal.h"
 
@@ -128,6 +127,7 @@ void __delete_from_page_cache(struct page *page)
 
 	radix_tree_delete(&mapping->page_tree, page->index);
 	page->mapping = NULL;
+	/* Leave page->index set: truncation lookup relies upon it */
 	mapping->nrpages--;
 	__dec_zone_page_state(page, NR_FILE_PAGES);
 	if (PageSwapBacked(page))
@@ -393,10 +393,23 @@ EXPORT_SYMBOL(filemap_write_and_wait_range);
 int replace_page_cache_page(struct page *old, struct page *new, gfp_t gfp_mask)
 {
 	int error;
+	struct mem_cgroup *memcg = NULL;
 
 	VM_BUG_ON(!PageLocked(old));
 	VM_BUG_ON(!PageLocked(new));
 	VM_BUG_ON(new->mapping);
+
+	/*
+	 * This is not page migration, but prepare_migration and
+	 * end_migration does enough work for charge replacement.
+	 *
+	 * In the longer term we probably want a specialized function
+	 * for moving the charge from old to new in a more efficient
+	 * manner.
+	 */
+	error = mem_cgroup_prepare_migration(old, new, &memcg, gfp_mask);
+	if (error)
+		return error;
 
 	error = radix_tree_preload(gfp_mask & ~__GFP_HIGHMEM);
 	if (!error) {
@@ -419,12 +432,13 @@ int replace_page_cache_page(struct page *old, struct page *new, gfp_t gfp_mask)
 		if (PageSwapBacked(new))
 			__inc_zone_page_state(new, NR_SHMEM);
 		spin_unlock_irq(&mapping->tree_lock);
-		/* mem_cgroup codes must not be called under tree_lock */
-		mem_cgroup_replace_page_cache(old, new);
 		radix_tree_preload_end();
 		if (freepage)
 			freepage(old);
 		page_cache_release(old);
+		mem_cgroup_end_migration(memcg, old, new, true);
+	} else {
+		mem_cgroup_end_migration(memcg, old, new, false);
 	}
 
 	return error;
@@ -447,6 +461,7 @@ int add_to_page_cache_locked(struct page *page, struct address_space *mapping,
 	int error;
 
 	VM_BUG_ON(!PageLocked(page));
+	VM_BUG_ON(PageSwapBacked(page));
 
 	error = mem_cgroup_cache_charge(page, current->mm,
 					gfp_mask & GFP_RECLAIM_MASK);
@@ -467,6 +482,7 @@ int add_to_page_cache_locked(struct page *page, struct address_space *mapping,
 			spin_unlock_irq(&mapping->tree_lock);
 		} else {
 			page->mapping = NULL;
+			/* Leave page->index set: truncation relies upon it */
 			spin_unlock_irq(&mapping->tree_lock);
 			mem_cgroup_uncharge_cache_page(page);
 			page_cache_release(page);
@@ -485,12 +501,8 @@ int add_to_page_cache_lru(struct page *page, struct address_space *mapping,
 	int ret;
 
 	ret = add_to_page_cache(page, mapping, offset, gfp_mask);
-	if (ret == 0) {
-		if (page_is_file_cache(page))
-			lru_cache_add_file(page);
-		else
-			lru_cache_add_anon(page);
-	}
+	if (ret == 0)
+		lru_cache_add_file(page);
 	return ret;
 }
 EXPORT_SYMBOL_GPL(add_to_page_cache_lru);
@@ -502,13 +514,10 @@ struct page *__page_cache_alloc(gfp_t gfp)
 	struct page *page;
 
 	if (cpuset_do_page_mem_spread()) {
-		unsigned int cpuset_mems_cookie;
-		do {
-			cpuset_mems_cookie = get_mems_allowed();
-			n = cpuset_mem_spread_node();
-			page = alloc_pages_exact_node(n, gfp, 0);
-		} while (!put_mems_allowed(cpuset_mems_cookie) && !page);
-
+		get_mems_allowed();
+		n = cpuset_mem_spread_node();
+		page = alloc_pages_exact_node(n, gfp, 0);
+		put_mems_allowed();
 		return page;
 	}
 	return alloc_pages(gfp, 0);
@@ -1405,11 +1414,14 @@ generic_file_aio_read(struct kiocb *iocb, const struct iovec *iov,
 	unsigned long seg = 0;
 	size_t count;
 	loff_t *ppos = &iocb->ki_pos;
+	struct blk_plug plug;
 
 	count = 0;
 	retval = generic_segment_checks(iov, &nr_segs, &count, VERIFY_WRITE);
 	if (retval)
 		return retval;
+
+	blk_start_plug(&plug);
 
 	/* coalesce the iovecs and go direct-to-BIO for O_DIRECT */
 	if (filp->f_flags & O_DIRECT) {
@@ -1426,12 +1438,8 @@ generic_file_aio_read(struct kiocb *iocb, const struct iovec *iov,
 			retval = filemap_write_and_wait_range(mapping, pos,
 					pos + iov_length(iov, nr_segs) - 1);
 			if (!retval) {
-				struct blk_plug plug;
-
-				blk_start_plug(&plug);
 				retval = mapping->a_ops->direct_IO(READ, iocb,
 							iov, pos, nr_segs);
-				blk_finish_plug(&plug);
 			}
 			if (retval > 0) {
 				*ppos = pos + retval;
@@ -1487,6 +1495,7 @@ generic_file_aio_read(struct kiocb *iocb, const struct iovec *iov,
 			break;
 	}
 out:
+	blk_finish_plug(&plug);
 	return retval;
 }
 EXPORT_SYMBOL(generic_file_aio_read);
@@ -1819,7 +1828,7 @@ repeat:
 		page = __page_cache_alloc(gfp | __GFP_COLD);
 		if (!page)
 			return ERR_PTR(-ENOMEM);
-		err = add_to_page_cache_lru(page, mapping, index, gfp);
+		err = add_to_page_cache_lru(page, mapping, index, GFP_KERNEL);
 		if (unlikely(err)) {
 			page_cache_release(page);
 			if (err == -EEXIST)
