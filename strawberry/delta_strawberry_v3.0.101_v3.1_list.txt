@@ -754,13 +754,18 @@ fs/binfmt_script.c
 fs/bio.c
 fs/block_dev.c
 fs/buffer.c
+fs/cachefiles/bind.c
+fs/compat.c
+fs/compat_ioctl.c
 fs/dcache.c
 fs/direct-io.c
 fs/eventpoll.c
 fs/exec.c
 fs/f2fs
+fs/fifo.c
 fs/file_table.c
 fs/fs-writeback.c
+fs/fscache/stats.c
 fs/generic_acl.c
 fs/inode.c
 fs/internal.h
@@ -768,6 +773,7 @@ fs/libfs.c
 fs/locks.c
 fs/namei.c
 fs/namespace.c
+fs/nfsctl.c
 fs/open.c
 fs/pipe.c
 fs/posix_acl.c
