@@ -773,11 +773,6 @@ fs/libfs.c
 fs/locks.c
 fs/namei.c
 fs/namespace.c
-fs/notify/group.c
-fs/notify/inode_mark.c
-fs/notify/mark.c
-fs/notify/notification.c
-fs/notify/vfsmount_mark.c
 fs/partitions/check.c
 fs/pipe.c
 fs/posix_acl.c

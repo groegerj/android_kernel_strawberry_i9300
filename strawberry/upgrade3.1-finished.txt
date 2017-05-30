@@ -55,6 +55,7 @@ fs/ext3/
 fs/ext4/
 fs/fat/
 fs/nls/
+fs/notify/
 fs/sysfs/
 include/crypto/
 include/linux/netfilter/
