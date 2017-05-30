@@ -755,7 +755,6 @@
 !| !0| !!!: fs/eventpoll.c
 !| !0| !!!: fs/exec.c
 !| <<| <<<: fs/f2fs
-0| !!| !!!: fs/fhandle.c
 !| !0| 0!!: fs/file_table.c
 !| !0| !!!: fs/fs-writeback.c
 !| !0| 000: fs/generic_acl.c

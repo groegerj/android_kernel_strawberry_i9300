@@ -755,7 +755,6 @@ fs/direct-io.c
 fs/eventpoll.c
 fs/exec.c
 fs/f2fs
-fs/fhandle.c
 fs/file_table.c
 fs/fs-writeback.c
 fs/generic_acl.c
