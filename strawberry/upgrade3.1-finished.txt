@@ -63,6 +63,7 @@ include/sound/
 ipc/
 kernel/events/
 kernel/time/
+mm/
 net/
 samples/
 sound/
