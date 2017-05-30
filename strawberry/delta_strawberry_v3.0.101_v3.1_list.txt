@@ -752,8 +752,6 @@ fs/block_dev.c
 fs/buffer.c
 fs/dcache.c
 fs/direct-io.c
-fs/ecryptfs/file.c
-fs/ecryptfs/inode.c
 fs/eventpoll.c
 fs/exec.c
 fs/f2fs
@@ -848,6 +846,7 @@ include/linux/dma-buf.h
 include/linux/dma-direction.h
 include/linux/dma-mapping.h
 include/linux/earlysuspend.h
+include/linux/ecryptfs.h
 include/linux/edac.h
 include/linux/etherdevice.h
 include/linux/export.h

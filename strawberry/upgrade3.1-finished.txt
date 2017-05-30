@@ -50,6 +50,7 @@ drivers/vhost/
 drivers/video/
 drivers/w1/
 drivers/watchdog/
+fs/ecryptfs/
 fs/ext2/
 fs/ext3/
 fs/ext4/
