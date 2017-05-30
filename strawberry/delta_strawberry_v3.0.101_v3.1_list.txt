@@ -43,7 +43,6 @@ arch/arm/include/asm/atomic.h
 arch/arm/include/asm/bitops.h
 arch/arm/include/asm/cacheflush.h
 arch/arm/include/asm/device.h
-arch/arm/include/asm/dma-contiguous.h
 arch/arm/include/asm/dma-mapping.h
 arch/arm/include/asm/hardirq.h
 arch/arm/include/asm/hardware/cache-l2x0.h
@@ -507,7 +506,6 @@ drivers/Makefile
 drivers/base/Kconfig
 drivers/base/Makefile
 drivers/base/dma-buf.c
-drivers/base/dma-contiguous.c
 drivers/base/iommu.c
 drivers/base/memory.c
 drivers/base/platform.c
@@ -801,7 +799,6 @@ include/acpi/platform/aclinux.h
 include/asm
 include/asm-generic/atomic.h
 include/asm-generic/cputime.h
-include/asm-generic/dma-contiguous.h
 include/asm-generic/emergency-restart.h
 include/asm-generic/local.h
 include/asm-generic/local64.h
