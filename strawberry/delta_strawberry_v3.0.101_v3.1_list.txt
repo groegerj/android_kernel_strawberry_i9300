@@ -539,11 +539,6 @@ drivers/input/keyboard/gpio_keys.c
 drivers/input/keyboard/samsung-keypad.c
 drivers/input/keyreset.c
 drivers/iommu
-drivers/md/dm-crypt.c
-drivers/md/dm-kcopyd.c
-drivers/md/dm-mpath.c
-drivers/md/dm-queue-length.c
-drivers/md/dm-table.c
 drivers/media/video/Kconfig
 drivers/media/video/Makefile
 drivers/media/video/exynos
