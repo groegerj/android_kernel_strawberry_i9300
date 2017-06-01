@@ -1094,9 +1094,7 @@ kernel/power/hibernate.c
 kernel/power/main.c
 kernel/power/power.h
 kernel/power/process.c
-kernel/power/snapshot.c
 kernel/power/suspend.c
-kernel/power/swap.c
 kernel/power/userwakelock.c
 kernel/power/wakelock.c
 kernel/printk.c
