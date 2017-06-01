@@ -532,7 +532,6 @@ drivers/gud
 drivers/input/Kconfig
 drivers/input/Makefile
 drivers/input/evdev.c
-drivers/input/input.c
 drivers/input/keyboard/Kconfig
 drivers/input/keyboard/Makefile
 drivers/input/keyboard/cypress
