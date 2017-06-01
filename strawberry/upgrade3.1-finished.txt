@@ -57,6 +57,7 @@ include/linux/netfilter/
 include/net/
 include/sound/
 ipc/
+kernel/debug/
 kernel/events/
 kernel/time/
 kernel/trace/

@@ -1073,7 +1073,6 @@ kernel/cgroup.c
 kernel/cpu.c
 kernel/cpu_pm.c
 kernel/cpuset.c
-kernel/debug/debug_core.c
 kernel/exit.c
 kernel/fork.c
 kernel/futex.c
