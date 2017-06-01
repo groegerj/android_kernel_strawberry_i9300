@@ -1126,10 +1126,8 @@ lib/bitmap.c
 lib/crc32.c
 lib/dec_and_lock.c
 lib/genalloc.c
-lib/list_debug.c
 lib/plist.c
 lib/radix-tree.c
-lib/ts_fsm.c
 scripts/mkmodimg.sh
 security/capability.c
 security/commoncap.c
