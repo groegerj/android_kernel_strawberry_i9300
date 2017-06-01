@@ -843,7 +843,6 @@ include/linux/if_packet.h
 include/linux/if_pppolac.h
 include/linux/if_pppopns.h
 include/linux/if_pppox.h
-include/linux/init.h
 include/linux/input/sec-input-bridge.h
 include/linux/input.h
 include/linux/interrupt.h
@@ -871,7 +870,6 @@ include/linux/leds-an30259a.h
 include/linux/leds-lp5521.h
 include/linux/leds-max77693.h
 include/linux/leds-max8997.h
-include/linux/leds.h
 include/linux/loop.h
 include/linux/lsm_audit.h
 include/linux/magic.h
@@ -912,7 +910,6 @@ include/linux/mount.h
 include/linux/mpu.h
 include/linux/mpu3050.h
 include/linux/mpu6000.h
-include/linux/msdos_fs.h
 include/linux/mutex.h
 include/linux/namei.h
 include/linux/netdevice.h
