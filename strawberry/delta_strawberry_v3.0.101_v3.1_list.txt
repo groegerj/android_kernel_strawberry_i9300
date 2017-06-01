@@ -1084,6 +1084,7 @@ kernel/kernel_sec_debug.c
 kernel/module.c
 kernel/notifier.c
 kernel/panic.c
+kernel/params.c
 kernel/pm_qos_params.c
 kernel/power/Kconfig
 kernel/power/Makefile
