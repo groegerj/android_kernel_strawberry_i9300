@@ -242,7 +242,7 @@ static void pch_i2c_init(struct i2c_algo_pch_data *adap)
 	if (pch_clk > PCH_MAX_CLK)
 		pch_clk = 62500;
 
-	pch_i2cbc = (pch_clk + (pch_i2c_speed * 4)) / (pch_i2c_speed * 8);
+	pch_i2cbc = (pch_clk + (pch_i2c_speed * 4)) / pch_i2c_speed * 8;
 	/* Set transfer speed in I2CBC */
 	iowrite32(pch_i2cbc, p + PCH_I2CBC);
 
@@ -673,32 +673,33 @@ static s32 pch_i2c_xfer(struct i2c_adapter *i2c_adap,
 	/* transfer not completed */
 	adap->pch_i2c_xfer_in_progress = true;
 
-	pmsg = &msgs[0];
-	pmsg->flags |= adap->pch_buff_mode_en;
-	status = pmsg->flags;
-	pch_dbg(adap,
-		"After invoking I2C_MODE_SEL :flag= 0x%x\n", status);
-	/* calculate sub address length and message length */
-	/* these are applicable only for buffer mode */
-	subaddrlen = pmsg->buf[0];
-	/* calculate actual message length excluding
-	 * the sub address fields */
-	msglen = (pmsg->len) - (subaddrlen + 1);
-	if (status & (I2C_M_RD)) {
-		pch_dbg(adap, "invoking pch_i2c_readbytes\n");
-		ret = pch_i2c_readbytes(i2c_adap, pmsg, (i + 1 == num),
-				   (i == 0));
-	} else {
-		pch_dbg(adap, "invoking pch_i2c_writebytes\n");
-		ret = pch_i2c_writebytes(i2c_adap, pmsg, (i + 1 == num),
-				    (i == 0));
+	for (i = 0; i < num && ret >= 0; i++) {
+		pmsg = &msgs[i];
+		pmsg->flags |= adap->pch_buff_mode_en;
+		status = pmsg->flags;
+		pch_dbg(adap,
+			"After invoking I2C_MODE_SEL :flag= 0x%x\n", status);
+		/* calculate sub address length and message length */
+		/* these are applicable only for buffer mode */
+		subaddrlen = pmsg->buf[0];
+		/* calculate actual message length excluding
+		 * the sub address fields */
+		msglen = (pmsg->len) - (subaddrlen + 1);
+
+		if ((status & (I2C_M_RD)) != false) {
+			ret = pch_i2c_readbytes(i2c_adap, pmsg, (i + 1 == num),
+						(i == 0));
+		} else {
+			ret = pch_i2c_writebytes(i2c_adap, pmsg, (i + 1 == num),
+						 (i == 0));
+		}
 	}
 
 	adap->pch_i2c_xfer_in_progress = false;	/* transfer completed */
 
 	mutex_unlock(&pch_mutex);
 
-	return ret;
+	return (ret < 0) ? ret : num;
 }
 
 /**

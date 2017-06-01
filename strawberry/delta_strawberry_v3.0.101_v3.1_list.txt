@@ -500,7 +500,6 @@ drivers/Kconfig
 drivers/Makefile
 drivers/base/Kconfig
 drivers/base/Makefile
-drivers/base/dma-buf.c
 drivers/base/iommu.c
 drivers/base/memory.c
 drivers/base/platform.c
@@ -530,8 +529,6 @@ drivers/gpio/Makefile
 drivers/gpio/gpio-exynos4.c
 drivers/gpio/gpio-plat-samsung.c
 drivers/gud
-drivers/i2c/busses/i2c-gpio.c
-drivers/i2c/busses/i2c-s3c2410.c
 drivers/input/Kconfig
 drivers/input/Makefile
 drivers/input/evdev.c
@@ -542,7 +539,6 @@ drivers/input/keyboard/cypress
 drivers/input/keyboard/gpio_keys.c
 drivers/input/keyboard/samsung-keypad.c
 drivers/input/keyreset.c
-drivers/input/sec-input-bridge.c
 drivers/iommu
 drivers/md/dm-crypt.c
 drivers/md/dm-kcopyd.c
@@ -568,7 +564,6 @@ drivers/media/video/videobuf-core.c
 drivers/media/video/videobuf2-cma-phys.c
 drivers/media/video/videobuf2-core.c
 drivers/media/video/videobuf2-dma-contig.c
-drivers/media/video/videobuf2-ion.c
 drivers/misc/Kconfig
 drivers/misc/Makefile
 drivers/misc/max77693-muic.c
@@ -1103,7 +1098,6 @@ kernel/power/power.h
 kernel/power/process.c
 kernel/power/snapshot.c
 kernel/power/suspend.c
-kernel/power/suspend_time.c
 kernel/power/swap.c
 kernel/power/userwakelock.c
 kernel/power/wakelock.c
