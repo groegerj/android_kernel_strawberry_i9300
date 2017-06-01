@@ -1117,9 +1117,6 @@ kernel/sysctl_binary.c
 kernel/sysctl_check.c
 kernel/taskstats.c
 kernel/timeconst.bc
-kernel/trace/trace.h
-kernel/trace/trace_mmiotrace.c
-kernel/trace/trace_syscalls.c
 kernel/watchdog.c
 kernel/workqueue.c
 lib/Kconfig.debug
