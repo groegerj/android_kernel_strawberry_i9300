@@ -819,6 +819,7 @@ include/linux/gfp.h
 include/linux/gp2a.h
 include/linux/gpio_event.h
 include/linux/gpio_keys.h
+include/linux/hardirq.h
 include/linux/hash.h
 include/linux/hashtable.h
 include/linux/hid.h
@@ -948,6 +949,7 @@ include/linux/power/max8922_charger_u1.h
 include/linux/power/smb328_charger.h
 include/linux/power/smb347_charger.h
 include/linux/power_supply.h
+include/linux/preempt.h
 include/linux/proc_fs.h
 include/linux/ptrace.h
 include/linux/quota.h
@@ -1060,6 +1062,7 @@ include/trace/events/writeback.h
 include/video/s5p-dp.h
 init/Kconfig
 init/main.c
+kernel/Kconfig.preempt
 kernel/Makefile
 kernel/audit.c
 kernel/auditsc.c
