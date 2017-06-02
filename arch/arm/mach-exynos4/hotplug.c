@@ -1,4 +1,4 @@
-/* linux arch/arm/mach-exynos/hotplug.c
+/* linux arch/arm/mach-exynos4/hotplug.c
  *
  *  Cloned from linux/arch/arm/mach-realview/hotplug.c
  *
@@ -13,17 +13,15 @@
 #include <linux/kernel.h>
 #include <linux/errno.h>
 #include <linux/smp.h>
-#include <linux/completion.h>
 #include <linux/io.h>
 
 #include <asm/cacheflush.h>
 
-#include <plat/cpu.h>
 #include <mach/regs-pmu.h>
 
 extern volatile int pen_release;
 
-static inline void cpu_enter_lowpower_a9(void)
+static inline void cpu_enter_lowpower(void)
 {
 	unsigned int v;
 
@@ -45,35 +43,6 @@ static inline void cpu_enter_lowpower_a9(void)
 	  : "cc");
 }
 
-static inline void cpu_enter_lowpower_a15(void)
-{
-	unsigned int v;
-
-	asm volatile(
-	"       mrc     p15, 0, %0, c1, c0, 0\n"
-	"       bic     %0, %0, %1\n"
-	"       mcr     p15, 0, %0, c1, c0, 0\n"
-	  : "=&r" (v)
-	  : "Ir" (CR_C)
-	  : "cc");
-
-	flush_cache_all();
-
-	asm volatile(
-	/*
-	* Turn off coherency
-	*/
-	"       mrc     p15, 0, %0, c1, c0, 1\n"
-	"       bic     %0, %0, %1\n"
-	"       mcr     p15, 0, %0, c1, c0, 1\n"
-	: "=&r" (v)
-	: "Ir" (0x40)
-	: "cc");
-
-	isb();
-	dsb();
-}
-
 static inline void cpu_leave_lowpower(void)
 {
 	unsigned int v;
@@ -93,9 +62,10 @@ static inline void cpu_leave_lowpower(void)
 static inline void platform_do_lowpower(unsigned int cpu, int *spurious)
 {
 	for (;;) {
+
 		/* make cpu1 to be turned off at next WFI command */
-		if ((cpu >= 1) && (cpu < NR_CPUS))
-			__raw_writel(0, S5P_ARM_CORE_CONFIGURATION(cpu));
+		if (cpu == 1)
+			__raw_writel(0, S5P_ARM_CORE1_CONFIGURATION);
 
 		/*
 		 * here's the WFI
@@ -140,10 +110,7 @@ void platform_cpu_die(unsigned int cpu)
 	/*
 	 * we're ready for shutdown now, so do it
 	 */
-	if (soc_is_exynos5250())
-		cpu_enter_lowpower_a15();
-	else
-		cpu_enter_lowpower_a9();
+	cpu_enter_lowpower();
 	platform_do_lowpower(cpu, &spurious);
 
 	/*

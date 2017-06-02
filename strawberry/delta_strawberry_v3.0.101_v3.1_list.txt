@@ -57,7 +57,6 @@ arch/arm/include/asm/outercache.h
 arch/arm/include/asm/perf_event.h
 arch/arm/include/asm/sections.h
 arch/arm/include/asm/smp.h
-arch/arm/include/asm/thread_info.h
 arch/arm/include/asm/tlb.h
 arch/arm/include/asm/uaccess.h
 arch/arm/kernel/Makefile
