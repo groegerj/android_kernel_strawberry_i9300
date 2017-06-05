@@ -211,31 +211,4 @@ enum exynos4212_gpio_number {
 #include "gpio-midas.h"
 #endif
 
-#if defined(CONFIG_MACH_SLP_NAPLES)
-#include "gpio-naples.h"
-#endif
-
-#if defined(CONFIG_MACH_U1) || defined(CONFIG_MACH_TRATS)
-#include "gpio-u1.h"
-#endif
-
-#if defined(CONFIG_MACH_Q1_BD)
-#include "gpio-q1.h"
-#endif
-
-#if defined(CONFIG_MACH_P2)
-#include "gpio-p2.h"
-#endif
-
-#if defined(CONFIG_MACH_P4)
-#include "gpio-p4.h"
-#endif
-
-#if defined(CONFIG_MACH_P8)
-#include "gpio-p8.h"
-#endif
-
-#if defined(CONFIG_MACH_P8LTE)
-#include "gpio-p8lte.h"
-#endif
 #endif /* __ASM_ARCH_GPIO_EXYNOS4_H */

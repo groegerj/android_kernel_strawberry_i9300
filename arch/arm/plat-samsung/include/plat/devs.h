@@ -214,7 +214,7 @@ extern struct platform_device s5p_device_ohci;
 extern struct platform_device host_notifier_device;
 #endif
 
-extern struct platform_device exynos_device_sysmmu[];
+extern struct platform_device exynos4_device_sysmmu[];
 
 extern struct platform_device s5p_device_mfc;
 extern struct platform_device s5p_device_mipi_dsim;

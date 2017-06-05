@@ -18,7 +18,7 @@
 #ifdef CONFIG_S5P_SYSTEM_MMU
 #include <linux/device.h>
 
-#define SYSMMU_PLATDEV(ipname) exynos_device_sysmmu_##ipname
+#define SYSMMU_PLATDEV(ipname) exynos4_device_sysmmu_##ipname
 
 #ifdef CONFIG_EXYNOS_DEV_PD
 #define ASSIGN_SYSMMU_POWERDOMAIN(ipname, powerdomain) \
