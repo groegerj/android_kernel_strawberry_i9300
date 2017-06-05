@@ -33,7 +33,6 @@
 #include <plat/map-base.h>
 #include <plat/map-s5p.h>
 #include <mach/smc.h>
-#include <mach/map-exynos4.h>
 
 	.text
 

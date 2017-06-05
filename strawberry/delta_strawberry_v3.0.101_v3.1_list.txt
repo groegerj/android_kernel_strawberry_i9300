@@ -153,9 +153,7 @@ arch/arm/mach-exynos4/include/mach/gpio-rev02-midas.h
 arch/arm/mach-exynos4/include/mach/gpio.h
 arch/arm/mach-exynos4/include/mach/gpufreq.h
 arch/arm/mach-exynos4/include/mach/iic-hdmiphy.h
-arch/arm/mach-exynos4/include/mach/irqs-exynos4.h
 arch/arm/mach-exynos4/include/mach/irqs.h
-arch/arm/mach-exynos4/include/mach/map-exynos4.h
 arch/arm/mach-exynos4/include/mach/map.h
 arch/arm/mach-exynos4/include/mach/mdm2.h
 arch/arm/mach-exynos4/include/mach/media.h
