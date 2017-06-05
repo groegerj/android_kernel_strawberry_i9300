@@ -1,4 +1,4 @@
-/* linux/arch/arm/mach-exynos/dev-audio.c
+/* linux/arch/arm/mach-exynos4/dev-audio.c
  *
  * Copyright (c) 2011 Samsung Electronics Co., Ltd.
  *		http://www.samsung.com
@@ -80,10 +80,10 @@ static struct s3c_audio_pdata i2sv5_pdata = {
 	},
 };
 
-static struct resource exynos_i2s0_resource[] = {
+static struct resource exynos4_i2s0_resource[] = {
 	[0] = {
-		.start	= EXYNOS_PA_I2S0,
-		.end	= EXYNOS_PA_I2S0 + 0x100 - 1,
+		.start	= EXYNOS4_PA_I2S0,
+		.end	= EXYNOS4_PA_I2S0 + 0x100 - 1,
 		.flags	= IORESOURCE_MEM,
 	},
 	[1] = {
@@ -103,11 +103,11 @@ static struct resource exynos_i2s0_resource[] = {
 	},
 };
 
-struct platform_device exynos_device_i2s0 = {
+struct platform_device exynos4_device_i2s0 = {
 	.name = "samsung-i2s",
 	.id = 0,
-	.num_resources = ARRAY_SIZE(exynos_i2s0_resource),
-	.resource = exynos_i2s0_resource,
+	.num_resources = ARRAY_SIZE(exynos4_i2s0_resource),
+	.resource = exynos4_i2s0_resource,
 	.dev = {
 		.platform_data = &i2sv5_pdata,
 	},
@@ -128,10 +128,10 @@ static struct s3c_audio_pdata i2sv3_pdata = {
 	},
 };
 
-static struct resource exynos_i2s1_resource[] = {
+static struct resource exynos4_i2s1_resource[] = {
 	[0] = {
-		.start	= EXYNOS_PA_I2S1,
-		.end	= EXYNOS_PA_I2S1 + 0x100 - 1,
+		.start	= EXYNOS4_PA_I2S1,
+		.end	= EXYNOS4_PA_I2S1 + 0x100 - 1,
 		.flags	= IORESOURCE_MEM,
 	},
 	[1] = {
@@ -146,20 +146,20 @@ static struct resource exynos_i2s1_resource[] = {
 	},
 };
 
-struct platform_device exynos_device_i2s1 = {
+struct platform_device exynos4_device_i2s1 = {
 	.name = "samsung-i2s",
 	.id = 1,
-	.num_resources = ARRAY_SIZE(exynos_i2s1_resource),
-	.resource = exynos_i2s1_resource,
+	.num_resources = ARRAY_SIZE(exynos4_i2s1_resource),
+	.resource = exynos4_i2s1_resource,
 	.dev = {
 		.platform_data = &i2sv3_pdata,
 	},
 };
 
-static struct resource exynos_i2s2_resource[] = {
+static struct resource exynos4_i2s2_resource[] = {
 	[0] = {
-		.start	= EXYNOS_PA_I2S2,
-		.end	= EXYNOS_PA_I2S2 + 0x100 - 1,
+		.start	= EXYNOS4_PA_I2S2,
+		.end	= EXYNOS4_PA_I2S2 + 0x100 - 1,
 		.flags	= IORESOURCE_MEM,
 	},
 	[1] = {
@@ -174,11 +174,11 @@ static struct resource exynos_i2s2_resource[] = {
 	},
 };
 
-struct platform_device exynos_device_i2s2 = {
+struct platform_device exynos4_device_i2s2 = {
 	.name = "samsung-i2s",
 	.id = 2,
-	.num_resources = ARRAY_SIZE(exynos_i2s2_resource),
-	.resource = exynos_i2s2_resource,
+	.num_resources = ARRAY_SIZE(exynos4_i2s2_resource),
+	.resource = exynos4_i2s2_resource,
 	.dev = {
 		.platform_data = &i2sv3_pdata,
 	},
@@ -186,7 +186,7 @@ struct platform_device exynos_device_i2s2 = {
 
 /* PCM Controller platform_devices */
 
-static int exynos_pcm_cfg_gpio(struct platform_device *pdev)
+static int exynos4_pcm_cfg_gpio(struct platform_device *pdev)
 {
 	/* configure GPIO for pcm port */
 	struct exynos_gpio_cfg exynos4_cfg[3] = {
@@ -216,13 +216,13 @@ static int exynos_pcm_cfg_gpio(struct platform_device *pdev)
 }
 
 static struct s3c_audio_pdata s3c_pcm_pdata = {
-	.cfg_gpio = exynos_pcm_cfg_gpio,
+	.cfg_gpio = exynos4_pcm_cfg_gpio,
 };
 
-static struct resource exynos_pcm0_resource[] = {
+static struct resource exynos4_pcm0_resource[] = {
 	[0] = {
-		.start	= EXYNOS_PA_PCM0,
-		.end	= EXYNOS_PA_PCM0 + 0x100 - 1,
+		.start	= EXYNOS4_PA_PCM0,
+		.end	= EXYNOS4_PA_PCM0 + 0x100 - 1,
 		.flags	= IORESOURCE_MEM,
 	},
 	[1] = {
@@ -237,20 +237,20 @@ static struct resource exynos_pcm0_resource[] = {
 	},
 };
 
-struct platform_device exynos_device_pcm0 = {
+struct platform_device exynos4_device_pcm0 = {
 	.name = "samsung-pcm",
 	.id = 0,
-	.num_resources = ARRAY_SIZE(exynos_pcm0_resource),
-	.resource = exynos_pcm0_resource,
+	.num_resources = ARRAY_SIZE(exynos4_pcm0_resource),
+	.resource = exynos4_pcm0_resource,
 	.dev = {
 		.platform_data = &s3c_pcm_pdata,
 	},
 };
 
-static struct resource exynos_pcm1_resource[] = {
+static struct resource exynos4_pcm1_resource[] = {
 	[0] = {
-		.start	= EXYNOS_PA_PCM1,
-		.end	= EXYNOS_PA_PCM1 + 0x100 - 1,
+		.start	= EXYNOS4_PA_PCM1,
+		.end	= EXYNOS4_PA_PCM1 + 0x100 - 1,
 		.flags	= IORESOURCE_MEM,
 	},
 	[1] = {
@@ -265,20 +265,20 @@ static struct resource exynos_pcm1_resource[] = {
 	},
 };
 
-struct platform_device exynos_device_pcm1 = {
+struct platform_device exynos4_device_pcm1 = {
 	.name = "samsung-pcm",
 	.id = 1,
-	.num_resources = ARRAY_SIZE(exynos_pcm1_resource),
-	.resource = exynos_pcm1_resource,
+	.num_resources = ARRAY_SIZE(exynos4_pcm1_resource),
+	.resource = exynos4_pcm1_resource,
 	.dev = {
 		.platform_data = &s3c_pcm_pdata,
 	},
 };
 
-static struct resource exynos_pcm2_resource[] = {
+static struct resource exynos4_pcm2_resource[] = {
 	[0] = {
-		.start	= EXYNOS_PA_PCM2,
-		.end	= EXYNOS_PA_PCM2 + 0x100 - 1,
+		.start	= EXYNOS4_PA_PCM2,
+		.end	= EXYNOS4_PA_PCM2 + 0x100 - 1,
 		.flags	= IORESOURCE_MEM,
 	},
 	[1] = {
@@ -293,11 +293,11 @@ static struct resource exynos_pcm2_resource[] = {
 	},
 };
 
-struct platform_device exynos_device_pcm2 = {
+struct platform_device exynos4_device_pcm2 = {
 	.name = "samsung-pcm",
 	.id = 2,
-	.num_resources = ARRAY_SIZE(exynos_pcm2_resource),
-	.resource = exynos_pcm2_resource,
+	.num_resources = ARRAY_SIZE(exynos4_pcm2_resource),
+	.resource = exynos4_pcm2_resource,
 	.dev = {
 		.platform_data = &s3c_pcm_pdata,
 	},
@@ -305,7 +305,7 @@ struct platform_device exynos_device_pcm2 = {
 
 /* AC97 Controller platform devices */
 
-static int exynos_ac97_cfg_gpio(struct platform_device *pdev)
+static int exynos4_ac97_cfg_gpio(struct platform_device *pdev)
 {
 	/* configure GPIO for ac97 port */
 	if (soc_is_exynos4210() || soc_is_exynos4212() || soc_is_exynos4412())
@@ -316,10 +316,10 @@ static int exynos_ac97_cfg_gpio(struct platform_device *pdev)
 	return 0;
 }
 
-static struct resource exynos_ac97_resource[] = {
+static struct resource exynos4_ac97_resource[] = {
 	[0] = {
-		.start	= EXYNOS_PA_AC97,
-		.end	= EXYNOS_PA_AC97 + 0x100 - 1,
+		.start	= EXYNOS4_PA_AC97,
+		.end	= EXYNOS4_PA_AC97 + 0x100 - 1,
 		.flags	= IORESOURCE_MEM,
 	},
 	[1] = {
@@ -345,26 +345,26 @@ static struct resource exynos_ac97_resource[] = {
 };
 
 static struct s3c_audio_pdata s3c_ac97_pdata = {
-	.cfg_gpio = exynos_ac97_cfg_gpio,
+	.cfg_gpio = exynos4_ac97_cfg_gpio,
 };
 
-static u64 exynos_ac97_dmamask = DMA_BIT_MASK(32);
+static u64 exynos4_ac97_dmamask = DMA_BIT_MASK(32);
 
-struct platform_device exynos_device_ac97 = {
+struct platform_device exynos4_device_ac97 = {
 	.name = "samsung-ac97",
 	.id = -1,
-	.num_resources = ARRAY_SIZE(exynos_ac97_resource),
-	.resource = exynos_ac97_resource,
+	.num_resources = ARRAY_SIZE(exynos4_ac97_resource),
+	.resource = exynos4_ac97_resource,
 	.dev = {
 		.platform_data = &s3c_ac97_pdata,
-		.dma_mask = &exynos_ac97_dmamask,
+		.dma_mask = &exynos4_ac97_dmamask,
 		.coherent_dma_mask = DMA_BIT_MASK(32),
 	},
 };
 
 /* S/PDIF Controller platform_device */
 
-static int exynos_spdif_cfg_gpio(struct platform_device *pdev)
+static int exynos4_spdif_cfg_gpio(struct platform_device *pdev)
 {
 	/* configure GPIO for SPDIF port */
 	if (soc_is_exynos4210() || soc_is_exynos4212() || soc_is_exynos4412())
@@ -375,10 +375,10 @@ static int exynos_spdif_cfg_gpio(struct platform_device *pdev)
 	return 0;
 }
 
-static struct resource exynos_spdif_resource[] = {
+static struct resource exynos4_spdif_resource[] = {
 	[0] = {
-		.start	= EXYNOS_PA_SPDIF,
-		.end	= EXYNOS_PA_SPDIF + 0x100 - 1,
+		.start	= EXYNOS4_PA_SPDIF,
+		.end	= EXYNOS4_PA_SPDIF + 0x100 - 1,
 		.flags	= IORESOURCE_MEM,
 	},
 	[1] = {
@@ -389,19 +389,19 @@ static struct resource exynos_spdif_resource[] = {
 };
 
 static struct s3c_audio_pdata samsung_spdif_pdata = {
-	.cfg_gpio = exynos_spdif_cfg_gpio,
+	.cfg_gpio = exynos4_spdif_cfg_gpio,
 };
 
-static u64 exynos_spdif_dmamask = DMA_BIT_MASK(32);
+static u64 exynos4_spdif_dmamask = DMA_BIT_MASK(32);
 
-struct platform_device exynos_device_spdif = {
+struct platform_device exynos4_device_spdif = {
 	.name = "samsung-spdif",
 	.id = -1,
-	.num_resources = ARRAY_SIZE(exynos_spdif_resource),
-	.resource = exynos_spdif_resource,
+	.num_resources = ARRAY_SIZE(exynos4_spdif_resource),
+	.resource = exynos4_spdif_resource,
 	.dev = {
 		.platform_data = &samsung_spdif_pdata,
-		.dma_mask = &exynos_spdif_dmamask,
+		.dma_mask = &exynos4_spdif_dmamask,
 		.coherent_dma_mask = DMA_BIT_MASK(32),
 	},
 };
@@ -429,10 +429,10 @@ EXPORT_SYMBOL(exynos_device_srp);
 void __init exynos4_i2sv3_setup_resource(void)
 {
 	if (!soc_is_exynos4210()) {
-		exynos_i2s1_resource[0].start = EXYNOS4212_PA_I2S1;
-		exynos_i2s1_resource[0].end   = EXYNOS4212_PA_I2S1 + 0x100 - 1;
-		exynos_i2s2_resource[0].start = EXYNOS4212_PA_I2S2;
-		exynos_i2s2_resource[0].end   = EXYNOS4212_PA_I2S2 + 0x100 - 1;
+		exynos4_i2s1_resource[0].start = EXYNOS4212_PA_I2S1;
+		exynos4_i2s1_resource[0].end   = EXYNOS4212_PA_I2S1 + 0x100 - 1;
+		exynos4_i2s2_resource[0].start = EXYNOS4212_PA_I2S2;
+		exynos4_i2s2_resource[0].end   = EXYNOS4212_PA_I2S2 + 0x100 - 1;
 	}
 }
 #endif

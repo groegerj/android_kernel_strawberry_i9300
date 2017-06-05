@@ -2244,16 +2244,16 @@ static struct platform_device *midas_devices[] __initdata = {
 #endif
 
 #ifdef CONFIG_SND_SAMSUNG_AC97
-	&exynos_device_ac97,
+	&exynos4_device_ac97,
 #endif
 #ifdef CONFIG_SND_SAMSUNG_I2S
-	&exynos_device_i2s0,
+	&exynos4_device_i2s0,
 #endif
 #ifdef CONFIG_SND_SAMSUNG_PCM
-	&exynos_device_pcm0,
+	&exynos4_device_pcm0,
 #endif
 #ifdef CONFIG_SND_SAMSUNG_SPDIF
-	&exynos_device_spdif,
+	&exynos4_device_spdif,
 #endif
 #if defined(CONFIG_SND_SAMSUNG_RP) || defined(CONFIG_SND_SAMSUNG_ALP)
 	&exynos_device_srp,
