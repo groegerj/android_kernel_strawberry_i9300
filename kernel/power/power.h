@@ -277,14 +277,7 @@ struct pm_wd_data {
 	struct task_struct *tsk;
 	int timeout;
 };
-#ifdef CONFIG_PM_WATCHDOG_TIMEOUT
-void pm_wd_timeout(unsigned long data);
-void pm_wd_add_timer(struct timer_list *timer, struct pm_wd_data *data,
-			int timeout);
-void pm_wd_del_timer(struct timer_list *timer);
-#else
 static inline void pm_wd_timeout(unsigned long data) { }
 static inline void pm_wd_add_timer(struct timer_list *timer,
 				struct pm_wd_data *data, int timeout) { }
 static inline void pm_wd_del_timer(struct timer_list *timer) { }
-#endif
