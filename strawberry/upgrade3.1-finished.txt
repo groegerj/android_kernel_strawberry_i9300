@@ -42,6 +42,7 @@ drivers/net/wireless/b43legacy/
 drivers/nfc/
 drivers/oprofile/
 drivers/pci/
+drivers/regulator/
 drivers/s390/
 drivers/sbus/
 drivers/scsi/
@@ -55,6 +56,7 @@ drivers/watchdog/
 fs/
 include/crypto/
 include/linux/netfilter/
+include/linux/regulator/
 include/net/
 include/sound/
 ipc/
