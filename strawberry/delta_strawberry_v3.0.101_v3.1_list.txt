@@ -1046,8 +1046,6 @@ include/trace/events/udp.h
 include/trace/events/vmscan.h
 include/trace/events/writeback.h
 include/video/s5p-dp.h
-init/Kconfig
-init/main.c
 kernel/Kconfig.preempt
 kernel/Makefile
 kernel/audit.c

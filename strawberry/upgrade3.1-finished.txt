@@ -60,6 +60,7 @@ include/linux/netfilter/
 include/linux/regulator/
 include/net/
 include/sound/
+init/
 ipc/
 kernel/debug/
 kernel/events/
