@@ -494,14 +494,6 @@ block/row-iosched.c
 block/sio-iosched.c
 drivers/Kconfig
 drivers/Makefile
-drivers/base/Kconfig
-drivers/base/Makefile
-drivers/base/iommu.c
-drivers/base/memory.c
-drivers/base/platform.c
-drivers/base/s5p-iommu.c
-drivers/base/sw_sync.c
-drivers/base/sync.c
 drivers/battery
 drivers/char/Kconfig
 drivers/char/Makefile

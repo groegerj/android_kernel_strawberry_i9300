@@ -494,14 +494,6 @@
 0| <<| <<<: block/sio-iosched.c
 !| !!| !!!: drivers/Kconfig
 !| !!| !!!: drivers/Makefile
-!| !!| !!!: drivers/base/Kconfig
-!| !!| !!!: drivers/base/Makefile
- | > |    : drivers/base/iommu.c
-!| !0| !!!: drivers/base/memory.c
-!| !0| !!!: drivers/base/platform.c
-0| <<| <<<: drivers/base/s5p-iommu.c
-0| <<| <<<: drivers/base/sw_sync.c
-0| <<| <<<: drivers/base/sync.c
 0| <<| <<<: drivers/battery
 !| !!| !!!: drivers/char/Kconfig
 !| !!| !!!: drivers/char/Makefile
