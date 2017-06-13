@@ -420,8 +420,6 @@ static inline bool d_need_lookup(struct dentry *dentry)
 
 extern void d_clear_need_lookup(struct dentry *dentry);
 
-extern struct dentry *lookup_create(struct nameidata *nd, int is_dir);
-
 extern int sysctl_vfs_cache_pressure;
 
 #endif	/* __LINUX_DCACHE_H */
