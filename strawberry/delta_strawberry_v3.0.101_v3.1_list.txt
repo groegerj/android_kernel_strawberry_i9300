@@ -540,12 +540,14 @@ drivers/media/video/s5p-tv
 drivers/media/video/samsung
 drivers/media/video/sr030pc30.c
 drivers/media/video/v4l2-common.c
+drivers/media/video/v4l2-ctrls.c
+drivers/media/video/v4l2-event.c
 drivers/media/video/v4l2-fh.c
+drivers/media/video/v4l2-ioctl.c
 drivers/media/video/v4l2-mem2mem.c
-drivers/media/video/videobuf-core.c
+drivers/media/video/v4l2-subdev.c
 drivers/media/video/videobuf2-cma-phys.c
 drivers/media/video/videobuf2-core.c
-drivers/media/video/videobuf2-dma-contig.c
 drivers/mmc/card/Kconfig
 drivers/mmc/card/Makefile
 drivers/mmc/card/block.c
@@ -1017,6 +1019,8 @@ include/media/m5mols.h
 include/media/rc-map.h
 include/media/s5c73m3_platform.h
 include/media/s5p_fimc.h
+include/media/v4l2-ctrls.h
+include/media/v4l2-event.h
 include/media/v4l2-fh.h
 include/media/v4l2-mem2mem.h
 include/media/v4l2-subdev.h
