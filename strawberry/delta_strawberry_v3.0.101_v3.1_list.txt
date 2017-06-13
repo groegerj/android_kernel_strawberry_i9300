@@ -1018,7 +1018,6 @@ include/media/exynos_flite.h
 include/media/exynos_gscaler.h
 include/media/exynos_mc.h
 include/media/isdbt_pdata.h
-include/media/m5mols.h
 include/media/rc-map.h
 include/media/s5c73m3_platform.h
 include/media/s5p_fimc.h
