@@ -62,6 +62,24 @@ struct f2fs_mount_info {
 
 #define CRCPOLY_LE 0xedb88320
 
+static inline struct inode *file_inode(struct file *f)
+{
+	return f->f_path.dentry->d_inode;
+}
+
+/**
+ * set_nlink - directly set an inode's link count
+ * @inode: inode
+ * @nlink: new nlink (should be non-zero)
+ *
+ * This is a low-level filesystem helper to replace any
+ * direct filesystem manipulation of i_nlink.
+ */
+static inline void set_nlink(struct inode *inode, unsigned int nlink)
+{
+	inode->i_nlink = nlink;
+}
+
 static inline __u32 f2fs_crc32(void *buf, size_t len)
 {
 	unsigned char *p = (unsigned char *)buf;
