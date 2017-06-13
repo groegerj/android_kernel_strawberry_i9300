@@ -546,14 +546,6 @@ drivers/media/video/videobuf-core.c
 drivers/media/video/videobuf2-cma-phys.c
 drivers/media/video/videobuf2-core.c
 drivers/media/video/videobuf2-dma-contig.c
-drivers/misc/Kconfig
-drivers/misc/Makefile
-drivers/misc/max77693-muic.c
-drivers/misc/modem_if
-drivers/misc/phantom.c
-drivers/misc/tzic.c
-drivers/misc/uid_cputime.c
-drivers/misc/uid_stat.c
 drivers/mmc/card/Kconfig
 drivers/mmc/card/Makefile
 drivers/mmc/card/block.c
