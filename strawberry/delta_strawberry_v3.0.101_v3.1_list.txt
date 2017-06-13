@@ -491,6 +491,7 @@ block/Kconfig.iosched
 block/Makefile
 block/blk-core.c
 block/blk-timeout.c
+block/cfq-iosched.c
 block/genhd.c
 block/row-iosched.c
 block/sio-iosched.c
@@ -822,6 +823,7 @@ include/linux/if_pppox.h
 include/linux/input/sec-input-bridge.h
 include/linux/input.h
 include/linux/interrupt.h
+include/linux/iocontext.h
 include/linux/iommu.h
 include/linux/ion.h
 include/linux/ipc_namespace.h
