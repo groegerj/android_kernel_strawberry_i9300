@@ -489,6 +489,8 @@ arch/mips/include/asm/pmc-sierra/msp71xx/msp_slp_int.h
 arch/mips/pmc-sierra/msp71xx/msp_irq_slp.c
 block/Kconfig.iosched
 block/Makefile
+block/blk-core.c
+block/blk-timeout.c
 block/genhd.c
 block/row-iosched.c
 block/sio-iosched.c
@@ -1102,6 +1104,7 @@ lib/atomic64_test.c
 lib/bitmap.c
 lib/crc32.c
 lib/dec_and_lock.c
+lib/fault-inject.c
 lib/genalloc.c
 lib/plist.c
 lib/radix-tree.c
