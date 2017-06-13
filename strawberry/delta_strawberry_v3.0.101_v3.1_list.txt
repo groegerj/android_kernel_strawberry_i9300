@@ -540,7 +540,10 @@ drivers/media/video/s5p-tv
 drivers/media/video/samsung
 drivers/media/video/sr030pc30.c
 drivers/media/video/v4l2-common.c
+drivers/media/video/v4l2-compat-ioctl32.c
 drivers/media/video/v4l2-ctrls.c
+drivers/media/video/v4l2-dev.c
+drivers/media/video/v4l2-device.c
 drivers/media/video/v4l2-event.c
 drivers/media/video/v4l2-fh.c
 drivers/media/video/v4l2-ioctl.c
@@ -1019,9 +1022,11 @@ include/media/m5mols.h
 include/media/rc-map.h
 include/media/s5c73m3_platform.h
 include/media/s5p_fimc.h
+include/media/v4l2-chip-ident.h
 include/media/v4l2-ctrls.h
 include/media/v4l2-event.h
 include/media/v4l2-fh.h
+include/media/v4l2-mediabus.h
 include/media/v4l2-mem2mem.h
 include/media/v4l2-subdev.h
 include/media/videobuf2-cma-phys.h
