@@ -618,6 +618,7 @@
 !| !!| !!!: drivers/regulator/Kconfig
 !| !!| !!!: drivers/regulator/Makefile
 <| <0| !!!: drivers/regulator/aat2870-regulator.c
+!| !0| !!!: drivers/regulator/dummy.c
 0| <<| <<<: drivers/regulator/max77686.c
 0| <<| <<<: drivers/regulator/max77693.c
 !| !0| !!!: drivers/regulator/tps65023-regulator.c

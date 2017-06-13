@@ -618,6 +618,7 @@ drivers/regulator/88pm8607.c
 drivers/regulator/Kconfig
 drivers/regulator/Makefile
 drivers/regulator/aat2870-regulator.c
+drivers/regulator/dummy.c
 drivers/regulator/max77686.c
 drivers/regulator/max77693.c
 drivers/regulator/tps65023-regulator.c
