@@ -39,7 +39,7 @@ drivers/net/cxgb4/
 drivers/net/hamradio/
 drivers/net/phy/
 drivers/net/wimax/
-drivers/net/wireless/b43legacy/
+drivers/net/wireless/
 drivers/nfc/
 drivers/oprofile/
 drivers/pci/

@@ -100,7 +100,7 @@ int mwifiex_request_set_multicast_list(struct mwifiex_private *priv,
 	} else {
 		/* Multicast */
 		priv->curr_pkt_filter &= ~HostCmd_ACT_MAC_PROMISCUOUS_ENABLE;
-		if (mcast_list->mode == MWIFIEX_ALL_MULTI_MODE) {
+		if (mcast_list->mode == MWIFIEX_MULTICAST_MODE) {
 			dev_dbg(priv->adapter->dev,
 				"info: Enabling All Multicast!\n");
 			priv->curr_pkt_filter |=
@@ -112,11 +112,20 @@ int mwifiex_request_set_multicast_list(struct mwifiex_private *priv,
 				dev_dbg(priv->adapter->dev,
 					"info: Set multicast list=%d\n",
 				       mcast_list->num_multicast_addr);
-				/* Send multicast addresses to firmware */
-				ret = mwifiex_send_cmd_async(priv,
-					HostCmd_CMD_MAC_MULTICAST_ADR,
-					HostCmd_ACT_GEN_SET, 0,
-					mcast_list);
+				/* Set multicast addresses to firmware */
+				if (old_pkt_filter == priv->curr_pkt_filter) {
+					/* Send request to firmware */
+					ret = mwifiex_send_cmd_async(priv,
+						HostCmd_CMD_MAC_MULTICAST_ADR,
+						HostCmd_ACT_GEN_SET, 0,
+						mcast_list);
+				} else {
+					/* Send request to firmware */
+					ret = mwifiex_send_cmd_async(priv,
+						HostCmd_CMD_MAC_MULTICAST_ADR,
+						HostCmd_ACT_GEN_SET, 0,
+						mcast_list);
+				}
 			}
 		}
 	}
@@ -476,6 +485,20 @@ int mwifiex_set_radio_band_cfg(struct mwifiex_private *priv,
 
 	return 0;
 }
+
+/*
+ * The function disables auto deep sleep mode.
+ */
+int mwifiex_disable_auto_ds(struct mwifiex_private *priv)
+{
+	struct mwifiex_ds_auto_ds auto_ds;
+
+	auto_ds.auto_ds = DEEP_SLEEP_OFF;
+
+	return mwifiex_send_cmd_sync(priv, HostCmd_CMD_802_11_PS_MODE_ENH,
+				     DIS_AUTO_PS, BITMAP_AUTO_DS, &auto_ds);
+}
+EXPORT_SYMBOL_GPL(mwifiex_disable_auto_ds);
 
 /*
  * IOCTL request handler to set/get active channel.

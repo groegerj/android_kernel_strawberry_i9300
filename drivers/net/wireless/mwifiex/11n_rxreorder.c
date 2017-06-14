@@ -267,8 +267,7 @@ mwifiex_11n_create_rx_reorder_tbl(struct mwifiex_private *priv, u8 *ta,
 	else
 		last_seq = priv->rx_seq[tid];
 
-	if (last_seq != MWIFIEX_DEF_11N_RX_SEQ_NUM &&
-	    last_seq >= new_node->start_win)
+	if (last_seq >= new_node->start_win)
 		new_node->start_win = last_seq + 1;
 
 	new_node->win_size = win_size;
@@ -329,13 +328,12 @@ int mwifiex_cmd_11n_addba_req(struct host_cmd_ds_command *cmd, void *data_buf)
  */
 int mwifiex_cmd_11n_addba_rsp_gen(struct mwifiex_private *priv,
 				  struct host_cmd_ds_command *cmd,
-				  void *data_buf)
+				  struct host_cmd_ds_11n_addba_req
+				  *cmd_addba_req)
 {
 	struct host_cmd_ds_11n_addba_rsp *add_ba_rsp =
 		(struct host_cmd_ds_11n_addba_rsp *)
 		&cmd->params.add_ba_rsp;
-	struct host_cmd_ds_11n_addba_req *cmd_addba_req =
-		(struct host_cmd_ds_11n_addba_req *) data_buf;
 	u8 tid;
 	int win_size;
 	uint16_t block_ack_param_set;
@@ -613,5 +611,5 @@ void mwifiex_11n_cleanup_reorder_tbl(struct mwifiex_private *priv)
 	spin_unlock_irqrestore(&priv->rx_reorder_tbl_lock, flags);
 
 	INIT_LIST_HEAD(&priv->rx_reorder_tbl_ptr);
-	mwifiex_reset_11n_rx_seq_num(priv);
+	memset(priv->rx_seq, 0, sizeof(priv->rx_seq));
 }

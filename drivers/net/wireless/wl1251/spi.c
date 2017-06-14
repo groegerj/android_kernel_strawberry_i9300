@@ -19,6 +19,7 @@
  *
  */
 
+#include <linux/interrupt.h>
 #include <linux/irq.h>
 #include <linux/module.h>
 #include <linux/slab.h>
@@ -280,7 +281,6 @@ static int __devinit wl1251_spi_probe(struct spi_device *spi)
 
 	wl->use_eeprom = pdata->use_eeprom;
 
-	irq_set_status_flags(wl->irq, IRQ_NOAUTOEN);
 	ret = request_irq(wl->irq, wl1251_irq, 0, DRIVER_NAME, wl);
 	if (ret < 0) {
 		wl1251_error("request_irq() failed: %d", ret);
@@ -288,6 +288,8 @@ static int __devinit wl1251_spi_probe(struct spi_device *spi)
 	}
 
 	irq_set_irq_type(wl->irq, IRQ_TYPE_EDGE_RISING);
+
+	disable_irq(wl->irq);
 
 	ret = wl1251_init_ieee80211(wl);
 	if (ret)

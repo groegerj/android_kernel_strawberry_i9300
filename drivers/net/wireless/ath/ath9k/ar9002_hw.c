@@ -179,25 +179,6 @@ static void ar9002_hw_init_mode_regs(struct ath_hw *ah)
 		INIT_INI_ARRAY(&ah->iniAddac, ar5416Addac,
 			       ARRAY_SIZE(ar5416Addac), 2);
 	}
-
-	/* iniAddac needs to be modified for these chips */
-	if (AR_SREV_9160(ah) || !AR_SREV_5416_22_OR_LATER(ah)) {
-		struct ar5416IniArray *addac = &ah->iniAddac;
-		u32 size = sizeof(u32) * addac->ia_rows * addac->ia_columns;
-		u32 *data;
-
-		data = kmalloc(size, GFP_KERNEL);
-		if (!data)
-			return;
-
-		memcpy(data, addac->ia_array, size);
-		addac->ia_array = data;
-
-		if (!AR_SREV_5416_22_OR_LATER(ah)) {
-			/* override CLKDRV value */
-			INI_RA(addac, 31,1) = 0;
-		}
-	}
 }
 
 /* Support for Japan ch.14 (2484) spread */
@@ -511,45 +492,6 @@ void ar9002_hw_enable_async_fifo(struct ath_hw *ah)
 				AR_MAC_PCU_ASYNC_FIFO_REG3_SOFT_RESET);
 		REG_SET_BIT(ah, AR_MAC_PCU_ASYNC_FIFO_REG3,
 				AR_MAC_PCU_ASYNC_FIFO_REG3_SOFT_RESET);
-	}
-}
-
-/*
- * If Async FIFO is enabled, the following counters change as MAC now runs
- * at 117 Mhz instead of 88/44MHz when async FIFO is disabled.
- *
- * The values below tested for ht40 2 chain.
- * Overwrite the delay/timeouts initialized in process ini.
- */
-void ar9002_hw_update_async_fifo(struct ath_hw *ah)
-{
-	if (AR_SREV_9287_13_OR_LATER(ah)) {
-		REG_WRITE(ah, AR_D_GBL_IFS_SIFS,
-			  AR_D_GBL_IFS_SIFS_ASYNC_FIFO_DUR);
-		REG_WRITE(ah, AR_D_GBL_IFS_SLOT,
-			  AR_D_GBL_IFS_SLOT_ASYNC_FIFO_DUR);
-		REG_WRITE(ah, AR_D_GBL_IFS_EIFS,
-			  AR_D_GBL_IFS_EIFS_ASYNC_FIFO_DUR);
-
-		REG_WRITE(ah, AR_TIME_OUT, AR_TIME_OUT_ACK_CTS_ASYNC_FIFO_DUR);
-		REG_WRITE(ah, AR_USEC, AR_USEC_ASYNC_FIFO_DUR);
-
-		REG_SET_BIT(ah, AR_MAC_PCU_LOGIC_ANALYZER,
-			    AR_MAC_PCU_LOGIC_ANALYZER_DISBUG20768);
-		REG_RMW_FIELD(ah, AR_AHB_MODE, AR_AHB_CUSTOM_BURST_EN,
-			      AR_AHB_CUSTOM_BURST_ASYNC_FIFO_VAL);
-	}
-}
-
-/*
- * We don't enable WEP aggregation on mac80211 but we keep this
- * around for HAL unification purposes.
- */
-void ar9002_hw_enable_wep_aggregation(struct ath_hw *ah)
-{
-	if (AR_SREV_9287_13_OR_LATER(ah)) {
-		REG_SET_BIT(ah, AR_PCU_MISC_MODE2,
-			    AR_PCU_MISC_MODE2_ENABLE_AGGWEP);
 	}
 }
 

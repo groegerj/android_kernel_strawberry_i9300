@@ -1936,7 +1936,6 @@ static int rt2500pci_probe_hw_mode(struct rt2x00_dev *rt2x00dev)
 static int rt2500pci_probe_hw(struct rt2x00_dev *rt2x00dev)
 {
 	int retval;
-	u32 reg;
 
 	/*
 	 * Allocate eeprom data.
@@ -1948,14 +1947,6 @@ static int rt2500pci_probe_hw(struct rt2x00_dev *rt2x00dev)
 	retval = rt2500pci_init_eeprom(rt2x00dev);
 	if (retval)
 		return retval;
-
-	/*
-	 * Enable rfkill polling by setting GPIO direction of the
-	 * rfkill switch GPIO pin correctly.
-	 */
-	rt2x00pci_register_read(rt2x00dev, GPIOCSR, &reg);
-	rt2x00_set_field32(&reg, GPIOCSR_DIR0, 1);
-	rt2x00pci_register_write(rt2x00dev, GPIOCSR, reg);
 
 	/*
 	 * Initialize hw specifications.
@@ -2025,6 +2016,7 @@ static const struct ieee80211_ops rt2500pci_mac80211_ops = {
 	.set_antenna		= rt2x00mac_set_antenna,
 	.get_antenna		= rt2x00mac_get_antenna,
 	.get_ringparam		= rt2x00mac_get_ringparam,
+	.tx_frames_pending	= rt2x00mac_tx_frames_pending,
 };
 
 static const struct rt2x00lib_ops rt2500pci_rt2x00_ops = {

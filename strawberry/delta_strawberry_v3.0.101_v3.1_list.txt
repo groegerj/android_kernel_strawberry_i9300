@@ -597,10 +597,6 @@ drivers/net/ibmveth.c
 drivers/net/ppp_generic.c
 drivers/net/pppolac.c
 drivers/net/pppopns.c
-drivers/net/wireless/Kconfig
-drivers/net/wireless/Makefile
-drivers/net/wireless/bcmdhd
-drivers/net/wireless/btlock
 drivers/power/Kconfig
 drivers/power/Makefile
 drivers/power/power_supply_core.c
