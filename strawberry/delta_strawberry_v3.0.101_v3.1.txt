@@ -514,7 +514,6 @@
 0| !!| !!!: drivers/cpufreq/cpufreq_stats.c
 !| !0| 0!!: drivers/cpufreq/powernow-k8.c
 !| !0| !!!: drivers/cpuidle/cpuidle.c
-0| !!| !!!: drivers/cpuidle/governors/menu.c
 0| !!| !!!: drivers/gpio/Kconfig
 0| !!| !!!: drivers/gpio/Makefile
 0| !!| <<<: drivers/gpio/gpio-exynos4.c
