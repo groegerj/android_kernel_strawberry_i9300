@@ -17,7 +17,6 @@
 #define DEBUG
 #endif
 
-#include <linux/version.h>
 #include <linux/netdevice.h>
 #include <linux/etherdevice.h>
 #include <linux/ethtool.h>
@@ -214,7 +213,6 @@ struct efx_tx_queue {
  *	If both this and page are %NULL, the buffer slot is currently free.
  * @page: The associated page buffer, if any.
  *	If both this and skb are %NULL, the buffer slot is currently free.
- * @page_offset: Offset within page. Valid iff @flags & %EFX_RX_BUF_PAGE.
  * @len: Buffer length, in bytes.
  * @is_page: Indicates if @page is valid. If false, @skb is valid.
  */
@@ -224,8 +222,7 @@ struct efx_rx_buffer {
 		struct sk_buff *skb;
 		struct page *page;
 	} u;
-	u16 page_offset;
-	u16 len;
+	unsigned int len;
 	bool is_page;
 };
 
@@ -647,7 +644,7 @@ struct efx_filter_state;
  * @irq_rx_moderation: IRQ moderation time for RX event queues
  * @msg_enable: Log message enable flags
  * @state: Device state flag. Serialised by the rtnl_lock.
- * @reset_pending: Pending reset method (normally RESET_TYPE_NONE)
+ * @reset_pending: Bitmask for pending resets
  * @tx_queue: TX DMA queues
  * @rx_queue: RX DMA queues
  * @channel: Channels
@@ -692,9 +689,6 @@ struct efx_filter_state;
  * @promiscuous: Promiscuous flag. Protected by netif_tx_lock.
  * @multicast_hash: Multicast hash table
  * @wanted_fc: Wanted flow control flags
- * @fc_disable: When non-zero flow control is disabled. Typically used to
- *	ensure that network back pressure doesn't delay dma queue flushes.
- *	Serialised by the rtnl lock.
  * @mac_work: Work item for changing MAC promiscuity and multicast hash
  * @loopback_mode: Loopback status
  * @loopback_modes: Supported loopback mode bitmask
@@ -733,7 +727,7 @@ struct efx_nic {
 	u32 msg_enable;
 
 	enum nic_state state;
-	enum reset_type reset_pending;
+	unsigned long reset_pending;
 
 	struct efx_channel *channel[EFX_MAX_CHANNELS];
 	char channel_name[EFX_MAX_CHANNELS][IFNAMSIZ + 6];
@@ -788,7 +782,6 @@ struct efx_nic {
 	bool promiscuous;
 	union efx_multicast_hash multicast_hash;
 	u8 wanted_fc;
-	unsigned fc_disable;
 
 	atomic_t rx_reset;
 	enum efx_loopback_mode loopback_mode;
@@ -834,13 +827,14 @@ static inline unsigned int efx_port_num(struct efx_nic *efx)
  * @init: Initialise the controller
  * @fini: Shut down the controller
  * @monitor: Periodic function for polling link state and hardware monitor
+ * @map_reset_reason: Map ethtool reset reason to a reset method
+ * @map_reset_flags: Map ethtool reset flags to a reset method, if possible
  * @reset: Reset the controller hardware and possibly the PHY.  This will
  *	be called while the controller is uninitialised.
  * @probe_port: Probe the MAC and PHY
  * @remove_port: Free resources allocated by probe_port()
  * @handle_global_event: Handle a "global" event (may be %NULL)
  * @prepare_flush: Prepare the hardware for flushing the DMA queues
- * @finish_flush: Clean up after flushing the DMA queues
  * @update_stats: Update statistics not provided by event handling
  * @start_stats: Start the regular fetching of statistics
  * @stop_stats: Stop the regular fetching of statistics
@@ -872,8 +866,6 @@ static inline unsigned int efx_port_num(struct efx_nic *efx)
  * @rx_dc_base: Base address in SRAM of RX queue descriptor caches
  * @offload_features: net_device feature flags for protocol offload
  *	features implemented in hardware
- * @reset_world_flags: Flags for additional components covered by
- *	reset method RESET_TYPE_WORLD
  */
 struct efx_nic_type {
 	int (*probe)(struct efx_nic *efx);
@@ -881,12 +873,13 @@ struct efx_nic_type {
 	int (*init)(struct efx_nic *efx);
 	void (*fini)(struct efx_nic *efx);
 	void (*monitor)(struct efx_nic *efx);
+	enum reset_type (*map_reset_reason)(enum reset_type reason);
+	int (*map_reset_flags)(u32 *flags);
 	int (*reset)(struct efx_nic *efx, enum reset_type method);
 	int (*probe_port)(struct efx_nic *efx);
 	void (*remove_port)(struct efx_nic *efx);
 	bool (*handle_global_event)(struct efx_channel *channel, efx_qword_t *);
 	void (*prepare_flush)(struct efx_nic *efx);
-	void (*finish_flush)(struct efx_nic *efx);
 	void (*update_stats)(struct efx_nic *efx);
 	void (*start_stats)(struct efx_nic *efx);
 	void (*stop_stats)(struct efx_nic *efx);
@@ -916,7 +909,6 @@ struct efx_nic_type {
 	unsigned int tx_dc_base;
 	unsigned int rx_dc_base;
 	u32 offload_features;
-	u32 reset_world_flags;
 };
 
 /**************************************************************************

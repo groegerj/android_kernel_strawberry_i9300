@@ -167,7 +167,7 @@ cpdma_desc_pool_create(struct device *dev, u32 phys, u32 hw_addr,
 	} else {
 		pool->cpumap = dma_alloc_coherent(dev, size, &pool->phys,
 						  GFP_KERNEL);
-		pool->iomap = (void __force __iomem *)pool->cpumap;
+		pool->iomap = pool->cpumap;
 		pool->hw_addr = pool->phys;
 	}
 
@@ -849,7 +849,6 @@ int cpdma_chan_stop(struct cpdma_chan *chan)
 
 		next_dma = desc_read(desc, hw_next);
 		chan->head = desc_from_phys(pool, next_dma);
-		chan->count--;
 		chan->stats.teardown_dequeue++;
 
 		/* issue callback without locks held */

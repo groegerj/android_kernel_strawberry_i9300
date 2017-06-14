@@ -135,18 +135,6 @@ static void siena_remove_port(struct efx_nic *efx)
 	efx_nic_free_buffer(efx, &efx->stats_buffer);
 }
 
-void siena_prepare_flush(struct efx_nic *efx)
-{
-	if (efx->fc_disable++ == 0)
-		efx_mcdi_set_mac(efx);
-}
-
-void siena_finish_flush(struct efx_nic *efx)
-{
-	if (--efx->fc_disable == 0)
-		efx_mcdi_set_mac(efx);
-}
-
 static const struct efx_nic_register_test siena_register_tests[] = {
 	{ FR_AZ_ADR_REGION,
 	  EFX_OWORD32(0x0003FFFF, 0x0003FFFF, 0x0003FFFF, 0x0003FFFF) },
@@ -188,6 +176,36 @@ static int siena_test_registers(struct efx_nic *efx)
  *
  **************************************************************************
  */
+
+static enum reset_type siena_map_reset_reason(enum reset_type reason)
+{
+	return RESET_TYPE_ALL;
+}
+
+static int siena_map_reset_flags(u32 *flags)
+{
+	enum {
+		SIENA_RESET_PORT = (ETH_RESET_DMA | ETH_RESET_FILTER |
+				    ETH_RESET_OFFLOAD | ETH_RESET_MAC |
+				    ETH_RESET_PHY),
+		SIENA_RESET_MC = (SIENA_RESET_PORT |
+				  ETH_RESET_MGMT << ETH_RESET_SHARED_SHIFT),
+	};
+
+	if ((*flags & SIENA_RESET_MC) == SIENA_RESET_MC) {
+		*flags &= ~SIENA_RESET_MC;
+		return RESET_TYPE_WORLD;
+	}
+
+	if ((*flags & SIENA_RESET_PORT) == SIENA_RESET_PORT) {
+		*flags &= ~SIENA_RESET_PORT;
+		return RESET_TYPE_ALL;
+	}
+
+	/* no invisible reset implemented */
+
+	return -EINVAL;
+}
 
 static int siena_reset_hw(struct efx_nic *efx, enum reset_type method)
 {
@@ -393,7 +411,7 @@ static int siena_try_update_nic_stats(struct efx_nic *efx)
 	__le64 generation_start, generation_end;
 
 	mac_stats = &efx->mac_stats;
-	dma_stats = (u64 *)efx->stats_buffer.addr;
+	dma_stats = efx->stats_buffer.addr;
 
 	generation_end = dma_stats[MC_CMD_MAC_GENERATION_END];
 	if (generation_end == STATS_GENERATION_INVALID)
@@ -599,11 +617,12 @@ const struct efx_nic_type siena_a0_nic_type = {
 	.init = siena_init_nic,
 	.fini = efx_port_dummy_op_void,
 	.monitor = NULL,
+	.map_reset_reason = siena_map_reset_reason,
+	.map_reset_flags = siena_map_reset_flags,
 	.reset = siena_reset_hw,
 	.probe_port = siena_probe_port,
 	.remove_port = siena_remove_port,
-	.prepare_flush = siena_prepare_flush,
-	.finish_flush = siena_finish_flush,
+	.prepare_flush = efx_port_dummy_op_void,
 	.update_stats = siena_update_nic_stats,
 	.start_stats = siena_start_nic_stats,
 	.stop_stats = siena_stop_nic_stats,
@@ -637,5 +656,4 @@ const struct efx_nic_type siena_a0_nic_type = {
 	.rx_dc_base = 0x68000,
 	.offload_features = (NETIF_F_IP_CSUM | NETIF_F_IPV6_CSUM |
 			     NETIF_F_RXHASH | NETIF_F_NTUPLE),
-	.reset_world_flags = ETH_RESET_MGMT << ETH_RESET_SHARED_SHIFT,
 };

@@ -486,7 +486,7 @@ static int gianfar_ptp_probe(struct platform_device *dev)
 	spin_lock_init(&etsects->lock);
 
 	etsects->regs = ioremap(etsects->rsrc->start,
-				1 + etsects->rsrc->end - etsects->rsrc->start);
+				resource_size(etsects->rsrc));
 	if (!etsects->regs) {
 		pr_err("ioremap ptp registers failed\n");
 		goto no_ioremap;
@@ -521,7 +521,6 @@ static int gianfar_ptp_probe(struct platform_device *dev)
 	return 0;
 
 no_clock:
-	iounmap(etsects->regs);
 no_ioremap:
 	release_resource(etsects->rsrc);
 no_resource:

@@ -48,7 +48,6 @@
 #include <linux/highmem.h>
 #include <linux/proc_fs.h>
 #include <linux/ctype.h>
-#include <linux/version.h>
 #include <linux/spinlock.h>
 #include <linux/dma-mapping.h>
 #include <linux/clk.h>
@@ -1008,7 +1007,7 @@ static void emac_rx_handler(void *token, int len, int status)
 	int			ret;
 
 	/* free and bail if we are shutting down */
-	if (unlikely(!netif_running(ndev))) {
+	if (unlikely(!netif_running(ndev) || !netif_carrier_ok(ndev))) {
 		dev_kfree_skb_any(skb);
 		return;
 	}
@@ -1037,9 +1036,7 @@ static void emac_rx_handler(void *token, int len, int status)
 recycle:
 	ret = cpdma_chan_submit(priv->rxchan, skb, skb->data,
 			skb_tailroom(skb), GFP_KERNEL);
-
-	WARN_ON(ret == -ENOMEM);
-	if (unlikely(ret < 0))
+	if (WARN_ON(ret < 0))
 		dev_kfree_skb_any(skb);
 }
 
@@ -1049,7 +1046,7 @@ static void emac_tx_handler(void *token, int len, int status)
 	struct net_device	*ndev = skb->dev;
 
 	if (unlikely(netif_queue_stopped(ndev)))
-		netif_wake_queue(ndev);
+		netif_start_queue(ndev);
 	ndev->stats.tx_packets++;
 	ndev->stats.tx_bytes += len;
 	dev_kfree_skb_any(skb);
@@ -1084,6 +1081,8 @@ static int emac_dev_xmit(struct sk_buff *skb, struct net_device *ndev)
 			dev_err(emac_dev, "DaVinci EMAC: packet pad failed");
 		goto fail_tx;
 	}
+
+	skb_tx_timestamp(skb);
 
 	ret_code = cpdma_chan_submit(priv->txchan, skb, skb->data, skb->len,
 				     GFP_KERNEL);
@@ -1491,14 +1490,14 @@ static void emac_adjust_link(struct net_device *ndev)
  */
 static int emac_devioctl(struct net_device *ndev, struct ifreq *ifrq, int cmd)
 {
-	dev_warn(&ndev->dev, "DaVinci EMAC: ioctl not supported\n");
+	struct emac_priv *priv = netdev_priv(ndev);
 
 	if (!(netif_running(ndev)))
 		return -EINVAL;
 
 	/* TODO: Add phy read and write and private statistics get feature */
 
-	return -EOPNOTSUPP;
+	return phy_mii_ioctl(priv->phydev, ifrq, cmd);
 }
 
 static int match_first_device(struct device *dev, void *data)
@@ -1823,7 +1822,7 @@ static int __devinit davinci_emac_probe(struct platform_device *pdev)
 	}
 
 	priv->emac_base_phys = res->start + pdata->ctrl_reg_offset;
-	size = res->end - res->start + 1;
+	size = resource_size(res);
 	if (!request_mem_region(res->start, size, ndev->name)) {
 		dev_err(&pdev->dev, "failed request_mem_region() for regs\n");
 		rc = -ENXIO;
@@ -1928,7 +1927,7 @@ no_irq_res:
 	cpdma_ctlr_destroy(priv->dma);
 no_dma:
 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-	release_mem_region(res->start, res->end - res->start + 1);
+	release_mem_region(res->start, resource_size(res));
 	iounmap(priv->remap_addr);
 
 probe_quit:
@@ -1962,7 +1961,7 @@ static int __devexit davinci_emac_remove(struct platform_device *pdev)
 		cpdma_chan_destroy(priv->rxchan);
 	cpdma_ctlr_destroy(priv->dma);
 
-	release_mem_region(res->start, res->end - res->start + 1);
+	release_mem_region(res->start, resource_size(res));
 
 	unregister_netdev(ndev);
 	iounmap(priv->remap_addr);

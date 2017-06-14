@@ -589,14 +589,6 @@ drivers/mmc/host/sdhci-s3c.c
 drivers/mmc/host/sdhci.c
 drivers/mmc/host/sdhci.h
 drivers/motor
-drivers/net/Kconfig
-drivers/net/Makefile
-drivers/net/cassini.c
-drivers/net/cpmac.c
-drivers/net/ibmveth.c
-drivers/net/ppp_generic.c
-drivers/net/pppolac.c
-drivers/net/pppopns.c
 drivers/power/Kconfig
 drivers/power/Makefile
 drivers/power/power_supply_core.c

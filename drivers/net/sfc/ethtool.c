@@ -677,27 +677,21 @@ static int efx_ethtool_set_ringparam(struct net_device *net_dev,
 				     struct ethtool_ringparam *ring)
 {
 	struct efx_nic *efx = netdev_priv(net_dev);
-	u32 txq_entries;
 
 	if (ring->rx_mini_pending || ring->rx_jumbo_pending ||
 	    ring->rx_pending > EFX_MAX_DMAQ_SIZE ||
 	    ring->tx_pending > EFX_MAX_DMAQ_SIZE)
 		return -EINVAL;
 
-	if (ring->rx_pending < EFX_RXQ_MIN_ENT) {
+	if (ring->rx_pending < EFX_MIN_RING_SIZE ||
+	    ring->tx_pending < EFX_MIN_RING_SIZE) {
 		netif_err(efx, drv, efx->net_dev,
-			  "RX queues cannot be smaller than %u\n",
-			  EFX_RXQ_MIN_ENT);
+			  "TX and RX queues cannot be smaller than %ld\n",
+			  EFX_MIN_RING_SIZE);
 		return -EINVAL;
 	}
 
-	txq_entries = max(ring->tx_pending, EFX_TXQ_MIN_ENT(efx));
-	if (txq_entries != ring->tx_pending)
-		netif_warn(efx, drv, efx->net_dev,
-			   "increasing TX queue size to minimum of %u\n",
-			   txq_entries);
-
-	return efx_realloc_channels(efx, ring->rx_pending, txq_entries);
+	return efx_realloc_channels(efx, ring->rx_pending, ring->tx_pending);
 }
 
 static int efx_ethtool_set_pauseparam(struct net_device *net_dev,
@@ -802,30 +796,13 @@ static int efx_ethtool_set_wol(struct net_device *net_dev,
 static int efx_ethtool_reset(struct net_device *net_dev, u32 *flags)
 {
 	struct efx_nic *efx = netdev_priv(net_dev);
-	enum reset_type method;
-	enum {
-		ETH_RESET_EFX_INVISIBLE = (ETH_RESET_DMA | ETH_RESET_FILTER |
-					   ETH_RESET_OFFLOAD | ETH_RESET_MAC)
-	};
+	int rc;
 
-	/* Check for minimal reset flags */
-	if ((*flags & ETH_RESET_EFX_INVISIBLE) != ETH_RESET_EFX_INVISIBLE)
-		return -EINVAL;
-	*flags ^= ETH_RESET_EFX_INVISIBLE;
-	method = RESET_TYPE_INVISIBLE;
+	rc = efx->type->map_reset_flags(flags);
+	if (rc < 0)
+		return rc;
 
-	if (*flags & ETH_RESET_PHY) {
-		*flags ^= ETH_RESET_PHY;
-		method = RESET_TYPE_ALL;
-	}
-
-	if ((*flags & efx->type->reset_world_flags) ==
-	    efx->type->reset_world_flags) {
-		*flags ^= efx->type->reset_world_flags;
-		method = RESET_TYPE_WORLD;
-	}
-
-	return efx_reset(efx, method);
+	return efx_reset(efx, rc);
 }
 
 static int

@@ -23,8 +23,8 @@
 #ifndef _ATL1E_H_
 #define _ATL1E_H_
 
-#include <linux/version.h>
 #include <linux/init.h>
+#include <linux/interrupt.h>
 #include <linux/types.h>
 #include <linux/errno.h>
 #include <linux/module.h>
@@ -186,7 +186,7 @@ struct atl1e_tpd_desc {
 /* how about 0x2000 */
 #define MAX_TX_BUF_LEN      0x2000
 #define MAX_TX_BUF_SHIFT    13
-#define MAX_TSO_SEG_SIZE    0x3c00
+/*#define MAX_TX_BUF_LEN  0x3000 */
 
 /* rrs word 1 bit 0:31 */
 #define RRS_RX_CSUM_MASK	0xFFFF
@@ -433,12 +433,12 @@ struct atl1e_rx_ring {
 struct atl1e_adapter {
 	struct net_device   *netdev;
 	struct pci_dev      *pdev;
-	struct vlan_group   *vlgrp;
 	struct napi_struct  napi;
 	struct mii_if_info  mii;    /* MII interface info */
 	struct atl1e_hw        hw;
 	struct atl1e_hw_stats  hw_stats;
 
+	bool have_msi;
 	u32 wol;
 	u16 link_speed;
 	u16 link_duplex;

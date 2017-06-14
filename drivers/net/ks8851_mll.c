@@ -23,6 +23,7 @@
 
 #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 
+#include <linux/interrupt.h>
 #include <linux/module.h>
 #include <linux/kernel.h>
 #include <linux/netdevice.h>
@@ -34,11 +35,12 @@
 #include <linux/platform_device.h>
 #include <linux/delay.h>
 #include <linux/slab.h>
+#include <asm/io.h>
 
 #define	DRV_NAME	"ks8851_mll"
 
 static u8 KS_DEFAULT_MAC_ADDRESS[] = { 0x00, 0x10, 0xA1, 0x86, 0x95, 0x11 };
-#define MAX_RECV_FRAMES			255
+#define MAX_RECV_FRAMES			32
 #define MAX_BUF_SIZE			2048
 #define TX_BUF_SIZE			2000
 #define RX_BUF_SIZE			2000
@@ -1188,8 +1190,6 @@ static void ks_set_rx_mode(struct net_device *netdev)
 			int i = 0;
 
 			netdev_for_each_mc_addr(ha, netdev) {
-				if (!(*ha->addr & 1))
-					continue;
 				if (i >= MAX_MCAST_LST)
 					break;
 				memcpy(ks->mcast_lst[i++], ha->addr, ETH_ALEN);

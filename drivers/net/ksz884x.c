@@ -17,6 +17,7 @@
 #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 
 #include <linux/init.h>
+#include <linux/interrupt.h>
 #include <linux/kernel.h>
 #include <linux/module.h>
 #include <linux/ioport.h>
@@ -5679,7 +5680,7 @@ static int netdev_set_mac_address(struct net_device *dev, void *addr)
 		memcpy(hw->override_addr, mac->sa_data, MAC_ADDR_LEN);
 	}
 
-	memcpy(dev->dev_addr, mac->sa_data, ETH_ALEN);
+	memcpy(dev->dev_addr, mac->sa_data, MAX_ADDR_LEN);
 
 	interrupt = hw_block_intr(hw);
 
@@ -5784,8 +5785,6 @@ static void netdev_set_rx_mode(struct net_device *dev)
 		}
 
 		netdev_for_each_mc_addr(ha, dev) {
-			if (!(*ha->addr & 1))
-				continue;
 			if (i >= MAX_MULTICAST_LIST)
 				break;
 			memcpy(hw->multi_list[i++], ha->addr, MAC_ADDR_LEN);

@@ -46,6 +46,7 @@
 #include <linux/skbuff.h>
 #include <linux/platform_device.h>
 #include <linux/clk.h>
+#include <linux/io.h>
 
 #include <linux/can/dev.h>
 #include <linux/can/error.h>
@@ -503,9 +504,9 @@ static netdev_tx_t ti_hecc_xmit(struct sk_buff *skb, struct net_device *ndev)
 	spin_unlock_irqrestore(&priv->mbx_lock, flags);
 
 	/* Prepare mailbox for transmission */
+	data = cf->can_dlc | (get_tx_head_prio(priv) << 8);
 	if (cf->can_id & CAN_RTR_FLAG) /* Remote transmission request */
 		data |= HECC_CANMCF_RTR;
-	data |= get_tx_head_prio(priv) << 8;
 	hecc_write_mbx(priv, mbxno, HECC_CANMCF, data);
 
 	if (cf->can_id & CAN_EFF_FLAG) /* Extended frame format */
@@ -734,12 +735,12 @@ static int ti_hecc_error(struct net_device *ndev, int int_status,
 		}
 		if (err_status & HECC_CANES_CRCE) {
 			hecc_set_bit(priv, HECC_CANES, HECC_CANES_CRCE);
-			cf->data[3] |= CAN_ERR_PROT_LOC_CRC_SEQ |
+			cf->data[2] |= CAN_ERR_PROT_LOC_CRC_SEQ |
 					CAN_ERR_PROT_LOC_CRC_DEL;
 		}
 		if (err_status & HECC_CANES_ACKE) {
 			hecc_set_bit(priv, HECC_CANES, HECC_CANES_ACKE);
-			cf->data[3] |= CAN_ERR_PROT_LOC_ACK |
+			cf->data[2] |= CAN_ERR_PROT_LOC_ACK |
 					CAN_ERR_PROT_LOC_ACK_DEL;
 		}
 	}
@@ -923,6 +924,7 @@ static int ti_hecc_probe(struct platform_device *pdev)
 	priv->can.do_get_state = ti_hecc_get_state;
 	priv->can.ctrlmode_supported = CAN_CTRLMODE_3_SAMPLES;
 
+	spin_lock_init(&priv->mbx_lock);
 	ndev->irq = irq->start;
 	ndev->flags |= IFF_ECHO;
 	platform_set_drvdata(pdev, ndev);
@@ -969,12 +971,12 @@ static int __devexit ti_hecc_remove(struct platform_device *pdev)
 	struct net_device *ndev = platform_get_drvdata(pdev);
 	struct ti_hecc_priv *priv = netdev_priv(ndev);
 
-	unregister_candev(ndev);
 	clk_disable(priv->clk);
 	clk_put(priv->clk);
 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
 	iounmap(priv->base);
 	release_mem_region(res->start, resource_size(res));
+	unregister_candev(ndev);
 	free_candev(ndev);
 	platform_set_drvdata(pdev, NULL);
 

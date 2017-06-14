@@ -32,14 +32,7 @@ drivers/media/video/uvc/
 drivers/message/
 drivers/mfd/
 drivers/misc/
-drivers/net/atlx/
-drivers/net/bonding/
-drivers/net/cxgb3/
-drivers/net/cxgb4/
-drivers/net/hamradio/
-drivers/net/phy/
-drivers/net/wimax/
-drivers/net/wireless/
+drivers/net/
 drivers/nfc/
 drivers/oprofile/
 drivers/pci/

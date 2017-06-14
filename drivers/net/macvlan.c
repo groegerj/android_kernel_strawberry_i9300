@@ -193,8 +193,7 @@ static rx_handler_result_t macvlan_handle_frame(struct sk_buff **pskb)
 	}
 
 	if (port->passthru)
-		vlan = list_first_or_null_rcu(&port->vlans,
-					      struct macvlan_dev, list);
+		vlan = list_first_entry(&port->vlans, struct macvlan_dev, list);
 	else
 		vlan = macvlan_hash_lookup(port, eth->h_dest);
 	if (vlan == NULL)
@@ -248,7 +247,7 @@ static int macvlan_queue_xmit(struct sk_buff *skb, struct net_device *dev)
 
 xmit_world:
 	skb->ip_summed = ip_summed;
-	skb->dev = vlan->lowerdev;
+	skb_set_dev(skb, vlan->lowerdev);
 	return dev_queue_xmit(skb);
 }
 
@@ -415,7 +414,8 @@ static struct lock_class_key macvlan_netdev_addr_lock_key;
 #define MACVLAN_FEATURES \
 	(NETIF_F_SG | NETIF_F_ALL_CSUM | NETIF_F_HIGHDMA | NETIF_F_FRAGLIST | \
 	 NETIF_F_GSO | NETIF_F_TSO | NETIF_F_UFO | NETIF_F_GSO_ROBUST | \
-	 NETIF_F_TSO_ECN | NETIF_F_TSO6 | NETIF_F_GRO | NETIF_F_RXCSUM)
+	 NETIF_F_TSO_ECN | NETIF_F_TSO6 | NETIF_F_GRO | NETIF_F_RXCSUM | \
+	 NETIF_F_HW_VLAN_FILTER)
 
 #define MACVLAN_STATE_MASK \
 	((1<<__LINK_STATE_NOCARRIER) | (1<<__LINK_STATE_DORMANT))
@@ -510,6 +510,28 @@ static struct rtnl_link_stats64 *macvlan_dev_get_stats64(struct net_device *dev,
 	return stats;
 }
 
+static void macvlan_vlan_rx_add_vid(struct net_device *dev,
+				    unsigned short vid)
+{
+	struct macvlan_dev *vlan = netdev_priv(dev);
+	struct net_device *lowerdev = vlan->lowerdev;
+	const struct net_device_ops *ops = lowerdev->netdev_ops;
+
+	if (ops->ndo_vlan_rx_add_vid)
+		ops->ndo_vlan_rx_add_vid(lowerdev, vid);
+}
+
+static void macvlan_vlan_rx_kill_vid(struct net_device *dev,
+				     unsigned short vid)
+{
+	struct macvlan_dev *vlan = netdev_priv(dev);
+	struct net_device *lowerdev = vlan->lowerdev;
+	const struct net_device_ops *ops = lowerdev->netdev_ops;
+
+	if (ops->ndo_vlan_rx_kill_vid)
+		ops->ndo_vlan_rx_kill_vid(lowerdev, vid);
+}
+
 static void macvlan_ethtool_get_drvinfo(struct net_device *dev,
 					struct ethtool_drvinfo *drvinfo)
 {
@@ -542,6 +564,8 @@ static const struct net_device_ops macvlan_netdev_ops = {
 	.ndo_set_multicast_list	= macvlan_set_multicast_list,
 	.ndo_get_stats64	= macvlan_dev_get_stats64,
 	.ndo_validate_addr	= eth_validate_addr,
+	.ndo_vlan_rx_add_vid	= macvlan_vlan_rx_add_vid,
+	.ndo_vlan_rx_kill_vid	= macvlan_vlan_rx_kill_vid,
 };
 
 void macvlan_common_setup(struct net_device *dev)
@@ -688,7 +712,7 @@ int macvlan_common_newlink(struct net *src_net, struct net_device *dev,
 	if (err < 0)
 		goto destroy_port;
 
-	list_add_tail_rcu(&vlan->list, &port->vlans);
+	list_add_tail(&vlan->list, &port->vlans);
 	netif_stacked_transfer_operstate(lowerdev, dev);
 
 	return 0;
@@ -714,7 +738,7 @@ void macvlan_dellink(struct net_device *dev, struct list_head *head)
 {
 	struct macvlan_dev *vlan = netdev_priv(dev);
 
-	list_del_rcu(&vlan->list);
+	list_del(&vlan->list);
 	unregister_netdevice_queue(dev, head);
 }
 EXPORT_SYMBOL_GPL(macvlan_dellink);

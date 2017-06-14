@@ -88,8 +88,8 @@ static struct rio_dev **rionet_active;
 #define dev_rionet_capable(dev) \
 	is_rionet_capable(dev->src_ops, dev->dst_ops)
 
-#define RIONET_MAC_MATCH(x)	(!memcmp((x), "\00\01\00\01", 4))
-#define RIONET_GET_DESTID(x)	((*((u8 *)x + 4) << 8) | *((u8 *)x + 5))
+#define RIONET_MAC_MATCH(x)	(*(u32 *)x == 0x00010001)
+#define RIONET_GET_DESTID(x)	(*(u16 *)(x + 4))
 
 static int rionet_rx_clean(struct net_device *ndev)
 {
@@ -190,7 +190,7 @@ static int rionet_start_xmit(struct sk_buff *skb, struct net_device *ndev)
 		return NETDEV_TX_BUSY;
 	}
 
-	if (eth->h_dest[0] & 0x01) {
+	if (is_multicast_ether_addr(eth->h_dest)) {
 		for (i = 0; i < RIO_MAX_ROUTE_ENTRIES(rnet->mport->sys_size);
 				i++)
 			if (rionet_active[i])

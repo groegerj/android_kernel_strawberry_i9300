@@ -4,8 +4,8 @@
  * License terms: GNU General Public License (GPL) version 2
  */
 
+#include <linux/hardirq.h>
 #include <linux/init.h>
-#include <linux/version.h>
 #include <linux/module.h>
 #include <linux/device.h>
 #include <linux/types.h>
@@ -325,9 +325,6 @@ static int ldisc_open(struct tty_struct *tty)
 
 	sprintf(name, "cf%s", tty->name);
 	dev = alloc_netdev(sizeof(*ser), name, caifdev_setup);
-	if (!dev)
-		return -ENOMEM;
-
 	ser = netdev_priv(dev);
 	ser->tty = tty_kref_get(tty);
 	ser->dev = dev;
