@@ -530,11 +530,15 @@ drivers/input/keyreset.c
 drivers/iommu
 drivers/media/video/Kconfig
 drivers/media/video/Makefile
+drivers/media/video/adp1653.c
+drivers/media/video/arv.c
+drivers/media/video/atmel-isi.c
 drivers/media/video/bw-qcam.c
 drivers/media/video/c-qcam.c
 drivers/media/video/cafe_ccic-regs.h
 drivers/media/video/cafe_ccic.c
 drivers/media/video/exynos
+drivers/media/video/fsl-viu.c
 drivers/media/video/marvell-ccic
 drivers/media/video/mhl
 drivers/media/video/mt9m001.c
@@ -556,6 +560,8 @@ drivers/media/video/ov7670.h
 drivers/media/video/ov772x.c
 drivers/media/video/ov9640.c
 drivers/media/video/ov9740.c
+drivers/media/video/pms.c
+drivers/media/video/pxa_camera.c
 drivers/media/video/rj54n1cb0c.c
 drivers/media/video/s2255drv.c
 drivers/media/video/s5c73m3.c
@@ -570,7 +576,10 @@ drivers/media/video/sh_mobile_csi2.c
 drivers/media/video/sh_vou.c
 drivers/media/video/sr030pc30.c
 drivers/media/video/tda7432.c
+drivers/media/video/timblogiw.c
+drivers/media/video/tuner-core.c
 drivers/media/video/tw9910.c
+drivers/media/video/usbvision/usbvision-video.c
 drivers/media/video/v4l2-common.c
 drivers/media/video/v4l2-compat-ioctl32.c
 drivers/media/video/v4l2-ctrls.c
@@ -581,8 +590,11 @@ drivers/media/video/v4l2-fh.c
 drivers/media/video/v4l2-ioctl.c
 drivers/media/video/v4l2-mem2mem.c
 drivers/media/video/v4l2-subdev.c
+drivers/media/video/via-camera.c
 drivers/media/video/videobuf2-cma-phys.c
 drivers/media/video/videobuf2-core.c
+drivers/media/video/vino.c
+drivers/media/video/vivi.c
 drivers/media/video/w9966.c
 drivers/media/video/zr364xx.c
 drivers/mmc/card/Kconfig
