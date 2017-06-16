@@ -23,8 +23,7 @@ drivers/input/touchscreen/
 drivers/isdn/
 drivers/leds/
 drivers/md/
-drivers/media/rc/
-drivers/media/video/
+drivers/media/
 drivers/message/
 drivers/mfd/
 drivers/misc/
