@@ -596,8 +596,11 @@ drivers/media/video/v4l2-ioctl.c
 drivers/media/video/v4l2-mem2mem.c
 drivers/media/video/v4l2-subdev.c
 drivers/media/video/via-camera.c
+drivers/media/video/videobuf-dma-sg.c
 drivers/media/video/videobuf2-cma-phys.c
 drivers/media/video/videobuf2-core.c
+drivers/media/video/videobuf2-dma-sg.c
+drivers/media/video/videobuf2-memops.c
 drivers/media/video/vino.c
 drivers/media/video/vivi.c
 drivers/media/video/w9966.c
