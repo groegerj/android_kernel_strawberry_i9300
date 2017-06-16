@@ -540,6 +540,7 @@ drivers/media/video/cafe_ccic.c
 drivers/media/video/exynos
 drivers/media/video/fsl-viu.c
 drivers/media/video/marvell-ccic
+drivers/media/video/mem2mem_testdev.c
 drivers/media/video/mhl
 drivers/media/video/mt9m001.c
 drivers/media/video/mt9m111.c
@@ -567,6 +568,8 @@ drivers/media/video/s2255drv.c
 drivers/media/video/s5c73m3.c
 drivers/media/video/s5c73m3.h
 drivers/media/video/s5c73m3_spi.c
+drivers/media/video/s5p-fimc/fimc-capture.c
+drivers/media/video/s5p-fimc/fimc-core.c
 drivers/media/video/s5p-mfc
 drivers/media/video/s5p-tv
 drivers/media/video/saa7115.c
@@ -574,6 +577,8 @@ drivers/media/video/samsung
 drivers/media/video/sh_mobile_ceu_camera.c
 drivers/media/video/sh_mobile_csi2.c
 drivers/media/video/sh_vou.c
+drivers/media/video/soc_camera.c
+drivers/media/video/soc_camera_platform.c
 drivers/media/video/sr030pc30.c
 drivers/media/video/tda7432.c
 drivers/media/video/timblogiw.c
