@@ -580,6 +580,7 @@ drivers/rtc/rtc-s3c.c
 drivers/samsung
 drivers/sensor
 drivers/switch
+drivers/tty/amiserial.c
 drivers/tty/bfin_jtag_comm.c
 drivers/tty/hvc/Kconfig
 drivers/tty/hvc/Makefile
@@ -589,6 +590,9 @@ drivers/tty/hvc/hvc_dcc.c
 drivers/tty/hvc/hvc_vio.c
 drivers/tty/hvc/hvsi.c
 drivers/tty/hvc/hvsi_lib.c
+drivers/tty/moxa.c
+drivers/tty/mxser.c
+drivers/tty/n_gsm.c
 drivers/tty/n_tty.c
 drivers/tty/pty.c
 drivers/tty/rocket.c
@@ -605,7 +609,9 @@ drivers/tty/serial/sb1250-duart.c
 drivers/tty/serial/serial_core.c
 drivers/tty/serial/zs.c
 drivers/tty/tty_io.c
+drivers/tty/tty_ioctl.c
 drivers/tty/tty_ldisc.c
+drivers/tty/tty_port.c
 drivers/tty/vt/consolemap.c
 drivers/tty/vt/vc_screen.c
 drivers/tty/vt/vt.c
