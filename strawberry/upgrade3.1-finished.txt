@@ -46,6 +46,7 @@ fs/
 include/crypto/
 include/linux/netfilter/
 include/linux/regulator/
+include/media/
 include/net/
 include/sound/
 init/
