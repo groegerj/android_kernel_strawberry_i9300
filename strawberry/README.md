@@ -2,6 +2,10 @@
 
 Android kernel for the Samsung Galaxy S3 international (i9300).
 
+## Warning
+
+This kernel is completely experimental. Use only if you know what you do.
+
 ## Purpose and Motivation
 
 The original i9300 Android kernel released by Samsung is based on the
@@ -59,6 +63,16 @@ Here is my plan. After every change I make, I test a few things:
 
 Things still can break, but this way I at least ensure that the basic system always works.
 
+## Bugs
+
+The following bugs are known.
+
+Unless the device is charged by cable, use of the power button (or waiting until the screen gets black)
+results in a state which is neither on nor off. The phone does not react in any way, but can be
+restarted by long-press of the power button.
+
+In the described state, the battery drains out quickly. This might be an independent second bug.
+
 ### Step 0: Starting with the LineageOS SMDK Kernel
 
 I started with the LineageOS i9300 kernel mentioned above. It claims to be 3.0.101, so it
@@ -94,7 +108,7 @@ mainline-3.0.101. Sometimes, this contains an essential patch not in mainline, b
 needed. More often, the respective subsystem just has a version which matches mainline-3.0.101
 not exactly but comes from a stage between 3.0.101 and 3.1, for example. Or, the Samsung
 guys have added some optimisation of security fix or whatever. In such a case, I replace
-that smdk stuff with mainline. Step 1 is almost finished by now.
+that smdk stuff with mainline. Step 1 is inished by now.
 
 ### Step 2: mainlining-3.1
 
@@ -113,13 +127,17 @@ This is why, after having mainlined as much code to 3.0.101, I started mainlinin
 much as possible to 3.1. Sometimes entire files can be replaced by mainline-3.1 versions,
 but often, there are side effects, and API changes etc. have to be taken into account.
 
-By now, I could mainline the whole network stack to 3.1, and parts of fs/, kernel/ and more.
+By now, I could mainline the whole network stack to 3.1, and parts of fs/, kernel/ and much more.
 Compared with the original number 2190 of different items, the number of items different
-from either mainline-3.0.101 or mainline-3.1 could be cut down to about half.
-Step 2 is still work in progress, but I work hard to reduct the differences with mainline-3.1
+from either mainline-3.0.101 or mainline-3.1 could be cut down to less than half.
+Step 2 makes good progress, and I work hard to reduct the differences with mainline-3.1
 to a minimum.
 
-### Step 3: further upgrade
+### Step 3: remove bugs
+
+As the title sais, the bugs described above need to be removed...
+
+### Step 4: further upgrade
 
 Starting from "i9300-version3.1", I expect it to be much easier to upgrade to 3.2 than
 it was to come to 3.1. The number of differences to mainline has been cut down a lot,
