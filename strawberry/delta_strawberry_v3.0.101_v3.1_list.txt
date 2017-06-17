@@ -977,8 +977,6 @@ include/linux/workqueue.h
 include/linux/writeback.h
 include/linux/xattr.h
 include/linux/zsmalloc.h
-include/rdma/ib_sa.h
-include/rdma/ib_verbs.h
 include/rxrpc/types.h
 include/scsi/scsi_device.h
 include/scsi/scsi_host.h
