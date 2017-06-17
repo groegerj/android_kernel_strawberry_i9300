@@ -25,7 +25,7 @@
 #include <linux/mutex.h>
 #include <linux/io.h>
 #include <linux/types.h>
-#include <asm/smc.h>
+#include <asm-generic/smc.h>
 
 #define TZIC_DEV "tzic"
 #define SMC_CMD_STORE_BINFO	 (-201)

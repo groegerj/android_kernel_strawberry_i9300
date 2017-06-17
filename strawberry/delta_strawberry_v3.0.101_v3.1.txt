@@ -675,7 +675,6 @@
 0| <<| <<<: firmware/tsp_atmel
 0| <<| <<<: firmware/tsp_melfas
 !| !0| !!!: include/acpi/platform/aclinux.h
-!| <<| <<<: include/asm
 !| !0| 00!: include/asm-generic/atomic.h
 0| !!| !!!: include/asm-generic/cputime.h
 0| !!| !!!: include/asm-generic/emergency-restart.h

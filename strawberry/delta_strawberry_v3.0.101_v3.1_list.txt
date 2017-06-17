@@ -675,7 +675,6 @@ firmware/ssp_crashed.fw.ihex
 firmware/tsp_atmel
 firmware/tsp_melfas
 include/acpi/platform/aclinux.h
-include/asm
 include/asm-generic/atomic.h
 include/asm-generic/cputime.h
 include/asm-generic/emergency-restart.h
