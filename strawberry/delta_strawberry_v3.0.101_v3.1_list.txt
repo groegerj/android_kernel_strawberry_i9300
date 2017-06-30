@@ -564,15 +564,6 @@ drivers/power/Makefile
 drivers/power/power_supply_core.c
 drivers/power/power_supply_sysfs.c
 drivers/power/samsung_fake_battery.c
-drivers/rtc/Kconfig
-drivers/rtc/Makefile
-drivers/rtc/alarm-dev.c
-drivers/rtc/alarm.c
-drivers/rtc/class.c
-drivers/rtc/interface.c
-drivers/rtc/rtc-lib.c
-drivers/rtc/rtc-max77686.c
-drivers/rtc/rtc-s3c.c
 drivers/samsung
 drivers/sensor
 drivers/switch

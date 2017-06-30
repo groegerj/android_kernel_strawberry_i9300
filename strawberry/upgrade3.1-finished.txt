@@ -33,6 +33,7 @@ drivers/nfc/
 drivers/oprofile/
 drivers/pci/
 drivers/regulator/
+drivers/rtc/
 drivers/s390/
 drivers/sbus/
 drivers/scsi/
