@@ -513,10 +513,6 @@ drivers/cpufreq/cpufreq_ondemand.c
 drivers/cpufreq/cpufreq_pegasusq.c
 drivers/cpufreq/cpufreq_stats.c
 drivers/cpufreq/powernow-k8.c
-drivers/gpio/Kconfig
-drivers/gpio/Makefile
-drivers/gpio/gpio-exynos4.c
-drivers/gpio/gpio-plat-samsung.c
 drivers/gud
 drivers/input/Kconfig
 drivers/input/Makefile

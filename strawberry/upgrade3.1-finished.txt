@@ -13,6 +13,7 @@ drivers/connector/
 drivers/cpuidle/
 drivers/edac/
 drivers/firewire/
+drivers/gpio/
 drivers/gpu/
 drivers/hid/
 drivers/hwmon/
