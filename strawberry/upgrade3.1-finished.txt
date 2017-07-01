@@ -32,6 +32,7 @@ drivers/net/
 drivers/nfc/
 drivers/oprofile/
 drivers/pci/
+drivers/power/
 drivers/regulator/
 drivers/rtc/
 drivers/s390/

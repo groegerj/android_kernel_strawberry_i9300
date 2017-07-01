@@ -571,11 +571,6 @@ drivers/mmc/host/sdhci-s3c.c
 drivers/mmc/host/sdhci.c
 drivers/mmc/host/sdhci.h
 drivers/motor
-drivers/power/Kconfig
-drivers/power/Makefile
-drivers/power/power_supply_core.c
-drivers/power/power_supply_sysfs.c
-drivers/power/samsung_fake_battery.c
 drivers/samsung
 drivers/sensor
 drivers/switch
