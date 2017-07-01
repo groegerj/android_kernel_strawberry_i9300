@@ -10,6 +10,7 @@ drivers/base/
 drivers/block/
 drivers/char/ipmi/
 drivers/connector/
+drivers/cpufreq/
 drivers/cpuidle/
 drivers/edac/
 drivers/firewire/
