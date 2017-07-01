@@ -474,13 +474,6 @@ drivers/char/virtio_console.c
 drivers/char/xilinx_hwicap/xilinx_hwicap.c
 drivers/gud
 drivers/iommu
-drivers/mmc/card/Kconfig
-drivers/mmc/card/Makefile
-drivers/mmc/card/block.c
-drivers/mmc/card/cprmdrv_samsung.c
-drivers/mmc/card/cprmdrv_samsung.h
-drivers/mmc/card/queue.c
-drivers/mmc/card/queue.h
 drivers/mmc/core/Kconfig
 drivers/mmc/core/bus.c
 drivers/mmc/core/core.c
