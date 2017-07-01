@@ -542,10 +542,6 @@ drivers/cpufreq/cpufreq_pegasusq.c
 drivers/cpufreq/cpufreq_stats.c
 drivers/cpufreq/powernow-k8.c
 drivers/gud
-drivers/input/Kconfig
-drivers/input/Makefile
-drivers/input/evdev.c
-drivers/input/keyreset.c
 drivers/iommu
 drivers/mmc/card/Kconfig
 drivers/mmc/card/Makefile
