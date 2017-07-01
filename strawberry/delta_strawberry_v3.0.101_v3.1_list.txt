@@ -545,11 +545,6 @@ drivers/gud
 drivers/input/Kconfig
 drivers/input/Makefile
 drivers/input/evdev.c
-drivers/input/keyboard/Kconfig
-drivers/input/keyboard/Makefile
-drivers/input/keyboard/cypress
-drivers/input/keyboard/gpio_keys.c
-drivers/input/keyboard/samsung-keypad.c
 drivers/input/keyreset.c
 drivers/iommu
 drivers/mmc/card/Kconfig

@@ -19,6 +19,7 @@ drivers/hid/
 drivers/hwmon/
 drivers/i2c/
 drivers/infiniband/
+drivers/input/keyboard/
 drivers/input/misc/
 drivers/input/touchscreen/
 drivers/isdn/
