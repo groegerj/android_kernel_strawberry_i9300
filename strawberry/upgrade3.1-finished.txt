@@ -29,8 +29,7 @@ drivers/media/
 drivers/message/
 drivers/mfd/
 drivers/misc/
-drivers/mmc/card/
-drivers/mmc/host/
+drivers/mmc/
 drivers/net/
 drivers/nfc/
 drivers/oprofile/
