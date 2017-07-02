@@ -492,14 +492,6 @@ drivers/mmc/core/sdio_io.c
 drivers/mmc/core/sdio_irq.c
 drivers/mmc/core/sdio_ops.c
 drivers/mmc/core/sdio_ops.h
-drivers/mmc/host/Kconfig
-drivers/mmc/host/Makefile
-drivers/mmc/host/mshci-s3c.c
-drivers/mmc/host/mshci.c
-drivers/mmc/host/mshci.h
-drivers/mmc/host/sdhci-s3c.c
-drivers/mmc/host/sdhci.c
-drivers/mmc/host/sdhci.h
 drivers/motor
 drivers/samsung
 drivers/sensor
