@@ -5,6 +5,7 @@ arch/arm/mach-omap1/
 arch/arm/mach-s3c2440/
 arch/arm/mm/
 arch/arm/vfp/
+block/
 crypto/
 drivers/atm/
 drivers/base/

@@ -425,14 +425,6 @@ arch/arm/plat-samsung/s3c-pl330.c
 arch/arm/tools/mach-types
 arch/mips/include/asm/pmc-sierra/msp71xx/msp_slp_int.h
 arch/mips/pmc-sierra/msp71xx/msp_irq_slp.c
-block/Kconfig.iosched
-block/Makefile
-block/blk-core.c
-block/blk-timeout.c
-block/cfq-iosched.c
-block/genhd.c
-block/row-iosched.c
-block/sio-iosched.c
 drivers/Kconfig
 drivers/Makefile
 drivers/battery
@@ -621,6 +613,7 @@ include/linux/dma-mapping.h
 include/linux/earlysuspend.h
 include/linux/ecryptfs.h
 include/linux/edac.h
+include/linux/elevator.h
 include/linux/etherdevice.h
 include/linux/export.h
 include/linux/ext3_fs.h
