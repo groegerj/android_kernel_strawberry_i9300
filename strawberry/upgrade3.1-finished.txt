@@ -61,6 +61,7 @@ init/
 ipc/
 kernel/debug/
 kernel/events/
+kernel/irq/
 kernel/time/
 kernel/trace/
 mm/

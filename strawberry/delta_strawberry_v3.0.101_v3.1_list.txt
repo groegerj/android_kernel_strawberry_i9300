@@ -843,8 +843,6 @@ kernel/exit.c
 kernel/fork.c
 kernel/futex.c
 kernel/hrtimer.c
-kernel/irq/generic-chip.c
-kernel/irq/handle.c
 kernel/kernel_sec_debug.c
 kernel/module.c
 kernel/notifier.c
