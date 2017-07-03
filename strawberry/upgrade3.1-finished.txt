@@ -10,7 +10,7 @@ crypto/
 drivers/atm/
 drivers/base/
 drivers/block/
-drivers/char/ipmi/
+drivers/char/
 drivers/connector/
 drivers/cpufreq/
 drivers/cpuidle/
