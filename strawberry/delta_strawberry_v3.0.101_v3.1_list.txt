@@ -564,6 +564,7 @@ include/linux/cpuidle.h
 include/linux/cpuset.h
 include/linux/cred.h
 include/linux/crypto.h
+include/linux/ctype.h
 include/linux/dcache.h
 include/linux/dccp.h
 include/linux/debug_locks.h
@@ -881,16 +882,6 @@ kernel/taskstats.c
 kernel/timeconst.bc
 kernel/watchdog.c
 kernel/workqueue.c
-lib/Kconfig.debug
-lib/atomic64.c
-lib/atomic64_test.c
-lib/bitmap.c
-lib/crc32.c
-lib/dec_and_lock.c
-lib/fault-inject.c
-lib/genalloc.c
-lib/plist.c
-lib/radix-tree.c
 scripts/mkmodimg.sh
 security/capability.c
 security/commoncap.c

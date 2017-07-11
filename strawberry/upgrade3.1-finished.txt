@@ -64,6 +64,7 @@ kernel/events/
 kernel/irq/
 kernel/time/
 kernel/trace/
+lib/
 mm/
 net/
 samples/
