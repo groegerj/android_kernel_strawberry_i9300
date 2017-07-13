@@ -437,6 +437,8 @@ drivers/usb/gadget/gadget_chips.h
 drivers/usb/gadget/gadget_gbhc
 drivers/usb/gadget/multi_config.c
 drivers/usb/gadget/multi_config.h
+drivers/usb/gadget/net2272.c
+drivers/usb/gadget/net2272.h
 drivers/usb/gadget/printer.c
 drivers/usb/gadget/s3c_udc.h
 drivers/usb/gadget/s3c_udc_otg.c
@@ -448,6 +450,7 @@ drivers/usb/gadget/u_ether.c
 drivers/usb/gadget/u_ether.h
 drivers/usb/gadget/u_ncm.c
 drivers/usb/gadget/u_serial.c
+drivers/usb/gadget/udc-core.c
 drivers/usb/gadget/uvc_queue.c
 drivers/usb/notify
 firmware/Makefile
