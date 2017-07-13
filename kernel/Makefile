@@ -108,9 +108,6 @@ obj-$(CONFIG_PERF_EVENTS) += events/
 obj-$(CONFIG_USER_RETURN_NOTIFIER) += user-return-notifier.o
 obj-$(CONFIG_PADATA) += padata.o
 obj-$(CONFIG_CRASH_DUMP) += crash_dump.o
-ifeq ($(CONFIG_MACH_U1_NA_SPR),y)
-obj-$(CONFIG_SEC_DEBUG) += kernel_sec_debug.o
-endif
 obj-$(CONFIG_JUMP_LABEL) += jump_label.o
 
 ifneq ($(CONFIG_SCHED_OMIT_FRAME_POINTER),y)
