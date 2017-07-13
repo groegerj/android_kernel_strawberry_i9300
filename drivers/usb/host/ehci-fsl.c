@@ -100,7 +100,7 @@ static int usb_hcd_fsl_probe(const struct hc_driver *driver,
 		goto err2;
 	}
 	hcd->rsrc_start = res->start;
-	hcd->rsrc_len = res->end - res->start + 1;
+	hcd->rsrc_len = resource_size(res);
 	if (!request_mem_region(hcd->rsrc_start, hcd->rsrc_len,
 				driver->description)) {
 		dev_dbg(&pdev->dev, "controller already in use\n");
@@ -125,7 +125,7 @@ static int usb_hcd_fsl_probe(const struct hc_driver *driver,
 	 */
 	if (pdata->init && pdata->init(pdev)) {
 		retval = -ENODEV;
-		goto err4;
+		goto err3;
 	}
 
 	/* Enable USB controller, 83xx or 8536 */
@@ -216,8 +216,6 @@ static void ehci_fsl_setup_phy(struct ehci_hcd *ehci,
 			       unsigned int port_offset)
 {
 	u32 portsc;
-	struct usb_hcd *hcd = ehci_to_hcd(ehci);
-	void __iomem *non_ehci = hcd->regs;
 
 	portsc = ehci_readl(ehci, &ehci->regs->port_status[port_offset]);
 	portsc &= ~(PORT_PTS_MSK | PORT_PTS_PTW);
@@ -233,8 +231,6 @@ static void ehci_fsl_setup_phy(struct ehci_hcd *ehci,
 		portsc |= PORT_PTS_PTW;
 		/* fall through */
 	case FSL_USB2_PHY_UTMI:
-		/* enable UTMI PHY */
-		setbits32(non_ehci + FSL_SOC_USB_CTRL, CTRL_UTMI_PHY_EN);
 		portsc |= PORT_PTS_UTMI;
 		break;
 	case FSL_USB2_PHY_NONE:

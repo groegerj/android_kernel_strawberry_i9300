@@ -36,27 +36,6 @@
 
 static int ehci_get_frame (struct usb_hcd *hcd);
 
-#ifdef CONFIG_PCI
-
-static unsigned ehci_read_frame_index(struct ehci_hcd *ehci)
-{
-	unsigned uf;
-
-	/*
-	 * The MosChip MCS9990 controller updates its microframe counter
-	 * a little before the frame counter, and occasionally we will read
-	 * the invalid intermediate value.  Avoid problems by checking the
-	 * microframe number (the low-order 3 bits); if they are 0 then
-	 * re-read the register to get the correct value.
-	 */
-	uf = ehci_readl(ehci, &ehci->regs->frame_index);
-	if (unlikely(ehci->frame_index_bug && ((uf & 7) == 0)))
-		uf = ehci_readl(ehci, &ehci->regs->frame_index);
-	return uf;
-}
-
-#endif
-
 /*-------------------------------------------------------------------------*/
 
 /*
@@ -193,7 +172,7 @@ periodic_usecs (struct ehci_hcd *ehci, unsigned frame, unsigned uframe)
 		}
 	}
 #ifdef	DEBUG
-	if (usecs > 100)
+	if (usecs > ehci->uframe_periodic_max)
 		ehci_err (ehci, "uframe %d sched overrun: %d usecs\n",
 			frame * 8 + uframe, usecs);
 #endif
@@ -503,7 +482,7 @@ static int enable_periodic (struct ehci_hcd *ehci)
 	ehci_to_hcd(ehci)->state = HC_STATE_RUNNING;
 
 	/* make sure ehci_work scans these */
-	ehci->next_uframe = ehci_read_frame_index(ehci)
+	ehci->next_uframe = ehci_readl(ehci, &ehci->regs->frame_index)
 		% (ehci->periodic_size << 3);
 	if (unlikely(ehci->broken_periodic))
 		ehci->last_periodic_enable = ktime_get_real();
@@ -730,11 +709,8 @@ static int check_period (
 	if (uframe >= 8)
 		return 0;
 
-	/*
-	 * 80% periodic == 100 usec/uframe available
-	 * convert "usecs we need" to "max already claimed"
-	 */
-	usecs = 100 - usecs;
+	/* convert "usecs we need" to "max already claimed" */
+	usecs = ehci->uframe_periodic_max - usecs;
 
 	/* we "know" 2 and 4 uframe intervals were rejected; so
 	 * for period 0, check _every_ microframe in the schedule.
@@ -1307,9 +1283,9 @@ itd_slot_ok (
 {
 	uframe %= period;
 	do {
-		/* can't commit more than 80% periodic == 100 usec */
+		/* can't commit more than uframe_periodic_max usec */
 		if (periodic_usecs (ehci, uframe >> 3, uframe & 0x7)
-				> (100 - usecs))
+				> (ehci->uframe_periodic_max - usecs))
 			return 0;
 
 		/* we know urb->interval is 2^N uframes */
@@ -1366,7 +1342,7 @@ sitd_slot_ok (
 #endif
 
 		/* check starts (OUT uses more than one) */
-		max_used = 100 - stream->usecs;
+		max_used = ehci->uframe_periodic_max - stream->usecs;
 		for (tmp = stream->raw_mask & 0xff; tmp; tmp >>= 1, uf++) {
 			if (periodic_usecs (ehci, frame, uf) > max_used)
 				return 0;
@@ -1375,7 +1351,7 @@ sitd_slot_ok (
 		/* for IN, check CSPLIT */
 		if (stream->c_usecs) {
 			uf = uframe & 7;
-			max_used = 100 - stream->c_usecs;
+			max_used = ehci->uframe_periodic_max - stream->c_usecs;
 			do {
 				tmp = 1 << uf;
 				tmp <<= 8;
@@ -1433,7 +1409,7 @@ iso_stream_schedule (
 		goto fail;
 	}
 
-	now = ehci_read_frame_index(ehci) & (mod - 1);
+	now = ehci_readl(ehci, &ehci->regs->frame_index) & (mod - 1);
 
 	/* Typical case: reuse current schedule, stream is still active.
 	 * Hopefully there are no gaps from the host falling behind
@@ -1479,36 +1455,30 @@ iso_stream_schedule (
 	 * jump until after the queue is primed.
 	 */
 	else {
-		int done = 0;
 		start = SCHEDULE_SLOP + (now & ~0x07);
 
 		/* NOTE:  assumes URB_ISO_ASAP, to limit complexity/bugs */
 
-		/* find a uframe slot with enough bandwidth.
-		 * Early uframes are more precious because full-speed
-		 * iso IN transfers can't use late uframes,
-		 * and therefore they should be allocated last.
-		 */
-		next = start;
-		start += period;
-		do {
-			start--;
+		/* find a uframe slot with enough bandwidth */
+		next = start + period;
+		for (; start < next; start++) {
+
 			/* check schedule: enough space? */
 			if (stream->highspeed) {
 				if (itd_slot_ok(ehci, mod, start,
 						stream->usecs, period))
-					done = 1;
+					break;
 			} else {
 				if ((start % 8) >= 6)
 					continue;
 				if (sitd_slot_ok(ehci, mod, stream,
 						start, sched, period))
-					done = 1;
+					break;
 			}
-		} while (start > next && !done);
+		}
 
 		/* no room in the schedule */
-		if (!done) {
+		if (start == next) {
 			ehci_dbg(ehci, "iso resched full %p (now %d max %d)\n",
 				urb, now, now + mod);
 			status = -ENOSPC;
@@ -2306,7 +2276,7 @@ scan_periodic (struct ehci_hcd *ehci)
 	 */
 	now_uframe = ehci->next_uframe;
 	if (HC_IS_RUNNING(ehci_to_hcd(ehci)->state)) {
-		clock = ehci_read_frame_index(ehci);
+		clock = ehci_readl(ehci, &ehci->regs->frame_index);
 		clock_frame = (clock >> 3) & (ehci->periodic_size - 1);
 	} else  {
 		clock = now_uframe + mod - 1;
@@ -2485,7 +2455,8 @@ restart:
 					|| ehci->periodic_sched == 0)
 				break;
 			ehci->next_uframe = now_uframe;
-			now = ehci_read_frame_index(ehci) & (mod - 1);
+			now = ehci_readl(ehci, &ehci->regs->frame_index) &
+					(mod - 1);
 			if (now_uframe == now)
 				break;
 
