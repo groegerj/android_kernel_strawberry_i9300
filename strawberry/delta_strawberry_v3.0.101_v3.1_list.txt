@@ -610,6 +610,7 @@ include/linux/jack.h
 include/linux/jump_label.h
 include/linux/k3g.h
 include/linux/kdb.h
+include/linux/kernel.h
 include/linux/kernel_sec_common.h
 include/linux/key.h
 include/linux/keychord.h
