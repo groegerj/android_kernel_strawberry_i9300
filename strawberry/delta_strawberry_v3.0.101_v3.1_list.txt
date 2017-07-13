@@ -607,6 +607,7 @@ include/linux/irq.h
 include/linux/irqdesc.h
 include/linux/isa1200_vibrator.h
 include/linux/jack.h
+include/linux/jiffies.h
 include/linux/jump_label.h
 include/linux/k3g.h
 include/linux/kdb.h
@@ -850,9 +851,13 @@ kernel/sched_fair.c
 kernel/signal.c
 kernel/stop_machine.c
 kernel/sys.c
+kernel/sysctl.c
 kernel/sysctl_binary.c
 kernel/sysctl_check.c
 kernel/taskstats.c
+kernel/time.c
+kernel/timer.c
+kernel/tsacct.c
 kernel/watchdog.c
 kernel/workqueue.c
 scripts/mkmodimg.sh
