@@ -853,7 +853,6 @@
 !| !0| !!!: kernel/sysctl_binary.c
 !| !0| 00<: kernel/sysctl_check.c
 !| !0| 000: kernel/taskstats.c
-0| <<| <<<: kernel/timeconst.bc
 !| !0| !!!: kernel/watchdog.c
 !| !0| !!!: kernel/workqueue.c
 0| <<| <<<: scripts/mkmodimg.sh

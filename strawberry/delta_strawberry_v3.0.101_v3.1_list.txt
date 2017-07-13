@@ -853,7 +853,6 @@ kernel/sys.c
 kernel/sysctl_binary.c
 kernel/sysctl_check.c
 kernel/taskstats.c
-kernel/timeconst.bc
 kernel/watchdog.c
 kernel/workqueue.c
 scripts/mkmodimg.sh
