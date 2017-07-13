@@ -45,6 +45,7 @@ drivers/scsi/
 drivers/spi/
 drivers/staging/
 drivers/tty/
+drivers/usb/core/
 drivers/usb/host/
 drivers/usb/misc/
 drivers/usb/otg/

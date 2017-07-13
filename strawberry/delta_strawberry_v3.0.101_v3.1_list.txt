@@ -409,12 +409,6 @@ drivers/sensor
 drivers/switch
 drivers/usb/Kconfig
 drivers/usb/Makefile
-drivers/usb/core/Kconfig
-drivers/usb/core/devio.c
-drivers/usb/core/hub.c
-drivers/usb/core/message.c
-drivers/usb/core/quirks.c
-drivers/usb/core/sec-dock.h
 drivers/usb/gadget/Kconfig
 drivers/usb/gadget/Makefile
 drivers/usb/gadget/android.c
