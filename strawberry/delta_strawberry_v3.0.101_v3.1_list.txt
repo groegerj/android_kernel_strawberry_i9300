@@ -465,10 +465,6 @@ drivers/usb/host/ehci.h
 drivers/usb/host/ohci-hcd.c
 drivers/usb/host/ohci-s5p.c
 drivers/usb/notify
-drivers/usb/otg/Kconfig
-drivers/usb/otg/Makefile
-drivers/usb/otg/otg-wakelock.c
-drivers/usb/otg/otg_id.c
 firmware/Makefile
 firmware/SlimISP_GD.bin.ihex
 firmware/SlimISP_GJ.bin.ihex
