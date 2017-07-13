@@ -456,7 +456,6 @@
 0| !!| !!!: drivers/usb/gadget/u_serial.c
 !| !0| !!!: drivers/usb/gadget/uvc_queue.c
 0| !!| !!!: drivers/usb/host/Kconfig
-0| !!| !!!: drivers/usb/host/Makefile
 0| !!| !!!: drivers/usb/host/ehci-hcd.c
 0| !!| !!!: drivers/usb/host/ehci-hub.c
 0| !!| !!!: drivers/usb/host/ehci-q.c

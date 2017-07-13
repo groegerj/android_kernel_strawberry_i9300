@@ -456,7 +456,6 @@ drivers/usb/gadget/u_ncm.c
 drivers/usb/gadget/u_serial.c
 drivers/usb/gadget/uvc_queue.c
 drivers/usb/host/Kconfig
-drivers/usb/host/Makefile
 drivers/usb/host/ehci-hcd.c
 drivers/usb/host/ehci-hub.c
 drivers/usb/host/ehci-q.c
