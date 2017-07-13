@@ -469,10 +469,6 @@ drivers/usb/otg/Kconfig
 drivers/usb/otg/Makefile
 drivers/usb/otg/otg-wakelock.c
 drivers/usb/otg/otg_id.c
-drivers/usb/serial/Kconfig
-drivers/usb/serial/Makefile
-drivers/usb/serial/usb-serial.c
-drivers/usb/serial/usb-wwan.h
 firmware/Makefile
 firmware/SlimISP_GD.bin.ihex
 firmware/SlimISP_GJ.bin.ihex

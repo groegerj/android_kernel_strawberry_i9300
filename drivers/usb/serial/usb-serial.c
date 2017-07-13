@@ -168,7 +168,6 @@ static void destroy_serial(struct kref *kref)
 		}
 	}
 
-	usb_put_intf(serial->interface);
 	usb_put_dev(serial->dev);
 	kfree(serial);
 }
@@ -356,10 +355,9 @@ static int serial_write(struct tty_struct *tty, const unsigned char *buf,
 
 	if (port->serial->dev->state == USB_STATE_NOTATTACHED)
 		goto exit;
-#ifdef CONFIG_MACH_M0
-	printk(KERN_INFO "%s - port %d, %d byte(s)",
-			__func__, port->number, count);
-#endif
+
+	dbg("%s - port %d, %d byte(s)", __func__, port->number, count);
+
 	/* pass on to the driver specific version of this function */
 	retval = port->serial->type->write(tty, port, buf, count);
 
@@ -626,7 +624,7 @@ static struct usb_serial *create_serial(struct usb_device *dev,
 	}
 	serial->dev = usb_get_dev(dev);
 	serial->type = driver;
-	serial->interface = usb_get_intf(interface);
+	serial->interface = interface;
 	kref_init(&serial->kref);
 	mutex_init(&serial->disc_mutex);
 	serial->minor = SERIAL_TTY_NO_MINOR;
@@ -671,14 +669,12 @@ exit:
 static struct usb_serial_driver *search_serial_device(
 					struct usb_interface *iface)
 {
-	const struct usb_device_id *id = NULL;
+	const struct usb_device_id *id;
 	struct usb_serial_driver *drv;
-	struct usb_driver *driver = to_usb_driver(iface->dev.driver);
 
 	/* Check if the usb id matches a known device */
 	list_for_each_entry(drv, &usb_serial_driver_list, driver_list) {
-		if (drv->usb_driver == driver)
-			id = get_iface_id(drv, iface);
+		id = get_iface_id(drv, iface);
 		if (id)
 			return drv;
 	}
@@ -766,7 +762,7 @@ int usb_serial_probe(struct usb_interface *interface,
 
 		if (retval) {
 			dbg("sub driver rejected device");
-			usb_serial_put(serial);
+			kfree(serial);
 			module_put(type->driver.owner);
 			return retval;
 		}
@@ -838,7 +834,7 @@ int usb_serial_probe(struct usb_interface *interface,
 		 */
 		if (num_bulk_in == 0 || num_bulk_out == 0) {
 			dev_info(&interface->dev, "PL-2303 hack: descriptors matched but endpoints did not\n");
-			usb_serial_put(serial);
+			kfree(serial);
 			module_put(type->driver.owner);
 			return -ENODEV;
 		}
@@ -852,7 +848,7 @@ int usb_serial_probe(struct usb_interface *interface,
 		if (num_ports == 0) {
 			dev_err(&interface->dev,
 			    "Generic device with no bulk out, not allowed.\n");
-			usb_serial_put(serial);
+			kfree(serial);
 			module_put(type->driver.owner);
 			return -EIO;
 		}
@@ -1063,12 +1059,6 @@ int usb_serial_probe(struct usb_interface *interface,
 		serial->attached = 1;
 	}
 
-	/* Avoid race with tty_open and serial_install by setting the
-	 * disconnected flag and not clearing it until all ports have been
-	 * registered.
-	 */
-	serial->disconnected = 1;
-
 	if (get_free_serial(serial, num_ports, &minor) == NULL) {
 		dev_err(&interface->dev, "No more free serial devices\n");
 		goto probe_error;
@@ -1092,8 +1082,6 @@ int usb_serial_probe(struct usb_interface *interface,
 			port->dev_state = PORT_REGISTERED;
 		}
 	}
-
-	serial->disconnected = 0;
 
 	usb_serial_console_init(debug, minor);
 
