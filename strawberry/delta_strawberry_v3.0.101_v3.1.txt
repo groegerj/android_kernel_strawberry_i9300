@@ -473,7 +473,6 @@
 0| !!| !!!: drivers/usb/serial/Makefile
 0| !!| !!!: drivers/usb/serial/usb-serial.c
 0| !!| !!!: drivers/usb/serial/usb-wwan.h
-0| !!| !!!: drivers/usb/storage/usb.c
 0| !!| !!!: firmware/Makefile
 0| <<| <<<: firmware/SlimISP_GD.bin.ihex
 0| <<| <<<: firmware/SlimISP_GJ.bin.ihex
