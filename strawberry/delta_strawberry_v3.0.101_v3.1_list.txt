@@ -827,8 +827,11 @@ kernel/delayacct.c
 kernel/exit.c
 kernel/fork.c
 kernel/futex.c
+kernel/futex_compat.c
+kernel/gcov/Kconfig
 kernel/hrtimer.c
-kernel/kernel_sec_debug.c
+kernel/hung_task.c
+kernel/jump_label.c
 kernel/kexec.c
 kernel/kmod.c
 kernel/kprobes.c
