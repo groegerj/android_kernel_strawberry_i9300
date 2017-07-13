@@ -46,6 +46,7 @@ drivers/spi/
 drivers/staging/
 drivers/tty/
 drivers/usb/misc/
+drivers/usb/wusbcore/
 drivers/vhost/
 drivers/video/
 drivers/w1/

@@ -474,7 +474,6 @@ drivers/usb/serial/Makefile
 drivers/usb/serial/usb-serial.c
 drivers/usb/serial/usb-wwan.h
 drivers/usb/storage/usb.c
-drivers/usb/wusbcore/wa-rpipe.c
 firmware/Makefile
 firmware/SlimISP_GD.bin.ihex
 firmware/SlimISP_GJ.bin.ihex
