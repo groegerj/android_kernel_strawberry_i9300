@@ -25,4 +25,5 @@ lib/
 mm/
 net/
 samples/
+scripts/
 sound/

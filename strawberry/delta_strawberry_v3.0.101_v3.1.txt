@@ -721,7 +721,6 @@
 !| !0| !!!: include/trace/events/vmscan.h
 !| !0| !!!: include/trace/events/writeback.h
 0| <<| <<<: include/video/s5p-dp.h
-0| <<| <<<: scripts/mkmodimg.sh
 0| !!| !!!: security/capability.c
 0| !!| !!!: security/commoncap.c
 0| !!| <<<: security/keys/encrypted.c

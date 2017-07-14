@@ -721,7 +721,6 @@ include/trace/events/udp.h
 include/trace/events/vmscan.h
 include/trace/events/writeback.h
 include/video/s5p-dp.h
-scripts/mkmodimg.sh
 security/capability.c
 security/commoncap.c
 security/keys/encrypted.c
