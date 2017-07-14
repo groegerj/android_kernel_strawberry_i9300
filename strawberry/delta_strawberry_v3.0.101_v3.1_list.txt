@@ -398,15 +398,6 @@ arch/arm/plat-samsung/s3c-pl330.c
 arch/arm/tools/mach-types
 arch/mips/include/asm/pmc-sierra/msp71xx/msp_slp_int.h
 arch/mips/pmc-sierra/msp71xx/msp_irq_slp.c
-drivers/Kconfig
-drivers/Makefile
-drivers/battery
-drivers/gud
-drivers/iommu
-drivers/motor
-drivers/samsung
-drivers/sensor
-drivers/switch
 firmware/Makefile
 firmware/SlimISP_GD.bin.ihex
 firmware/SlimISP_GJ.bin.ihex

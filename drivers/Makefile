@@ -64,7 +64,7 @@ obj-$(CONFIG_SBUS)		+= sbus/
 obj-$(CONFIG_ZORRO)		+= zorro/
 obj-$(CONFIG_MAC)		+= macintosh/
 obj-$(CONFIG_ATA_OVER_ETH)	+= block/aoe/
-obj-$(CONFIG_PARIDE)		+= block/paride/
+obj-$(CONFIG_PARIDE) 		+= block/paride/
 obj-$(CONFIG_TC)		+= tc/
 obj-$(CONFIG_UWB)		+= uwb/
 obj-$(CONFIG_USB_OTG_UTILS)	+= usb/
@@ -87,11 +87,7 @@ obj-$(CONFIG_THERMAL)		+= thermal/
 obj-$(CONFIG_WATCHDOG)		+= watchdog/
 obj-$(CONFIG_PHONE)		+= telephony/
 obj-$(CONFIG_MD)		+= md/
-ifeq ($(CONFIG_BT_TIZEN),y)
-obj-$(CONFIG_BT)		+= bluetooth_tizen/
-else
 obj-$(CONFIG_BT)		+= bluetooth/
-endif
 obj-$(CONFIG_ACCESSIBILITY)	+= accessibility/
 obj-$(CONFIG_ISDN)		+= isdn/
 obj-$(CONFIG_EDAC)		+= edac/
@@ -130,19 +126,9 @@ obj-$(CONFIG_HWSPINLOCK)	+= hwspinlock/
 obj-$(CONFIG_VIBETONZ)		+= motor/
 
 obj-$(CONFIG_SENSORS_CORE)	+= sensor/
-obj-$(CONFIG_SENSORS_SSP)	+= sensorhub/
 obj-$(CONFIG_FM_RADIO)   += samsung/
-obj-$(CONFIG_PM_DEVFREQ)	+= devfreq/
-obj-$(CONFIG_SAMSUNG_PHONE_SVNET) += svnet/
-obj-$(CONFIG_PHONE_IPC_SPI) += phone_svn/
-#obj-$(CONFIG_ACCESSORY)		+= accessory/
-#obj-$(CONFIG_BARCODE_EMUL)	+= barcode_emul/
-obj-$(CONFIG_EXTCON)		+= extcon/
-obj-$(CONFIG_SAMSUNG_PHONE_TTY)	+= dpram/
 # Secure OS Mobicore
 obj-$(CONFIG_MOBICORE_SUPPORT)	+= gud/
-
-obj-$(CONFIG_FELICA) += felica/
 
 ifeq (1, $(shell if [ -d ./drivers/exfat ]; then echo 1; fi))
 obj-y	+= exfat/
