@@ -82,7 +82,7 @@ static inline grant_ref_t *__gnttab_entry(grant_ref_t entry)
 static int get_free_entries(unsigned count)
 {
 	unsigned long flags;
-	int ref, rc;
+	int ref, rc = 0;
 	grant_ref_t head;
 
 	spin_lock_irqsave(&gnttab_list_lock, flags);
@@ -355,18 +355,9 @@ void gnttab_request_free_callback(struct gnttab_free_callback *callback,
 				  void (*fn)(void *), void *arg, u16 count)
 {
 	unsigned long flags;
-	struct gnttab_free_callback *cb;
-
 	spin_lock_irqsave(&gnttab_list_lock, flags);
-
-	/* Check if the callback is already on the list */
-	cb = gnttab_free_callback_list;
-	while (cb) {
-		if (cb == callback)
-			goto out;
-		cb = cb->next;
-	}
-
+	if (callback->next)
+		goto out;
 	callback->fn = fn;
 	callback->arg = arg;
 	callback->count = count;
