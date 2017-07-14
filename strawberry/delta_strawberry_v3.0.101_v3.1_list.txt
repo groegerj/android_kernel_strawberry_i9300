@@ -407,9 +407,6 @@ drivers/motor
 drivers/samsung
 drivers/sensor
 drivers/switch
-drivers/usb/Kconfig
-drivers/usb/Makefile
-drivers/usb/notify
 firmware/Makefile
 firmware/SlimISP_GD.bin.ihex
 firmware/SlimISP_GJ.bin.ihex
