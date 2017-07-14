@@ -87,8 +87,6 @@
 #define USB_REQ_GET_INTERFACE		0x0A
 #define USB_REQ_SET_INTERFACE		0x0B
 #define USB_REQ_SYNCH_FRAME		0x0C
-#define USB_REQ_SET_SEL			0x30
-#define USB_REQ_SET_ISOCH_DELAY		0x31
 
 #define USB_REQ_SET_ENCRYPTION		0x0D	/* Wireless USB */
 #define USB_REQ_GET_ENCRYPTION		0x0E
@@ -585,26 +583,8 @@ struct usb_ss_ep_comp_descriptor {
 } __attribute__ ((packed));
 
 #define USB_DT_SS_EP_COMP_SIZE		6
-
 /* Bits 4:0 of bmAttributes if this is a bulk endpoint */
-static inline int
-usb_ss_max_streams(const struct usb_ss_ep_comp_descriptor *comp)
-{
-	int		max_streams;
-
-	if (!comp)
-		return 0;
-
-	max_streams = comp->bmAttributes & 0x1f;
-
-	if (!max_streams)
-		return 0;
-
-	max_streams = 1 << max_streams;
-
-	return max_streams;
-}
-
+#define USB_SS_MAX_STREAMS(p)		(1 << ((p) & 0x1f))
 /* Bits 1:0 of bmAttributes if this is an isoc endpoint */
 #define USB_SS_MULT(p)			(1 + ((p) & 0x3))
 

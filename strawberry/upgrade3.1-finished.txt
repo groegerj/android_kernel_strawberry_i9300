@@ -54,6 +54,7 @@ fs/
 include/crypto/
 include/linux/netfilter/
 include/linux/regulator/
+include/linux/usb/
 include/media/
 include/net/
 include/rdma/
