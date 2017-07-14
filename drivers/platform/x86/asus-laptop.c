@@ -70,11 +70,10 @@ MODULE_LICENSE("GPL");
  * WAPF defines the behavior of the Fn+Fx wlan key
  * The significance of values is yet to be found, but
  * most of the time:
- * 0x0 will do nothing
- * 0x1 will allow to control the device with Fn+Fx key.
- * 0x4 will send an ACPI event (0x88) while pressing the Fn+Fx key
- * 0x5 like 0x1 or 0x4
- * So, if something doesn't work as you want, just try other values =)
+ * Bit | Bluetooth | WLAN
+ *  0  | Hardware  | Hardware
+ *  1  | Hardware  | Software
+ *  4  | Software  | Software
  */
 static uint wapf = 1;
 module_param(wapf, uint, 0444);
@@ -643,14 +642,12 @@ static ssize_t show_infos(struct device *dev,
 	/*
 	 * The HWRS method return informations about the hardware.
 	 * 0x80 bit is for WLAN, 0x100 for Bluetooth.
-	 * 0x40 for WWAN, 0x10 for WIMAX.
 	 * The significance of others is yet to be found.
-	 * We don't currently use this for device detection, and it
-	 * takes several seconds to run on some systems.
+	 * If we don't find the method, we assume the device are present.
 	 */
-	rv = acpi_evaluate_integer(asus->handle, "HWRS", NULL, &temp);
+	rv = acpi_evaluate_integer(asus->handle, "HRWS", NULL, &temp);
 	if (!ACPI_FAILURE(rv))
-		len += sprintf(page + len, "HWRS value         : %#x\n",
+		len += sprintf(page + len, "HRWS value         : %#x\n",
 			       (uint) temp);
 	/*
 	 * Another value for userspace: the ASYM method returns 0x02 for
@@ -1273,7 +1270,7 @@ static int asus_laptop_get_info(struct asus_laptop *asus)
 {
 	struct acpi_buffer buffer = { ACPI_ALLOCATE_BUFFER, NULL };
 	union acpi_object *model = NULL;
-	unsigned long long bsts_result;
+	unsigned long long bsts_result, hwrs_result;
 	char *string = NULL;
 	acpi_status status;
 
@@ -1334,6 +1331,17 @@ static int asus_laptop_get_info(struct asus_laptop *asus)
 
 	if (*string)
 		pr_notice("  %s model detected\n", string);
+
+	/*
+	 * The HWRS method return informations about the hardware.
+	 * 0x80 bit is for WLAN, 0x100 for Bluetooth,
+	 * 0x40 for WWAN, 0x10 for WIMAX.
+	 * The significance of others is yet to be found.
+	 */
+	status =
+	    acpi_evaluate_integer(asus->handle, "HRWS", NULL, &hwrs_result);
+	if (!ACPI_FAILURE(status))
+		pr_notice("  HRWS returned %x", (int)hwrs_result);
 
 	if (!acpi_check_handle(asus->handle, METHOD_WL_STATUS, NULL))
 		asus->have_rsts = true;

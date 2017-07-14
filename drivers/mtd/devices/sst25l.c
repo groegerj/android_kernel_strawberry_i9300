@@ -5,7 +5,7 @@
  *
  * Copyright © 2009 Bluewater Systems Ltd
  * Author: Andre Renaud <andre@bluewatersys.com>
- * Author: Ryan Mallon <ryan@bluewatersys.com>
+ * Author: Ryan Mallon
  *
  * Based on m25p80.c
  *
@@ -406,7 +406,6 @@ static int __devinit sst25l_probe(struct spi_device *spi)
 	flash->mtd.flags	= MTD_CAP_NORFLASH;
 	flash->mtd.erasesize	= flash_info->erase_size;
 	flash->mtd.writesize	= flash_info->page_size;
-	flash->mtd.writebufsize	= flash_info->page_size;
 	flash->mtd.size		= flash_info->page_size * flash_info->nr_pages;
 	flash->mtd.erase	= sst25l_erase;
 	flash->mtd.read		= sst25l_read;
@@ -499,5 +498,5 @@ module_exit(sst25l_exit);
 
 MODULE_DESCRIPTION("MTD SPI driver for SST25L Flash chips");
 MODULE_AUTHOR("Andre Renaud <andre@bluewatersys.com>, "
-	      "Ryan Mallon <ryan@bluewatersys.com>");
+	      "Ryan Mallon");
 MODULE_LICENSE("GPL");

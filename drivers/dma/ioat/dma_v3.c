@@ -73,10 +73,10 @@
 /* provide a lookup table for setting the source address in the base or
  * extended descriptor of an xor or pq descriptor
  */
-static const u8 xor_idx_to_desc __read_mostly = 0xd0;
-static const u8 xor_idx_to_field[] __read_mostly = { 1, 4, 5, 6, 7, 0, 1, 2 };
-static const u8 pq_idx_to_desc __read_mostly = 0xf8;
-static const u8 pq_idx_to_field[] __read_mostly = { 1, 4, 5, 0, 1, 2, 4, 5 };
+static const u8 xor_idx_to_desc = 0xe0;
+static const u8 xor_idx_to_field[] = { 1, 4, 5, 6, 7, 0, 1, 2 };
+static const u8 pq_idx_to_desc = 0xf8;
+static const u8 pq_idx_to_field[] = { 1, 4, 5, 0, 1, 2, 4, 5 };
 
 static dma_addr_t xor_get_src(struct ioat_raw_descriptor *descs[2], int idx)
 {
@@ -949,7 +949,7 @@ static int __devinit ioat_xor_val_self_test(struct ioatdma_device *device)
 			goto free_resources;
 		}
 	}
-	dma_sync_single_for_device(dev, dest_dma, PAGE_SIZE, DMA_FROM_DEVICE);
+	dma_sync_single_for_device(dev, dest_dma, PAGE_SIZE, DMA_TO_DEVICE);
 
 	/* skip validate if the capability is not present */
 	if (!dma_has_cap(DMA_XOR_VAL, dma_chan->device->cap_mask))

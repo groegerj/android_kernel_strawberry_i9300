@@ -3186,8 +3186,17 @@ static int __init hotkey_init(struct ibm_init_struct *iibm)
 		KEY_VENDOR,	/* 0x17: Thinkpad/AccessIBM/Lenovo */
 
 		/* (assignments unknown, please report if found) */
+		KEY_UNKNOWN, KEY_UNKNOWN,
+
+		/*
+		 * The mic mute button only sends 0x1a.  It does not
+		 * automatically mute the mic or change the mute light.
+		 */
+		KEY_MICMUTE,	/* 0x1a: Mic mute (since ?400 or so) */
+
+		/* (assignments unknown, please report if found) */
 		KEY_UNKNOWN, KEY_UNKNOWN, KEY_UNKNOWN, KEY_UNKNOWN,
-		KEY_UNKNOWN, KEY_UNKNOWN, KEY_UNKNOWN, KEY_UNKNOWN,
+		KEY_UNKNOWN,
 		},
 	};
 
@@ -8656,13 +8665,6 @@ static int __must_check __init get_thinkpad_model_data(
 		tp->model_str = kstrdup(s, GFP_KERNEL);
 		if (!tp->model_str)
 			return -ENOMEM;
-	} else {
-		s = dmi_get_system_info(DMI_BIOS_VENDOR);
-		if (s && !(strnicmp(s, "Lenovo", 6))) {
-			tp->model_str = kstrdup(s, GFP_KERNEL);
-			if (!tp->model_str)
-				return -ENOMEM;
-		}
 	}
 
 	s = dmi_get_system_info(DMI_PRODUCT_NAME);
