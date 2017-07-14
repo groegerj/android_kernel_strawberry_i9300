@@ -9,6 +9,7 @@ arch/arm/vfp/
 block/
 crypto/
 drivers/
+firmware/
 fs/
 include/crypto/
 include/linux/netfilter/
