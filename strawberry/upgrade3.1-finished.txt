@@ -11,6 +11,7 @@ crypto/
 drivers/
 firmware/
 fs/
+include/acpi/
 include/crypto/
 include/drm/
 include/linux/netfilter/

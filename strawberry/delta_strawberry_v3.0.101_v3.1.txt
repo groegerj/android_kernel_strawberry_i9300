@@ -398,7 +398,6 @@
 0| !!| !!!: arch/arm/tools/mach-types
  | >>| >>>: arch/mips/include/asm/pmc-sierra/msp71xx/msp_slp_int.h
  | >>| >>>: arch/mips/pmc-sierra/msp71xx/msp_irq_slp.c
-!| !0| !!!: include/acpi/platform/aclinux.h
 !| !0| 00!: include/asm-generic/atomic.h
 0| !!| !!!: include/asm-generic/cputime.h
 0| !!| !!!: include/asm-generic/emergency-restart.h
