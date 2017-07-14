@@ -396,8 +396,6 @@ arch/arm/plat-samsung/pm.c
 arch/arm/plat-samsung/pwm.c
 arch/arm/plat-samsung/s3c-pl330.c
 arch/arm/tools/mach-types
-arch/mips/include/asm/pmc-sierra/msp71xx/msp_slp_int.h
-arch/mips/pmc-sierra/msp71xx/msp_irq_slp.c
 include/asm-generic/atomic.h
 include/asm-generic/cputime.h
 include/asm-generic/emergency-restart.h

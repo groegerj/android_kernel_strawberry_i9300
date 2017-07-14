@@ -396,8 +396,6 @@
 0| !!| !!!: arch/arm/plat-samsung/pwm.c
 0| !!| <<<: arch/arm/plat-samsung/s3c-pl330.c
 0| !!| !!!: arch/arm/tools/mach-types
- | >>| >>>: arch/mips/include/asm/pmc-sierra/msp71xx/msp_slp_int.h
- | >>| >>>: arch/mips/pmc-sierra/msp71xx/msp_irq_slp.c
 !| !0| 00!: include/asm-generic/atomic.h
 0| !!| !!!: include/asm-generic/cputime.h
 0| !!| !!!: include/asm-generic/emergency-restart.h
