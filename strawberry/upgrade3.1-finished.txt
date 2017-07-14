@@ -23,6 +23,7 @@ include/rdma/
 include/rxrpc/
 include/scsi/
 include/sound/
+include/trace/
 include/video/
 init/
 ipc/

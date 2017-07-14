@@ -690,12 +690,4 @@ include/linux/workqueue.h
 include/linux/writeback.h
 include/linux/xattr.h
 include/linux/zsmalloc.h
-include/trace/events/asoc.h
-include/trace/events/ext4.h
-include/trace/events/f2fs.h
-include/trace/events/sock.h
-include/trace/events/sync.h
-include/trace/events/udp.h
-include/trace/events/vmscan.h
-include/trace/events/writeback.h
 /strawberry
