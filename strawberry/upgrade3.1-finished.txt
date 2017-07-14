@@ -20,6 +20,8 @@ include/linux/usb/
 include/media/
 include/net/
 include/rdma/
+include/rxrpc/
+include/scsi/
 include/sound/
 init/
 ipc/

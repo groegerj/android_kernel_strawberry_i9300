@@ -690,9 +690,6 @@ include/linux/workqueue.h
 include/linux/writeback.h
 include/linux/xattr.h
 include/linux/zsmalloc.h
-include/rxrpc/types.h
-include/scsi/scsi_device.h
-include/scsi/scsi_host.h
 include/trace/events/asoc.h
 include/trace/events/ext4.h
 include/trace/events/f2fs.h
