@@ -407,12 +407,6 @@ include/asm-generic/local64.h
 include/asm-generic/smc.h
 include/asm-generic/vmlinux.lds.h
 include/compat
-include/drm/Kbuild
-include/drm/drm_backlight.h
-include/drm/drm_fourcc.h
-include/drm/exynos_drm.h
-include/drm/gma_drm.h
-include/drm/ttm/ttm_lock.h
 include/linux/30pin_con.h
 include/linux/Kbuild
 include/linux/aio.h

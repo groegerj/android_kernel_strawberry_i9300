@@ -12,6 +12,7 @@ drivers/
 firmware/
 fs/
 include/crypto/
+include/drm/
 include/linux/netfilter/
 include/linux/regulator/
 include/linux/usb/
