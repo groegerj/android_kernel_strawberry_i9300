@@ -698,5 +698,4 @@
 <| <0| 000: include/trace/events/udp.h
 !| !0| !!!: include/trace/events/vmscan.h
 !| !0| !!!: include/trace/events/writeback.h
-0| <<| <<<: include/video/s5p-dp.h
 <| <<| <<<: /strawberry
