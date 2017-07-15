@@ -18,6 +18,7 @@ include/crypto/
 include/drm/
 include/linux/i2c/
 include/linux/netfilter/
+include/linux/platform_data/
 include/linux/power/
 include/linux/regulator/
 include/linux/sunrpc/
