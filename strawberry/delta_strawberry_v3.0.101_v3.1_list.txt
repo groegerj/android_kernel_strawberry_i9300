@@ -396,13 +396,6 @@ arch/arm/plat-samsung/pm.c
 arch/arm/plat-samsung/pwm.c
 arch/arm/plat-samsung/s3c-pl330.c
 arch/arm/tools/mach-types
-include/asm-generic/atomic.h
-include/asm-generic/cputime.h
-include/asm-generic/emergency-restart.h
-include/asm-generic/local.h
-include/asm-generic/local64.h
-include/asm-generic/smc.h
-include/asm-generic/vmlinux.lds.h
 include/compat
 include/linux/30pin_con.h
 include/linux/Kbuild

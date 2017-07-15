@@ -12,6 +12,7 @@ crypto/
 drivers/
 firmware/
 fs/
+include/asm-generic/
 include/acpi/
 include/crypto/
 include/drm/
