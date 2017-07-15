@@ -596,10 +596,6 @@ include/linux/pm_runtime.h
 include/linux/pn544.h
 include/linux/poison.h
 include/linux/posix_acl.h
-include/linux/power/charger-manager.h
-include/linux/power/max8922_charger_u1.h
-include/linux/power/smb328_charger.h
-include/linux/power/smb347_charger.h
 include/linux/power_supply.h
 include/linux/preempt.h
 include/linux/proc_fs.h
