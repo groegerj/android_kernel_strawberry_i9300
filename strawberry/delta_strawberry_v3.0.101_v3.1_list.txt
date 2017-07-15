@@ -634,9 +634,6 @@ include/linux/ssp_platformdata.h
 include/linux/stacktrace.h
 include/linux/stmpe811-adc.h
 include/linux/stop_machine.h
-include/linux/sunrpc/auth.h
-include/linux/sunrpc/cache.h
-include/linux/sunrpc/timer.h
 include/linux/suspend.h
 include/linux/sw_sync.h
 include/linux/swap.h

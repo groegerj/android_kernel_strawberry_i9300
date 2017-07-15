@@ -20,6 +20,7 @@ include/linux/i2c/
 include/linux/netfilter/
 include/linux/power/
 include/linux/regulator/
+include/linux/sunrpc/
 include/linux/usb/
 include/media/
 include/net/
