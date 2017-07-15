@@ -16,6 +16,7 @@ include/asm-generic/
 include/acpi/
 include/crypto/
 include/drm/
+include/linux/i2c/
 include/linux/netfilter/
 include/linux/regulator/
 include/linux/usb/

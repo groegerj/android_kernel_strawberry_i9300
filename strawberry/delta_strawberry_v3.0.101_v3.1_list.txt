@@ -480,12 +480,6 @@ include/linux/hid.h
 include/linux/host_notify.h
 include/linux/hw_breakpoint.h
 include/linux/hwmon.h
-include/linux/i2c/ak8975.h
-include/linux/i2c/es305.h
-include/linux/i2c/fm34_we395.h
-include/linux/i2c/mxt224_u1.h
-include/linux/i2c/si47xx_common.h
-include/linux/i2c/touchkey_i2c.h
 include/linux/ieee80211.h
 include/linux/if_packet.h
 include/linux/if_pppolac.h
