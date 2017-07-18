@@ -1289,10 +1289,10 @@ enum v4l2_colorfx {
 #define V4L2_CID_MIN_BUFFERS_FOR_CAPTURE	(V4L2_CID_BASE+39)
 #define V4L2_CID_MIN_BUFFERS_FOR_OUTPUT		(V4L2_CID_BASE+40)
 
-#define V4L2_CID_ALPHA_COMPONENT		(V4L2_CID_BASE+41)
-
 /* last CID + 1 */
-#define V4L2_CID_LASTP1				(V4L2_CID_BASE+42)
+#define V4L2_CID_LASTP1                         (V4L2_CID_BASE+41)
+
+/* Minimum number of buffer neede by the device */
 
 /*  MPEG-class control IDs defined by V4L2 */
 #define V4L2_CID_MPEG_BASE 			(V4L2_CTRL_CLASS_MPEG | 0x900)
@@ -1735,16 +1735,6 @@ enum v4l2_preemphasis {
 };
 #define V4L2_CID_TUNE_POWER_LEVEL		(V4L2_CID_FM_TX_CLASS_BASE + 113)
 #define V4L2_CID_TUNE_ANTENNA_CAPACITOR		(V4L2_CID_FM_TX_CLASS_BASE + 114)
-/* FM Tuner class control IDs */
-#define V4L2_CID_FM_RX_CLASS_BASE		(V4L2_CTRL_CLASS_FM_RX | 0x900)
-#define V4L2_CID_FM_RX_CLASS			(V4L2_CTRL_CLASS_FM_RX | 1)
-
-#define V4L2_CID_TUNE_DEEMPHASIS		(V4L2_CID_FM_RX_CLASS_BASE + 1)
-enum v4l2_deemphasis {
-	V4L2_DEEMPHASIS_DISABLED	= 0,
-	V4L2_DEEMPHASIS_50_uS		= 1,
-	V4L2_DEEMPHASIS_75_uS		= 2,
-};
 
 /* Flash and privacy (indicator) light controls */
 #define V4L2_CID_FLASH_CLASS_BASE		(V4L2_CTRL_CLASS_FLASH | 0x900)
@@ -1777,8 +1767,6 @@ enum v4l2_flash_strobe_source {
 #define V4L2_FLASH_FAULT_TIMEOUT		(1 << 1)
 #define V4L2_FLASH_FAULT_OVER_TEMPERATURE	(1 << 2)
 #define V4L2_FLASH_FAULT_SHORT_CIRCUIT		(1 << 3)
-#define V4L2_FLASH_FAULT_OVER_CURRENT		(1 << 4)
-#define V4L2_FLASH_FAULT_INDICATOR		(1 << 5)
 
 #define V4L2_CID_FLASH_CHARGE			(V4L2_CID_FLASH_CLASS_BASE + 11)
 #define V4L2_CID_FLASH_READY			(V4L2_CID_FLASH_CLASS_BASE + 12)
@@ -2148,7 +2136,6 @@ struct v4l2_streamparm {
 #define V4L2_EVENT_VSYNC			1
 #define V4L2_EVENT_EOS				2
 #define V4L2_EVENT_CTRL				3
-#define V4L2_EVENT_FRAME_SYNC			4
 #define V4L2_EVENT_PRIVATE_START		0x08000000
 
 /* Payload for V4L2_EVENT_VSYNC */
@@ -2175,16 +2162,11 @@ struct v4l2_event_ctrl {
 	__s32 default_value;
 };
 
-struct v4l2_event_frame_sync {
-	__u32 frame_sequence;
-};
-
 struct v4l2_event {
 	__u32				type;
 	union {
 		struct v4l2_event_vsync vsync;
-		struct v4l2_event_ctrl		ctrl;
-		struct v4l2_event_frame_sync	frame_sync;
+		struct v4l2_event_ctrl	ctrl;
 		__u8			data[64];
 	} u;
 	__u32				pending;
