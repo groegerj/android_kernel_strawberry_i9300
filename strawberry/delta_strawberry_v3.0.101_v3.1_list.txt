@@ -401,7 +401,6 @@ include/linux/30pin_con.h
 include/linux/Kbuild
 include/linux/aio.h
 include/linux/akm8975.h
-include/linux/amba/mmci.h
 include/linux/android_aid.h
 include/linux/android_alarm.h
 include/linux/ashmem.h
@@ -485,7 +484,7 @@ include/linux/if_packet.h
 include/linux/if_pppolac.h
 include/linux/if_pppopns.h
 include/linux/if_pppox.h
-include/linux/input/sec-input-bridge.h
+include/linux/input/kxtj9.h
 include/linux/input.h
 include/linux/interrupt.h
 include/linux/iocontext.h
@@ -535,7 +534,6 @@ include/linux/mfd/wm8994/pdata.h
 include/linux/mfd/wm8994/registers.h
 include/linux/migrate.h
 include/linux/miscdevice.h
-include/linux/mlx4/device.h
 include/linux/mm.h
 include/linux/mm_types.h
 include/linux/mman.h
