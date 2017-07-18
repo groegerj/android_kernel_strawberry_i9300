@@ -524,14 +524,6 @@ include/linux/melfas_mms_ts.h
 include/linux/melfas_touchkey.h
 include/linux/melfas_ts.h
 include/linux/memcontrol.h
-include/linux/mfd/max77686-private.h
-include/linux/mfd/max77686.h
-include/linux/mfd/max77693-private.h
-include/linux/mfd/max77693.h
-include/linux/mfd/s5m87xx
-include/linux/mfd/wm8994/core.h
-include/linux/mfd/wm8994/pdata.h
-include/linux/mfd/wm8994/registers.h
 include/linux/migrate.h
 include/linux/miscdevice.h
 include/linux/mm.h

@@ -22,6 +22,7 @@ include/linux/bcma/
 include/linux/ceph/
 include/linux/dvb/
 include/linux/i2c/
+include/linux/mfd/
 include/linux/mlx4/
 include/linux/mtd/
 include/linux/netfilter/
