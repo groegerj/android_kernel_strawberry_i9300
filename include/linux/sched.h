@@ -1865,8 +1865,6 @@ extern void task_clear_jobctl_trapping(struct task_struct *task);
 extern void task_clear_jobctl_pending(struct task_struct *task,
 				      unsigned int mask);
 
-extern void task_clear_group_stop_pending(struct task_struct *task);
-
 #ifdef CONFIG_PREEMPT_RCU
 
 #define RCU_READ_UNLOCK_BLOCKED (1 << 0) /* blocked while in RCU read-side. */
@@ -1930,7 +1928,6 @@ static inline int set_cpus_allowed(struct task_struct *p, cpumask_t new_mask)
  * Please use one of the three interfaces below.
  */
 extern unsigned long long notrace sched_clock(void);
-extern unsigned long long notrace sched_clock_clksrc(void);
 /*
  * See the comment in kernel/sched_clock.c
  */
@@ -2606,14 +2603,7 @@ static inline void thread_group_cputime_init(struct signal_struct *sig)
 extern void recalc_sigpending_and_wake(struct task_struct *t);
 extern void recalc_sigpending(void);
 
-extern void signal_wake_up_state(struct task_struct *t, unsigned int state);
-
 extern void signal_wake_up(struct task_struct *t, int resume_stopped);
-
-static inline void ptrace_signal_wake_up(struct task_struct *t, bool resume)
-{
-	signal_wake_up_state(t, resume ? __TASK_TRACED : 0);
-}
 
 /*
  * Wrappers for p->thread_info->cpu access. No-op on UP.
