@@ -776,26 +776,6 @@ struct v4l2_crop {
 /* current composing area plus all padding pixels */
 #define V4L2_SEL_TGT_COMPOSE_PADDED	259
 
-/**
- * struct v4l2_selection - selection info
- * @type:	buffer type (do not use *_MPLANE types)
- * @target:	selection target, used to choose one of possible rectangles
- * @flags:	constraints flags
- * @r:		coordinates of selection window
- * @reserved:	for future use, rounds structure size to 64 bytes, set to zero
- *
- * Hardware may use multiple helper window to process a video stream.
- * The structure is used to exchange this selection areas between
- * an application and a driver.
- */
-struct v4l2_selection {
-	__u32			type;
-	__u32			target;
-	__u32                   flags;
-	struct v4l2_rect        r;
-	__u32                   reserved[9];
-};
-
 
 /*
  *      A N A L O G   V I D E O   S T A N D A R D
@@ -818,10 +798,10 @@ typedef __u64 v4l2_std_id;
 #define V4L2_STD_PAL_Nc         ((v4l2_std_id)0x00000400)
 #define V4L2_STD_PAL_60         ((v4l2_std_id)0x00000800)
 
-#define V4L2_STD_NTSC_M         ((v4l2_std_id)0x00001000)	/* BTSC */
-#define V4L2_STD_NTSC_M_JP      ((v4l2_std_id)0x00002000)	/* EIA-J */
+#define V4L2_STD_NTSC_M         ((v4l2_std_id)0x00001000)
+#define V4L2_STD_NTSC_M_JP      ((v4l2_std_id)0x00002000)
 #define V4L2_STD_NTSC_443       ((v4l2_std_id)0x00004000)
-#define V4L2_STD_NTSC_M_KR      ((v4l2_std_id)0x00008000)	/* FM A2 */
+#define V4L2_STD_NTSC_M_KR      ((v4l2_std_id)0x00008000)
 
 #define V4L2_STD_SECAM_B        ((v4l2_std_id)0x00010000)
 #define V4L2_STD_SECAM_D        ((v4l2_std_id)0x00020000)
@@ -905,18 +885,11 @@ typedef __u64 v4l2_std_id;
 				 V4L2_STD_PAL_Nc	|\
 				 V4L2_STD_NTSC)
 
-/* Standards where MTS/BTSC stereo could be found */
-#define V4L2_STD_MTS		(V4L2_STD_NTSC_M	|\
-				 V4L2_STD_PAL_M		|\
-				 V4L2_STD_PAL_N		|\
-				 V4L2_STD_PAL_Nc)
-
-/* Standards for Countries with 60Hz Line frequency */
 #define V4L2_STD_525_60		(V4L2_STD_PAL_M		|\
 				 V4L2_STD_PAL_60	|\
 				 V4L2_STD_NTSC		|\
 				 V4L2_STD_NTSC_443)
-/* Standards for Countries with 50Hz Line frequency */
+
 #define V4L2_STD_625_50		(V4L2_STD_PAL		|\
 				 V4L2_STD_PAL_N		|\
 				 V4L2_STD_PAL_Nc	|\
@@ -1163,7 +1136,6 @@ struct v4l2_ext_controls {
 #define V4L2_CTRL_CLASS_CAMERA 0x009a0000	/* Camera class controls */
 #define V4L2_CTRL_CLASS_FM_TX 0x009b0000	/* FM Modulator control class */
 #define V4L2_CTRL_CLASS_FLASH 0x009c0000	/* Camera flash controls */
-#define V4L2_CTRL_CLASS_FM_RX 0x009d0000	/* FM Tuner control class */
 
 #define V4L2_CTRL_ID_MASK      	  (0x0fffffff)
 #define V4L2_CTRL_ID2CLASS(id)    ((id) & 0x0fff0000UL)
@@ -1209,13 +1181,11 @@ struct v4l2_querymenu {
 #define V4L2_CTRL_FLAG_INACTIVE 	0x0010
 #define V4L2_CTRL_FLAG_SLIDER 		0x0020
 #define V4L2_CTRL_FLAG_WRITE_ONLY 	0x0040
-#define V4L2_CTRL_FLAG_VOLATILE		0x0080
 
 /*  Query flag, to be ORed with the control ID */
 #define V4L2_CTRL_FLAG_NEXT_CTRL	0x80000000
 
 /*  User-class control IDs defined by V4L2 */
-#define V4L2_CID_MAX_CTRLS		1024
 #define V4L2_CID_BASE			(V4L2_CTRL_CLASS_USER | 0x900)
 #define V4L2_CID_USER_BASE 		V4L2_CID_BASE
 /*  IDs reserved for driver specific controls */
@@ -1254,7 +1224,6 @@ enum v4l2_power_line_frequency {
 	V4L2_CID_POWER_LINE_FREQUENCY_DISABLED	= 0,
 	V4L2_CID_POWER_LINE_FREQUENCY_50HZ	= 1,
 	V4L2_CID_POWER_LINE_FREQUENCY_60HZ	= 2,
-	V4L2_CID_POWER_LINE_FREQUENCY_AUTO	= 3,
 };
 #define V4L2_CID_HUE_AUTO			(V4L2_CID_BASE+25)
 #define V4L2_CID_WHITE_BALANCE_TEMPERATURE	(V4L2_CID_BASE+26)
