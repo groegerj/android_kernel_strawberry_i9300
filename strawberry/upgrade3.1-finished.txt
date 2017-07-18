@@ -24,6 +24,7 @@ include/linux/dvb/
 include/linux/i2c/
 include/linux/mfd/
 include/linux/mlx4/
+include/linux/mmc/
 include/linux/mtd/
 include/linux/netfilter/
 include/linux/platform_data/
