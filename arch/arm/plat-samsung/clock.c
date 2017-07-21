@@ -27,6 +27,7 @@
 */
 
 #include <linux/init.h>
+#include <linux/module.h>
 #include <linux/kernel.h>
 #include <linux/list.h>
 #include <linux/errno.h>
@@ -83,35 +84,31 @@ static int clk_null_enable(struct clk *clk, int enable)
 
 int clk_enable(struct clk *clk)
 {
-	unsigned long flags;
-
 	if (IS_ERR(clk) || clk == NULL)
 		return -EINVAL;
 
 	clk_enable(clk->parent);
 
-	spin_lock_irqsave(&clocks_lock, flags);
+	spin_lock(&clocks_lock);
 
 	if ((clk->usage++) == 0)
 		(clk->enable)(clk, 1);
 
-	spin_unlock_irqrestore(&clocks_lock, flags);
+	spin_unlock(&clocks_lock);
 	return 0;
 }
 
 void clk_disable(struct clk *clk)
 {
-	unsigned long flags;
-
 	if (IS_ERR(clk) || clk == NULL)
 		return;
 
-	spin_lock_irqsave(&clocks_lock, flags);
+	spin_lock(&clocks_lock);
 
 	if ((--clk->usage) == 0)
 		(clk->enable)(clk, 0);
 
-	spin_unlock_irqrestore(&clocks_lock, flags);
+	spin_unlock(&clocks_lock);
 	clk_disable(clk->parent);
 }
 
@@ -143,7 +140,6 @@ long clk_round_rate(struct clk *clk, unsigned long rate)
 
 int clk_set_rate(struct clk *clk, unsigned long rate)
 {
-	unsigned long flags;
 	int ret;
 
 	if (IS_ERR(clk))
@@ -159,9 +155,9 @@ int clk_set_rate(struct clk *clk, unsigned long rate)
 	if (clk->ops == NULL || clk->ops->set_rate == NULL)
 		return -EINVAL;
 
-	spin_lock_irqsave(&clocks_lock, flags);
+	spin_lock(&clocks_lock);
 	ret = (clk->ops->set_rate)(clk, rate);
-	spin_unlock_irqrestore(&clocks_lock, flags);
+	spin_unlock(&clocks_lock);
 
 	return ret;
 }
@@ -173,18 +169,17 @@ struct clk *clk_get_parent(struct clk *clk)
 
 int clk_set_parent(struct clk *clk, struct clk *parent)
 {
-	unsigned long flags;
 	int ret = 0;
 
 	if (IS_ERR(clk))
 		return -EINVAL;
 
-	spin_lock_irqsave(&clocks_lock, flags);
+	spin_lock(&clocks_lock);
 
 	if (clk->ops && clk->ops->set_parent)
 		ret = (clk->ops->set_parent)(clk, parent);
 
-	spin_unlock_irqrestore(&clocks_lock, flags);
+	spin_unlock(&clocks_lock);
 
 	return ret;
 }
@@ -211,7 +206,6 @@ struct clk_ops clk_ops_def_setrate = {
 
 struct clk clk_xtal = {
 	.name		= "xtal",
-	.id		= -1,
 	.rate		= 0,
 	.parent		= NULL,
 	.ctrlbit	= 0,
@@ -219,30 +213,25 @@ struct clk clk_xtal = {
 
 struct clk clk_ext = {
 	.name		= "ext",
-	.id		= -1,
 };
 
 struct clk clk_epll = {
 	.name		= "epll",
-	.id		= -1,
 };
 
 struct clk clk_mpll = {
 	.name		= "mpll",
-	.id		= -1,
 	.ops		= &clk_ops_def_setrate,
 };
 
 struct clk clk_upll = {
 	.name		= "upll",
-	.id		= -1,
 	.parent		= NULL,
 	.ctrlbit	= 0,
 };
 
 struct clk clk_f = {
 	.name		= "fclk",
-	.id		= -1,
 	.rate		= 0,
 	.parent		= &clk_mpll,
 	.ctrlbit	= 0,
@@ -250,7 +239,6 @@ struct clk clk_f = {
 
 struct clk clk_h = {
 	.name		= "hclk",
-	.id		= -1,
 	.rate		= 0,
 	.parent		= NULL,
 	.ctrlbit	= 0,
@@ -259,7 +247,6 @@ struct clk clk_h = {
 
 struct clk clk_p = {
 	.name		= "pclk",
-	.id		= -1,
 	.rate		= 0,
 	.parent		= NULL,
 	.ctrlbit	= 0,
@@ -268,7 +255,6 @@ struct clk clk_p = {
 
 struct clk clk_usb_bus = {
 	.name		= "usb-bus",
-	.id		= -1,
 	.rate		= 0,
 	.parent		= &clk_upll,
 };
@@ -276,7 +262,6 @@ struct clk clk_usb_bus = {
 
 struct clk s3c24xx_uclk = {
 	.name		= "uclk",
-	.id		= -1,
 };
 
 /* initialise the clock system */
@@ -289,8 +274,6 @@ struct clk s3c24xx_uclk = {
  */
 int s3c24xx_register_clock(struct clk *clk)
 {
-	unsigned long flags;
-
 	if (clk->enable == NULL)
 		clk->enable = clk_null_enable;
 
@@ -299,10 +282,6 @@ int s3c24xx_register_clock(struct clk *clk)
 	clk->lookup.con_id = clk->name;
 	clk->lookup.clk = clk;
 	clkdev_add(&clk->lookup);
-
-	spin_lock_irqsave(&clocks_lock, flags);
-	list_add_tail(&clk->list, &clocks);
-	spin_unlock_irqrestore(&clocks_lock, flags);
 
 	return 0;
 }
@@ -412,7 +391,7 @@ static int clk_debugfs_register_one(struct clk *c)
 	char s[255];
 	char *p = s;
 
-	p += sprintf(p, "%s", c->devname ?: c->name);
+	p += sprintf(p, "%s", c->devname);
 
 	d = debugfs_create_dir(s, pa ? pa->dent : clk_debugfs_root);
 	if (!d)
