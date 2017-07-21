@@ -38,7 +38,7 @@ static struct resource s3c_ts_resource[] = {
 
 struct platform_device s3c_device_ts = {
 	.name		= "s3c64xx-ts",
-	.id		= 0,
+	.id		= -1,
 	.num_resources	= ARRAY_SIZE(s3c_ts_resource),
 	.resource	= s3c_ts_resource,
 };
