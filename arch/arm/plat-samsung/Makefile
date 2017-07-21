@@ -51,7 +51,6 @@ obj-y				+= dev-uart.o
 obj-$(CONFIG_S3C_DEV_USB_HOST)	+= dev-usb.o
 obj-$(CONFIG_S3C_DEV_USB_HSOTG)	+= dev-usb-hsotg.o
 obj-$(CONFIG_S3C_DEV_WDT)	+= dev-wdt.o
-obj-$(CONFIG_EXYNOS_DEV_SS_UDC)	+= dev-usb3-exynos-drd.o
 obj-$(CONFIG_S3C_DEV_NAND)	+= dev-nand.o
 obj-$(CONFIG_S3C_DEV_ONENAND)	+= dev-onenand.o
 obj-$(CONFIG_S3C_DEV_RTC)	+= dev-rtc.o
@@ -59,9 +58,8 @@ obj-$(CONFIG_S3C_DEV_RTC)	+= dev-rtc.o
 obj-$(CONFIG_SAMSUNG_DEV_ADC)	+= dev-adc.o
 obj-$(CONFIG_SAMSUNG_DEV_IDE)	+= dev-ide.o
 obj-$(CONFIG_SAMSUNG_DEV_TS)	+= dev-ts.o
-obj-$(CONFIG_SAMSUNG_DEV_TS1)	+= dev-ts1.o
 obj-$(CONFIG_SAMSUNG_DEV_KEYPAD)	+= dev-keypad.o
-obj-$(CONFIG_HAVE_PWM)	+= dev-pwm.o
+obj-$(CONFIG_SAMSUNG_DEV_PWM)	+= dev-pwm.o
 obj-$(CONFIG_SAMSUNG_DEV_BACKLIGHT)	+= dev-backlight.o
 
 # DMA support
@@ -69,8 +67,6 @@ obj-$(CONFIG_SAMSUNG_DEV_BACKLIGHT)	+= dev-backlight.o
 obj-$(CONFIG_S3C_DMA)		+= dma.o
 
 obj-$(CONFIG_S3C_PL330_DMA)	+= s3c-pl330.o
-
-obj-$(CONFIG_DMA_M2M_TEST)	+= dma_m2m_test.o
 
 # PM support
 
