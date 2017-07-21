@@ -116,11 +116,6 @@ config S5P_DEV_FIMC3
 	help
 	  Compile in platform device definitions for FIMC controller 3
 
-config S5P_DEV_I2C_HDMIPHY
-	bool
-	help
-	  Compile in platform device definitions for I2C HDMIPHY controller
-
 config S5P_DEV_TV
 	bool
 	help
@@ -211,11 +206,6 @@ config S5P_DEV_USBGADGET
 	help
 	  compile in platform device definitions for USB-GADGET
 
-config S5P_DEV_USB_SWITCH
-	bool
-	help
-	  compile in platform device definitions for USB-SWITCH
-
 config S5P_SETUP_MIPIPHY
 	bool
 	depends on (VIDEO_S5P_MIPI_CSIS || S5P_MIPI_DSI2 || VIDEO_EXYNOS_MIPI_CSIS)
@@ -234,11 +224,6 @@ config S5P_DEV_THERMAL
 	help
 	  Compile in platform device definitions for THERMAL management unit.
 
-config S5P_DEV_ACE
-	bool
-	help
-	  Compile in common setup code for Crypto Engine devices.
-
 config S5P_DEV_MIPI_DSI
 	bool
 	depends on FB_S5P_MIPI_DSIM
@@ -246,32 +231,3 @@ config S5P_DEV_MIPI_DSI
 	help
 	  Compile in platform device definitions for MIPI_DSI
 
-config S5P_DEV_DSIM02
-	bool
-	help
-	  Compile in platform device definitions for MIPI-DSIM channel 0
-
-config S5P_DEV_DSIM12
-	bool
-	help
-	  Compile in platform device definitions for MIPI-DSIM channel 1
-
-config S5P_BTS
-	bool "S5P BTS driver"
-	default n
-	help
-	  Use Bus Traffic Shaper Driver
-
-config S5P_DEV_MIPI_DSIM
-	bool
-	depends on FB_MIPI_DSIM
-	default y
-	help
-	  Compile in platform device definitions for MIPI_DSIM
-	  to support mainlile style fimd
-
-config S3C_DEV_TSI
-	boolean "DEV TSI"
-        default n
-	---help---
-	  Compile in platform device definitions for S3C_DEV_TSI controller
