@@ -30,11 +30,11 @@ obj-$(CONFIG_S5P_BTS)		+= bts.o
 # devices
 
 obj-$(CONFIG_S3C_DEV_FIMC)	+= dev-fimc-s5p.o
+obj-$(CONFIG_S5P_DEV_MFC)	+= dev-mfc.o
 obj-$(CONFIG_S5P_DEV_FIMC0)	+= dev-fimc0.o
 obj-$(CONFIG_S5P_DEV_FIMC1)	+= dev-fimc1.o
 obj-$(CONFIG_S5P_DEV_FIMC2)	+= dev-fimc2.o
 obj-$(CONFIG_S5P_DEV_FIMC3)	+= dev-fimc3.o
-obj-$(CONFIG_S5P_DEV_MFC)	+= dev-mfc.o
 obj-$(CONFIG_S5P_DEV_FIMD0)	+= dev-fimd0.o
 obj-$(CONFIG_S5P_DEV_FIMD1)	+= dev-fimd1.o
 obj-$(CONFIG_S5P_DEV_I2C_HDMIPHY)      += dev-i2c-hdmiphy.o
