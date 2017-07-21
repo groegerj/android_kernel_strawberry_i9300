@@ -1645,7 +1645,7 @@ static struct snd_soc_dai_link midas_dai[] = {
 		.cpu_dai_name = "samsung-i2s.4",
 		.codec_dai_name = "wm8994-aif1",
 #ifndef CONFIG_SND_SOC_SAMSUNG_USE_DMA_WRAPPER
-		.platform_name = "samsung-audio-idma",
+		.platform_name = "samsung-idma",
 #else
 		.platform_name = "samsung-audio",
 #endif

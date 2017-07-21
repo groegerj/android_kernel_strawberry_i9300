@@ -556,7 +556,7 @@ samsung_asoc_idma_platform_remove(struct platform_device *pdev)
 
 static struct platform_driver asoc_idma_driver = {
 	.driver = {
-		.name = "samsung-audio-idma",
+		.name = "samsung-idma",
 		.owner = THIS_MODULE,
 	},
 
