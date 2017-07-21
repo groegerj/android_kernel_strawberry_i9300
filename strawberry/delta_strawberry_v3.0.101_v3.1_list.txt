@@ -51,12 +51,5 @@ arch/arm/kernel/smp.c
 arch/arm/kernel/stacktrace.c
 arch/arm/kernel/swp_emulate.c
 arch/arm/kernel/traps.c
-arch/arm/lib/copy_from_user.S
-arch/arm/lib/copy_template.S
-arch/arm/lib/copy_to_user.S
-arch/arm/lib/getuser.S
-arch/arm/lib/memcpy.S
-arch/arm/lib/memset.S
-arch/arm/lib/putuser.S
 arch/arm/tools/mach-types
 /strawberry
