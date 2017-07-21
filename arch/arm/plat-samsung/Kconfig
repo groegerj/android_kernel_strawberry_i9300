@@ -346,12 +346,7 @@ config S3C64XX_DEV_SPI
 config SAMSUNG_DEV_TS
 	bool
 	help
-	  Common in platform device definitions for touchscreen device
-
-config SAMSUNG_DEV_TS1
-	bool
-	help
-	  Common in platform device definitions for touchscreen-1 device
+	    Common in platform device definitions for touchscreen device
 
 config SAMSUNG_DEV_KEYPAD
 	bool
@@ -389,12 +384,6 @@ config S3C_PL330_DMA
 	select PL330
 	help
 	  S3C DMA API Driver for PL330 DMAC.
-
-config DMA_M2M_TEST
-	tristate "S3C DMA API Test client"
-	help
-	  Samsung DMA API test client. Say N unless you're debugging a
-	  DMA Device driver.
 
 comment "Power management"
 
