@@ -1,4 +1,5 @@
 Documentation/
+arch/arm/kernel/
 arch/arm/lib/
 arch/arm/mach-at91/
 arch/arm/mach-bcmring/
