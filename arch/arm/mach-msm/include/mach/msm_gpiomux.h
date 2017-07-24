@@ -9,11 +9,30 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  */
-#ifndef __ASM_ARCH_MSM_CLKDEV_H
-#define __ASM_ARCH_MSM_CLKDEV_H
 
-struct clk;
+#ifndef _LINUX_MSM_GPIOMUX_H
+#define _LINUX_MSM_GPIOMUX_H
 
-static inline int __clk_get(struct clk *clk) { return 1; }
-static inline void __clk_put(struct clk *clk) { }
+#ifdef CONFIG_MSM_GPIOMUX
+
+/* Increment a gpio's reference count, possibly activating the line. */
+int __must_check msm_gpiomux_get(unsigned gpio);
+
+/* Decrement a gpio's reference count, possibly suspending the line. */
+int msm_gpiomux_put(unsigned gpio);
+
+#else
+
+static inline int __must_check msm_gpiomux_get(unsigned gpio)
+{
+	return -ENOSYS;
+}
+
+static inline int msm_gpiomux_put(unsigned gpio)
+{
+	return -ENOSYS;
+}
+
 #endif
+
+#endif /* _LINUX_MSM_GPIOMUX_H */

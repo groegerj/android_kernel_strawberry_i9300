@@ -32,7 +32,7 @@
  * Memory-mapped I/O on MX21ADS base board
  */
 #define MX21ADS_MMIO_BASE_ADDR   0xf5000000
-#define MX21ADS_MMIO_SIZE        0xc00000
+#define MX21ADS_MMIO_SIZE        SZ_16M
 
 #define MX21ADS_REG_ADDR(offset)    (void __force __iomem *) \
 		(MX21ADS_MMIO_BASE_ADDR + (offset))
@@ -279,6 +279,8 @@ static struct platform_device *platform_devices[] __initdata = {
 
 static void __init mx21ads_board_init(void)
 {
+	imx21_soc_init();
+
 	mxc_gpio_setup_multiple_pins(mx21ads_pins, ARRAY_SIZE(mx21ads_pins),
 			"mx21ads");
 
