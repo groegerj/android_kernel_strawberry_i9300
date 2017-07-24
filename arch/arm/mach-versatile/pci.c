@@ -43,9 +43,9 @@
 #define PCI_IMAP0		__IO_ADDRESS(VERSATILE_PCI_CORE_BASE+0x0)
 #define PCI_IMAP1		__IO_ADDRESS(VERSATILE_PCI_CORE_BASE+0x4)
 #define PCI_IMAP2		__IO_ADDRESS(VERSATILE_PCI_CORE_BASE+0x8)
-#define PCI_SMAP0		__IO_ADDRESS(VERSATILE_PCI_CORE_BASE+0x14)
-#define PCI_SMAP1		__IO_ADDRESS(VERSATILE_PCI_CORE_BASE+0x18)
-#define PCI_SMAP2		__IO_ADDRESS(VERSATILE_PCI_CORE_BASE+0x1c)
+#define PCI_SMAP0		__IO_ADDRESS(VERSATILE_PCI_CORE_BASE+0x10)
+#define PCI_SMAP1		__IO_ADDRESS(VERSATILE_PCI_CORE_BASE+0x14)
+#define PCI_SMAP2		__IO_ADDRESS(VERSATILE_PCI_CORE_BASE+0x18)
 #define PCI_SELFID		__IO_ADDRESS(VERSATILE_PCI_CORE_BASE+0xc)
 
 #define DEVICE_ID_OFFSET		0x00
@@ -311,6 +311,9 @@ struct pci_bus * __init pci_versatile_scan_bus(int nr, struct pci_sys_data *sys)
 
 void __init pci_versatile_preinit(void)
 {
+	pcibios_min_io = 0x44000000;
+	pcibios_min_mem = 0x50000000;
+
 	__raw_writel(VERSATILE_PCI_MEM_BASE0 >> 28, PCI_IMAP0);
 	__raw_writel(VERSATILE_PCI_MEM_BASE1 >> 28, PCI_IMAP1);
 	__raw_writel(VERSATILE_PCI_MEM_BASE2 >> 28, PCI_IMAP2);
@@ -325,7 +328,7 @@ void __init pci_versatile_preinit(void)
 /*
  * map the specified device/slot/pin to an IRQ.   Different backplanes may need to modify this.
  */
-static int __init versatile_map_irq(struct pci_dev *dev, u8 slot, u8 pin)
+static int __init versatile_map_irq(const struct pci_dev *dev, u8 slot, u8 pin)
 {
 	int irq;
 	int devslot = PCI_SLOT(dev->devfn);
