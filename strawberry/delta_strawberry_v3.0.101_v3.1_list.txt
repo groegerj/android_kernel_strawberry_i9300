@@ -5,10 +5,6 @@ arch/Kconfig
 arch/arm/Kconfig
 arch/arm/Kconfig.debug
 arch/arm/Makefile
-arch/arm/common/Kconfig
-arch/arm/common/Makefile
-arch/arm/common/gic.c
-arch/arm/common/pl330.c
 arch/arm/configs/lineageos_i9300_defconfig
 arch/arm/crypto
 arch/arm/tools/mach-types
