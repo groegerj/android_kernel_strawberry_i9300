@@ -1,5 +1,6 @@
 Documentation/
 arch/arm/common/
+arch/arm/configs/
 arch/arm/include/
 arch/arm/kernel/
 arch/arm/lib/

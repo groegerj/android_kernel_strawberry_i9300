@@ -5,7 +5,6 @@
 !| !!| !!!: arch/arm/Kconfig
 0| !!| !!!: arch/arm/Kconfig.debug
 !| !!| !!!: arch/arm/Makefile
-!| <<| <<<: arch/arm/configs/lineageos_i9300_defconfig
 0| <<| <<<: arch/arm/crypto
 0| !!| !!!: arch/arm/tools/mach-types
 <| <<| <<<: /strawberry

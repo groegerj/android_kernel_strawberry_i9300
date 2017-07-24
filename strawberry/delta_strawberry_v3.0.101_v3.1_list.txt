@@ -5,7 +5,6 @@ arch/Kconfig
 arch/arm/Kconfig
 arch/arm/Kconfig.debug
 arch/arm/Makefile
-arch/arm/configs/lineageos_i9300_defconfig
 arch/arm/crypto
 arch/arm/tools/mach-types
 /strawberry
