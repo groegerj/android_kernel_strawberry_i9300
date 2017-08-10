@@ -67,10 +67,6 @@ static inline int is_zero_pfn(unsigned long pfn)
 
 #define my_zero_pfn(addr)	page_to_pfn(ZERO_PAGE(addr))
 
-/* TODO: s390 cannot support io_remap_pfn_range... */
-#define io_remap_pfn_range(vma, vaddr, pfn, size, prot) 	       \
-	remap_pfn_range(vma, vaddr, pfn, size, prot)
-
 #endif /* !__ASSEMBLY__ */
 
 /*
@@ -657,6 +653,50 @@ static inline void pgste_set_pte(pte_t *ptep, pgste_t pgste)
 		page_set_storage_key(address, nkey, 1);
 #endif
 }
+
+/**
+ * struct gmap_struct - guest address space
+ * @mm: pointer to the parent mm_struct
+ * @table: pointer to the page directory
+ * @asce: address space control element for gmap page table
+ * @crst_list: list of all crst tables used in the guest address space
+ */
+struct gmap {
+	struct list_head list;
+	struct mm_struct *mm;
+	unsigned long *table;
+	unsigned long asce;
+	struct list_head crst_list;
+};
+
+/**
+ * struct gmap_rmap - reverse mapping for segment table entries
+ * @next: pointer to the next gmap_rmap structure in the list
+ * @entry: pointer to a segment table entry
+ */
+struct gmap_rmap {
+	struct list_head list;
+	unsigned long *entry;
+};
+
+/**
+ * struct gmap_pgtable - gmap information attached to a page table
+ * @vmaddr: address of the 1MB segment in the process virtual memory
+ * @mapper: list of segment table entries maping a page table
+ */
+struct gmap_pgtable {
+	unsigned long vmaddr;
+	struct list_head mapper;
+};
+
+struct gmap *gmap_alloc(struct mm_struct *mm);
+void gmap_free(struct gmap *gmap);
+void gmap_enable(struct gmap *gmap);
+void gmap_disable(struct gmap *gmap);
+int gmap_map_segment(struct gmap *gmap, unsigned long from,
+		     unsigned long to, unsigned long length);
+int gmap_unmap_segment(struct gmap *gmap, unsigned long to, unsigned long len);
+unsigned long gmap_fault(unsigned long address, struct gmap *);
 
 /*
  * Certain architectures need to do special things when PTEs

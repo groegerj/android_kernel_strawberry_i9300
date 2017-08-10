@@ -882,7 +882,7 @@ void user_disable_single_step(struct task_struct *task)
 }
 
 #ifdef CONFIG_HAVE_HW_BREAKPOINT
-void ptrace_triggered(struct perf_event *bp, int nmi,
+void ptrace_triggered(struct perf_event *bp,
 		      struct perf_sample_data *data, struct pt_regs *regs)
 {
 	struct perf_event_attr attr;
@@ -973,7 +973,7 @@ int ptrace_set_debugreg(struct task_struct *task, unsigned long addr,
 								&attr.bp_type);
 
 	thread->ptrace_bps[0] = bp = register_user_hw_breakpoint(&attr,
-							ptrace_triggered, task);
+					       ptrace_triggered, NULL, task);
 	if (IS_ERR(bp)) {
 		thread->ptrace_bps[0] = NULL;
 		ptrace_put_breakpoints(task);
@@ -1497,14 +1497,9 @@ long arch_ptrace(struct task_struct *child, long request,
 		if (index < PT_FPR0) {
 			tmp = ptrace_get_reg(child, (int) index);
 		} else {
-			unsigned int fpidx = index - PT_FPR0;
-
 			flush_fp_to_thread(child);
-			if (fpidx < (PT_FPSCR - PT_FPR0))
-				tmp = ((unsigned long *)child->thread.fpr)
-					[fpidx * TS_FPRWIDTH];
-			else
-				tmp = child->thread.fpscr.val;
+			tmp = ((unsigned long *)child->thread.fpr)
+				[TS_FPRWIDTH * (index - PT_FPR0)];
 		}
 		ret = put_user(tmp, datalp);
 		break;
@@ -1530,14 +1525,9 @@ long arch_ptrace(struct task_struct *child, long request,
 		if (index < PT_FPR0) {
 			ret = ptrace_put_reg(child, index, data);
 		} else {
-			unsigned int fpidx = index - PT_FPR0;
-
 			flush_fp_to_thread(child);
-			if (fpidx < (PT_FPSCR - PT_FPR0))
-				((unsigned long *)child->thread.fpr)
-					[fpidx * TS_FPRWIDTH] = data;
-			else
-				child->thread.fpscr.val = data;
+			((unsigned long *)child->thread.fpr)
+				[TS_FPRWIDTH * (index - PT_FPR0)] = data;
 			ret = 0;
 		}
 		break;

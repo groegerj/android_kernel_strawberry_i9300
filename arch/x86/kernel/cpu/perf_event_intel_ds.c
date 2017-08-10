@@ -340,7 +340,7 @@ static int intel_pmu_drain_bts_buffer(void)
 	 */
 	perf_prepare_sample(&header, &data, event, &regs);
 
-	if (perf_output_begin(&handle, event, header.size * (top - at), 1, 1))
+	if (perf_output_begin(&handle, event, header.size * (top - at)))
 		return 1;
 
 	for (; at < top; at++) {
@@ -508,7 +508,6 @@ static int intel_pmu_pebs_fixup_ip(struct pt_regs *regs)
 	unsigned long from = cpuc->lbr_entries[0].from;
 	unsigned long old_to, to = cpuc->lbr_entries[0].to;
 	unsigned long ip = regs->ip;
-	int is_64bit = 0;
 
 	/*
 	 * We don't need to fixup if the PEBS assist is fault like
@@ -560,10 +559,7 @@ static int intel_pmu_pebs_fixup_ip(struct pt_regs *regs)
 		} else
 			kaddr = (void *)to;
 
-#ifdef CONFIG_X86_64
-		is_64bit = kernel_ip(to) || !test_thread_flag(TIF_IA32);
-#endif
-		insn_init(&insn, kaddr, is_64bit);
+		kernel_insn_init(&insn, kaddr);
 		insn_get_length(&insn);
 		to += insn.length;
 	} while (to < ip);
@@ -620,7 +616,7 @@ static void __intel_pmu_pebs_event(struct perf_event *event,
 	else
 		regs.flags &= ~PERF_EFLAGS_EXACT;
 
-	if (perf_event_overflow(event, 1, &data, &regs))
+	if (perf_event_overflow(event, &data, &regs))
 		x86_pmu_stop(event, 0);
 }
 
@@ -752,16 +748,6 @@ static void intel_ds_init(void)
 			x86_pmu.pebs = 0;
 		}
 	}
-}
-
-void perf_restore_debug_store(void)
-{
-	struct debug_store *ds = __this_cpu_read(cpu_hw_events.ds);
-
-	if (!x86_pmu.bts && !x86_pmu.pebs)
-		return;
-
-	wrmsrl(MSR_IA32_DS_AREA, (unsigned long)ds);
 }
 
 #else /* CONFIG_CPU_SUP_INTEL */

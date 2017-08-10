@@ -31,7 +31,7 @@
 #include <linux/spinlock.h>
 #include <linux/of.h>
 
-#include <asm/atomic.h>
+#include <linux/atomic.h>
 #include <asm/eeh.h>
 #include <asm/eeh_event.h>
 #include <asm/io.h>
@@ -1338,7 +1338,7 @@ static const struct file_operations proc_eeh_operations = {
 static int __init eeh_init_proc(void)
 {
 	if (machine_is(pseries))
-		proc_create("powerpc/eeh", 0, NULL, &proc_eeh_operations);
+		proc_create("ppc64/eeh", 0, NULL, &proc_eeh_operations);
 	return 0;
 }
 __initcall(eeh_init_proc);

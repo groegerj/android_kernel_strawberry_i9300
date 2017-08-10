@@ -54,16 +54,6 @@ static const struct dmi_system_id pci_use_crs_table[] __initconst = {
 			DMI_MATCH(DMI_BIOS_VENDOR, "American Megatrends Inc."),
 		},
 	},
-	/* https://bugzilla.kernel.org/show_bug.cgi?id=42619 */
-	{
-		.callback = set_use_crs,
-		.ident = "MSI MS-7253",
-		.matches = {
-			DMI_MATCH(DMI_BOARD_VENDOR, "MICRO-STAR INTERNATIONAL CO., LTD"),
-			DMI_MATCH(DMI_BOARD_NAME, "MS-7253"),
-			DMI_MATCH(DMI_BIOS_VENDOR, "Phoenix Technologies, LTD"),
-		},
-	},
 	{}
 };
 
@@ -159,7 +149,7 @@ setup_resource(struct acpi_resource *acpi_res, void *data)
 	struct acpi_resource_address64 addr;
 	acpi_status status;
 	unsigned long flags;
-	u64 start, orig_end, end;
+	u64 start, end;
 
 	status = resource_to_addr(acpi_res, &addr);
 	if (!ACPI_SUCCESS(status))
@@ -175,21 +165,7 @@ setup_resource(struct acpi_resource *acpi_res, void *data)
 		return AE_OK;
 
 	start = addr.minimum + addr.translation_offset;
-	orig_end = end = addr.maximum + addr.translation_offset;
-
-	/* Exclude non-addressable range or non-addressable portion of range */
-	end = min(end, (u64)iomem_resource.end);
-	if (end <= start) {
-		dev_info(&info->bridge->dev,
-			"host bridge window [%#llx-%#llx] "
-			"(ignored, not CPU addressable)\n", start, orig_end);
-		return AE_OK;
-	} else if (orig_end != end) {
-		dev_info(&info->bridge->dev,
-			"host bridge window [%#llx-%#llx] "
-			"([%#llx-%#llx] ignored, not CPU addressable)\n",
-			start, orig_end, end + 1, orig_end);
-	}
+	end = addr.maximum + addr.translation_offset;
 
 	res = &info->res[info->res_num];
 	res->name = info->name;
@@ -281,10 +257,9 @@ static void add_resources(struct pci_root_info *info)
 
 		conflict = insert_resource_conflict(root, res);
 		if (conflict)
-			dev_err(&info->bridge->dev,
-				"address space collision: host bridge window %pR "
-				"conflicts with %s %pR\n",
-				res, conflict->name, conflict);
+			dev_info(&info->bridge->dev,
+				 "ignoring host bridge window %pR (conflicts with %s %pR)\n",
+				 res, conflict->name, conflict);
 		else
 			pci_bus_add_resource(info->bus, res, 0);
 	}
@@ -393,6 +368,20 @@ struct pci_bus * __devinit pci_acpi_scan_root(struct acpi_pci_root *root)
 		if (bus) {
 			get_current_resources(device, busnum, domain, bus);
 			bus->subordinate = pci_scan_child_bus(bus);
+		}
+	}
+
+	/* After the PCI-E bus has been walked and all devices discovered,
+	 * configure any settings of the fabric that might be necessary.
+	 */
+	if (bus) {
+		struct pci_bus *child;
+		list_for_each_entry(child, &bus->children, node) {
+			struct pci_dev *self = child->self;
+			if (!self)
+				continue;
+
+			pcie_bus_configure_settings(child, self->pcie_mpss);
 		}
 	}
 

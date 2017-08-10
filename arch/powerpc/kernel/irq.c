@@ -157,12 +157,6 @@ notrace void arch_local_irq_restore(unsigned long en)
 	if (get_hard_enabled())
 		return;
 
-#if defined(CONFIG_BOOKE) && defined(CONFIG_SMP)
-	/* Check for pending doorbell interrupts and resend to ourself */
-	if (cpu_has_feature(CPU_FTR_DBELL))
-		smp_muxed_ipi_resend();
-#endif
-
 	/*
 	 * Need to hard-enable interrupts here.  Since currently disabled,
 	 * no need to take further asm precautions against preemption; but
@@ -170,13 +164,16 @@ notrace void arch_local_irq_restore(unsigned long en)
 	 */
 	local_paca->hard_enabled = en;
 
-	/*
-	 * Trigger the decrementer if we have a pending event. Some processors
-	 * only trigger on edge transitions of the sign bit. We might also
-	 * have disabled interrupts long enough that the decrementer wrapped
-	 * to positive.
+#ifndef CONFIG_BOOKE
+	/* On server, re-trigger the decrementer if it went negative since
+	 * some processors only trigger on edge transitions of the sign bit.
+	 *
+	 * BookE has a level sensitive decrementer (latches in TSR) so we
+	 * don't need that
 	 */
-	decrementer_check_overflow();
+	if ((int)mfspr(SPRN_DEC) < 0)
+		mtspr(SPRN_DEC, 1);
+#endif /* CONFIG_BOOKE */
 
 	/*
 	 * Force the delivery of pending soft-disabled interrupts on PS3.
@@ -454,11 +451,18 @@ static inline void do_softirq_onstack(void)
 	curtp = current_thread_info();
 	irqtp = softirq_ctx[smp_processor_id()];
 	irqtp->task = curtp->task;
+	irqtp->flags = 0;
 	current->thread.ksp_limit = (unsigned long)irqtp +
 				    _ALIGN_UP(sizeof(struct thread_info), 16);
 	call_do_softirq(irqtp);
 	current->thread.ksp_limit = saved_sp_limit;
 	irqtp->task = NULL;
+
+	/* Set any flag that may have been set on the
+	 * alternate stack
+	 */
+	if (irqtp->flags)
+		set_bits(irqtp->flags, &curtp->flags);
 }
 
 void do_softirq(void)
@@ -747,7 +751,7 @@ unsigned int irq_create_mapping(struct irq_host *host,
 	if (irq_setup_virq(host, virq, hwirq))
 		return NO_IRQ;
 
-	printk(KERN_DEBUG "irq: irq %lu on host %s mapped to virtual irq %u\n",
+	pr_debug("irq: irq %lu on host %s mapped to virtual irq %u\n",
 		hwirq, host->of_node ? host->of_node->full_name : "null", virq);
 
 	return virq;
@@ -879,6 +883,41 @@ unsigned int irq_find_mapping(struct irq_host *host,
 }
 EXPORT_SYMBOL_GPL(irq_find_mapping);
 
+#ifdef CONFIG_SMP
+int irq_choose_cpu(const struct cpumask *mask)
+{
+	int cpuid;
+
+	if (cpumask_equal(mask, cpu_all_mask)) {
+		static int irq_rover;
+		static DEFINE_RAW_SPINLOCK(irq_rover_lock);
+		unsigned long flags;
+
+		/* Round-robin distribution... */
+do_round_robin:
+		raw_spin_lock_irqsave(&irq_rover_lock, flags);
+
+		irq_rover = cpumask_next(irq_rover, cpu_online_mask);
+		if (irq_rover >= nr_cpu_ids)
+			irq_rover = cpumask_first(cpu_online_mask);
+
+		cpuid = irq_rover;
+
+		raw_spin_unlock_irqrestore(&irq_rover_lock, flags);
+	} else {
+		cpuid = cpumask_first_and(mask, cpu_online_mask);
+		if (cpuid >= nr_cpu_ids)
+			goto do_round_robin;
+	}
+
+	return get_hard_smp_processor_id(cpuid);
+}
+#else
+int irq_choose_cpu(const struct cpumask *mask)
+{
+	return hard_smp_processor_id();
+}
+#endif
 
 unsigned int irq_radix_revmap_lookup(struct irq_host *host,
 				     irq_hw_number_t hwirq)

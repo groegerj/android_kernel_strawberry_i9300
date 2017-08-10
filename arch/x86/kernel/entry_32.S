@@ -54,6 +54,7 @@
 #include <asm/ftrace.h>
 #include <asm/irq_vectors.h>
 #include <asm/cpufeature.h>
+#include <asm/alternative-asm.h>
 
 /* Avoid __ASSEMBLER__'ifying <linux/audit.h> just for this.  */
 #include <linux/elf-em.h>
@@ -97,6 +98,12 @@
 1:
 #endif
 .endm
+
+#ifdef CONFIG_VM86
+#define resume_userspace_sig	check_userspace
+#else
+#define resume_userspace_sig	resume_userspace
+#endif
 
 /*
  * User gs save/restore
@@ -321,19 +328,10 @@ ret_from_exception:
 	preempt_stop(CLBR_ANY)
 ret_from_intr:
 	GET_THREAD_INFO(%ebp)
-resume_userspace_sig:
-#ifdef CONFIG_VM86
+check_userspace:
 	movl PT_EFLAGS(%esp), %eax	# mix EFLAGS and CS
 	movb PT_CS(%esp), %al
 	andl $(X86_EFLAGS_VM | SEGMENT_RPL_MASK), %eax
-#else
-	/*
-	 * We can be coming here from a syscall done in the kernel space,
-	 * e.g. a failed kernel_execve().
-	 */
-	movl PT_CS(%esp), %eax
-	andl $SEGMENT_RPL_MASK, %eax
-#endif
 	cmpl $USER_RPL, %eax
 	jb resume_kernel		# not returning to v8086 or userspace
 
@@ -876,12 +874,7 @@ ENTRY(simd_coprocessor_error)
 661:	pushl_cfi $do_general_protection
 662:
 .section .altinstructions,"a"
-	.balign 4
-	.long 661b
-	.long 663f
-	.word X86_FEATURE_XMM
-	.byte 662b-661b
-	.byte 664f-663f
+	altinstruction_entry 661b, 663f, X86_FEATURE_XMM, 662b-661b, 664f-663f
 .previous
 .section .altinstr_replacement,"ax"
 663:	pushl $do_simd_coprocessor_error
@@ -1029,7 +1022,7 @@ ENTRY(xen_sysenter_target)
 
 ENTRY(xen_hypervisor_callback)
 	CFI_STARTPROC
-	pushl_cfi $-1 /* orig_ax = -1 => not a system call */
+	pushl_cfi $0
 	SAVE_ALL
 	TRACE_IRQS_OFF
 
@@ -1071,15 +1064,14 @@ ENTRY(xen_failsafe_callback)
 2:	mov 8(%esp),%es
 3:	mov 12(%esp),%fs
 4:	mov 16(%esp),%gs
-	/* EAX == 0 => Category 1 (Bad segment)
-	   EAX != 0 => Category 2 (Bad IRET) */
 	testl %eax,%eax
 	popl_cfi %eax
 	lea 16(%esp),%esp
 	CFI_ADJUST_CFA_OFFSET -16
 	jz 5f
-	jmp iret_exc
-5:	pushl_cfi $-1 /* orig_ax = -1 => not a system call */
+	addl $16,%esp
+	jmp iret_exc		# EAX != 0 => Category 2 (Bad IRET)
+5:	pushl_cfi $0		# EAX == 0 => Category 1 (Bad segment)
 	SAVE_ALL
 	jmp ret_from_exception
 	CFI_ENDPROC

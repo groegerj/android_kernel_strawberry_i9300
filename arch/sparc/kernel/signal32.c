@@ -273,10 +273,7 @@ void do_sigreturn32(struct pt_regs *regs)
 		case 1: set.sig[0] = seta[0] + (((long)seta[1]) << 32);
 	}
 	sigdelsetmask(&set, ~_BLOCKABLE);
-	spin_lock_irq(&current->sighand->siglock);
-	current->blocked = set;
-	recalc_sigpending();
-	spin_unlock_irq(&current->sighand->siglock);
+	set_current_blocked(&set);
 	return;
 
 segv:
@@ -377,10 +374,7 @@ asmlinkage void do_rt_sigreturn32(struct pt_regs *regs)
 		case 1: set.sig[0] = seta.sig[0] + (((long)seta.sig[1]) << 32);
 	}
 	sigdelsetmask(&set, ~_BLOCKABLE);
-	spin_lock_irq(&current->sighand->siglock);
-	current->blocked = set;
-	recalc_sigpending();
-	spin_unlock_irq(&current->sighand->siglock);
+	set_current_blocked(&set);
 	return;
 segv:
 	force_sig(SIGSEGV, current);
@@ -583,7 +577,7 @@ static int setup_frame32(struct k_sigaction *ka, struct pt_regs *regs,
 			err |= __put_user(rp->ins[i], &sf->ss.ins[i]);
 		err |= __put_user(rp->ins[6], &sf->ss.fp);
 		err |= __put_user(rp->ins[7], &sf->ss.callers_pc);
-	}
+	}	
 	if (err)
 		goto sigsegv;
 
@@ -782,6 +776,7 @@ static inline int handle_signal32(unsigned long signr, struct k_sigaction *ka,
 				  siginfo_t *info,
 				  sigset_t *oldset, struct pt_regs *regs)
 {
+	sigset_t blocked;
 	int err;
 
 	if (ka->sa.sa_flags & SA_SIGINFO)
@@ -792,12 +787,10 @@ static inline int handle_signal32(unsigned long signr, struct k_sigaction *ka,
 	if (err)
 		return err;
 
-	spin_lock_irq(&current->sighand->siglock);
-	sigorsets(&current->blocked,&current->blocked,&ka->sa.sa_mask);
+	sigorsets(&blocked, &current->blocked, &ka->sa.sa_mask);
 	if (!(ka->sa.sa_flags & SA_NOMASK))
-		sigaddset(&current->blocked,signr);
-	recalc_sigpending();
-	spin_unlock_irq(&current->sighand->siglock);
+		sigaddset(&blocked, signr);
+	set_current_blocked(&blocked);
 
 	tracehook_signal_handler(signr, info, ka, regs, 0);
 
@@ -829,23 +822,21 @@ static inline void syscall_restart32(unsigned long orig_i0, struct pt_regs *regs
  * want to handle. Thus you cannot kill init even with a SIGKILL even by
  * mistake.
  */
-void do_signal32(sigset_t *oldset, struct pt_regs * regs)
+void do_signal32(sigset_t *oldset, struct pt_regs * regs,
+		 int restart_syscall, unsigned long orig_i0)
 {
 	struct k_sigaction ka;
-	unsigned long orig_i0;
-	int restart_syscall;
 	siginfo_t info;
 	int signr;
 	
 	signr = get_signal_to_deliver(&info, &ka, regs, NULL);
 
-	restart_syscall = 0;
-	orig_i0 = 0;
-	if (pt_regs_is_syscall(regs) &&
-	    (regs->tstate & (TSTATE_XCARRY | TSTATE_ICARRY))) {
-		restart_syscall = 1;
-		orig_i0 = regs->u_regs[UREG_G6];
-	}
+	/* If the debugger messes with the program counter, it clears
+	 * the "in syscall" bit, directing us to not perform a syscall
+	 * restart.
+	 */
+	if (restart_syscall && !pt_regs_is_syscall(regs))
+		restart_syscall = 0;
 
 	if (signr > 0) {
 		if (restart_syscall)
@@ -883,7 +874,7 @@ void do_signal32(sigset_t *oldset, struct pt_regs * regs)
 	 */
 	if (current_thread_info()->status & TS_RESTORE_SIGMASK) {
 		current_thread_info()->status &= ~TS_RESTORE_SIGMASK;
-		sigprocmask(SIG_SETMASK, &current->saved_sigmask, NULL);
+		set_current_blocked(&current->saved_sigmask);
 	}
 }
 

@@ -96,6 +96,7 @@ void flush_fp_to_thread(struct task_struct *tsk)
 		preempt_enable();
 	}
 }
+EXPORT_SYMBOL_GPL(flush_fp_to_thread);
 
 void enable_kernel_fp(void)
 {
@@ -145,6 +146,7 @@ void flush_altivec_to_thread(struct task_struct *tsk)
 		preempt_enable();
 	}
 }
+EXPORT_SYMBOL_GPL(flush_altivec_to_thread);
 #endif /* CONFIG_ALTIVEC */
 
 #ifdef CONFIG_VSX
@@ -186,6 +188,7 @@ void flush_vsx_to_thread(struct task_struct *tsk)
 		preempt_enable();
 	}
 }
+EXPORT_SYMBOL_GPL(flush_vsx_to_thread);
 #endif /* CONFIG_VSX */
 
 #ifdef CONFIG_SPE
@@ -213,6 +216,7 @@ void flush_spe_to_thread(struct task_struct *tsk)
 #ifdef CONFIG_SMP
 			BUG_ON(tsk != current);
 #endif
+			tsk->thread.spefscr = mfspr(SPRN_SPEFSCR);
 			giveup_spe(tsk);
 		}
 		preempt_enable();
@@ -650,6 +654,8 @@ void show_regs(struct pt_regs * regs)
 	printbits(regs->msr, msr_bits);
 	printk("  CR: %08lx  XER: %08lx\n", regs->ccr, regs->xer);
 	trap = TRAP(regs);
+	if ((regs->trap != 0xc00) && cpu_has_feature(CPU_FTR_CFAR))
+		printk("CFAR: "REG"\n", regs->orig_gpr3);
 	if (trap == 0x300 || trap == 0x600)
 #ifdef CONFIG_PPC_ADV_DEBUG_REGS
 		printk("DEAR: "REG", ESR: "REG"\n", regs->dar, regs->dsisr);
@@ -794,8 +800,16 @@ int copy_thread(unsigned long clone_flags, unsigned long usp,
 #endif /* CONFIG_PPC_STD_MMU_64 */
 #ifdef CONFIG_PPC64 
 	if (cpu_has_feature(CPU_FTR_DSCR)) {
-		p->thread.dscr_inherit = current->thread.dscr_inherit;
-		p->thread.dscr = current->thread.dscr;
+		if (current->thread.dscr_inherit) {
+			p->thread.dscr_inherit = 1;
+			p->thread.dscr = current->thread.dscr;
+		} else if (0 != dscr_default) {
+			p->thread.dscr_inherit = 1;
+			p->thread.dscr = dscr_default;
+		} else {
+			p->thread.dscr_inherit = 0;
+			p->thread.dscr = 0;
+		}
 	}
 #endif
 
@@ -822,8 +836,6 @@ void start_thread(struct pt_regs *regs, unsigned long start, unsigned long sp)
 #ifdef CONFIG_PPC64
 	unsigned long load_addr = regs->gpr[2];	/* saved by ELF_PLAT_INIT */
 #endif
-
-	set_fs(USER_DS);
 
 	/*
 	 * If we exec out of a kernel thread then thread.regs will not be
