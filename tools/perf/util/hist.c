@@ -14,7 +14,8 @@ enum hist_filter {
 
 struct callchain_param	callchain_param = {
 	.mode	= CHAIN_GRAPH_REL,
-	.min_percent = 0.5
+	.min_percent = 0.5,
+	.order  = ORDER_CALLEE
 };
 
 u16 hists__col_len(struct hists *self, enum hist_column col)
@@ -158,18 +159,6 @@ struct hist_entry *__hists__add_entry(struct hists *self,
 		if (!cmp) {
 			he->period += period;
 			++he->nr_events;
-
-			/* If the map of an existing hist_entry has
-			 * become out-of-date due to an exec() or
-			 * similar, update it.  Otherwise we will
-			 * mis-adjust symbol addresses when computing
-			 * the history counter to increment.
-			 */
-			if (he->ms.map != entry.ms.map) {
-				he->ms.map = entry.ms.map;
-				if (he->ms.map)
-					he->ms.map->referenced = true;
-			}
 			goto out;
 		}
 
@@ -857,6 +846,9 @@ size_t hists__fprintf(struct hists *self, struct hists *pair,
 print_entries:
 	for (nd = rb_first(&self->entries); nd; nd = rb_next(nd)) {
 		struct hist_entry *h = rb_entry(nd, struct hist_entry, rb_node);
+
+		if (h->filtered)
+			continue;
 
 		if (show_displacement) {
 			if (h->pair != NULL)

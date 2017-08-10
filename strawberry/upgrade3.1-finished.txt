@@ -16,3 +16,6 @@ samples/
 security/
 scripts/
 sound/
+tools/
+usr/
+virt/

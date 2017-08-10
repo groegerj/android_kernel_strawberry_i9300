@@ -1,3 +1,5 @@
+.mailmap
+CREDITS
 MAINTAINERS
 Makefile
 /README.md

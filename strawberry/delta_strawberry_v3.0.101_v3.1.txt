@@ -1,4 +1,6 @@
-0| !!| !!!: MAINTAINERS
+!| !0| !!!: .mailmap
+!| !0| !!!: CREDITS
+!| !0| !!!: MAINTAINERS
 !| !!| !!!: Makefile
 <| <<| <<<: /README.md
 <| <<| <<<: /strawberry
