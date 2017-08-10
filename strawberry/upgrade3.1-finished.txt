@@ -1,6 +1,5 @@
 Documentation/
-arch/arm/
-arch/mips/
+arch/
 block/
 crypto/
 drivers/

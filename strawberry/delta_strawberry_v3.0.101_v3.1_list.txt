@@ -1,5 +1,4 @@
 MAINTAINERS
 Makefile
 /README.md
-arch/Kconfig
 /strawberry
