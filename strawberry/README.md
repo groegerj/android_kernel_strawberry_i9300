@@ -60,7 +60,8 @@ Here is my plan. After every change I make, I test a few things:
 
 *  The kernel still compiles.
 *  Android boots.
-*  Playing a video works.
+*  ADB works.
+*  Playing a video works (including sound).
 *  Loading a website via wireless network works.
 
 Things still can break, but this way I at least ensure that the basic system always works.
@@ -103,7 +104,7 @@ different names arch/arm/mach-exynos in smdk and arch/arm/mach-exynos4 in mainli
 are (quite) different versions of the same directory containing some 100 files.
 Nevertheless, that number 2190 should give you some idea.
 
-Now, of the things which are different, there are different sort os being different.
+Now, of the things which are different, there are different sorts of being different.
 smdk contains drivers and stuff not only for the i9300 but for many different Samsung
 devices. Then drivers, but also core code, is a mixture of versions. There is stuff
 very close to mainline-3.0.101, other stuff 3.1-ish but also code backported, patched
