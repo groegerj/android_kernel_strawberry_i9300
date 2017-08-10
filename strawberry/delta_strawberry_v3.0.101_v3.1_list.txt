@@ -2,9 +2,4 @@ MAINTAINERS
 Makefile
 /README.md
 arch/Kconfig
-arch/arm/Kconfig
-arch/arm/Kconfig.debug
-arch/arm/Makefile
-arch/arm/crypto
-arch/arm/tools/mach-types
 /strawberry
