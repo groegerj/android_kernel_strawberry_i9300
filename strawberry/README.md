@@ -2,7 +2,7 @@
 
 Android kernel for the Samsung Galaxy S3 international (i9300).
 
-![Screenshot of Phone Status](screenshot.png)
+![Screenshot of Phone Status](strawberry/screenshot.png)
 
 ## Warning
 
