@@ -2,6 +2,8 @@
 
 Android kernel for the Samsung Galaxy S3 international (i9300).
 
+![Screenshot of Phone Status](screenshot.png)
+
 ## Warning
 
 This kernel is completely experimental. Use only if you know what you do.
@@ -50,7 +52,7 @@ included in one or another way in the mainline Linux kernel until today,
 and so that strategy has a chance of becoming successful.
 I wish Wolfgang all the best.
 
-## Strategy and Status
+## Strategy
 
 Wolfgang explains why merging is bad. He is completely right on this.
 But I started doing it anyway, and I still think with some effort it can be done.
@@ -63,7 +65,14 @@ Here is my plan. After every change I make, I test a few things:
 
 Things still can break, but this way I at least ensure that the basic system always works.
 
-## Bugs
+## Status
+
+I managed to complete the steps to be described below up to Step 2.
+This means I have a working 3.1 kernel for i9300! This said, I must admit that I introduced
+the bugs described below in the process. They are all about things I did not test during
+development. The lesson from this is clear. You only get what you test.
+
+### Bugs
 
 The following bugs are known.
 
@@ -72,6 +81,8 @@ results in a state which is neither on nor off. The phone does not react in any 
 restarted by long-press of the power button.
 
 In the described state, the battery drains out quickly. This might be an independent second bug.
+
+Bluetooth does not work.
 
 ### Step 0: Starting with the LineageOS SMDK Kernel
 
@@ -108,7 +119,7 @@ mainline-3.0.101. Sometimes, this contains an essential patch not in mainline, b
 needed. More often, the respective subsystem just has a version which matches mainline-3.0.101
 not exactly but comes from a stage between 3.0.101 and 3.1, for example. Or, the Samsung
 guys have added some optimisation of security fix or whatever. In such a case, I replace
-that smdk stuff with mainline. Step 1 is inished by now.
+that smdk stuff with mainline. Step 1 is finished by now.
 
 ### Step 2: mainlining-3.1
 
@@ -127,15 +138,17 @@ This is why, after having mainlined as much code to 3.0.101, I started mainlinin
 much as possible to 3.1. Sometimes entire files can be replaced by mainline-3.1 versions,
 but often, there are side effects, and API changes etc. have to be taken into account.
 
-By now, I could mainline the whole network stack to 3.1, and parts of fs/, kernel/ and much more.
+Step 2 is finished by now.
 Compared with the original number 2190 of different items, the number of items different
-from either mainline-3.0.101 or mainline-3.1 could be cut down to less than half.
-Step 2 makes good progress, and I work hard to reduct the differences with mainline-3.1
-to a minimum.
+compared to mainline-3.1 could be cut down 827.
 
-### Step 3: remove bugs
+### Step 3: remove bugs introduced in Step 2
 
-As the title sais, the bugs described above need to be removed...
+The nasty bugs described above need to be removed.
+I consider starting a second time with Step 0. This time, however, things should be easier.
+From what I gained so far, large subsystems should be usable right away, which are
+(hopefully) unrelated to the bugs. Still a lot of work, but the progress so far has convinced me
+that it's possible.
 
 ### Step 4: further upgrade
 
